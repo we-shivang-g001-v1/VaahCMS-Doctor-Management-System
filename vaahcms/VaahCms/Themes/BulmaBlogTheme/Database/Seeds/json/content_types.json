@@ -1,0 +1,111 @@
+[
+    {
+        "content": {
+            "name": "Blog",
+            "slug": "blog",
+            "plural": "Blogs",
+            "plural_slug": "blogs",
+            "singular": "Blog",
+            "singular_slug": "blog",
+            "excerpt": "Simple blog",
+            "is_published": 1,
+            "is_commentable": 1,
+            "content_statuses": [
+                "draft",
+                "published"
+            ]
+        },
+        "groups": [
+            {
+                "name": "Default",
+                "slug": "default",
+                "fields": [
+                    {
+                        "name": "Title",
+                        "meta": {
+                            "default": "Hello World"
+                        },
+                        "type": {
+                            "slug": "title"
+                        }
+                    },
+                    {
+                        "name": "Slug",
+                        "meta": {
+                            "default": "slug"
+                        },
+                        "type": {
+                            "slug": "slug"
+                        }
+                    },
+                    {
+                        "name": "Thumbnail Image",
+                        "meta": {
+                            "default": ""
+                        },
+                        "type": {
+                            "slug": "image"
+                        }
+                    },
+                    {
+                        "name": "Content",
+                        "meta": {
+                            "default": "Welcome. This is your first post. Edit or delete it, then start writing!"
+                        },
+                        "type": {
+                            "slug": "editor"
+                        }
+                    },
+                    {
+                        "name": "Category",
+                        "meta": {
+                            "default": "Uncategorized",
+                            "is_multiple": true,
+                            "type": "Taxonomy"
+                        },
+                        "type": {
+                            "slug": "relation"
+                        }
+                    },
+                    {
+                        "name": "SEO Meta Tags",
+                        "type": {
+                            "slug": "seo-meta-tags"
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "content": {
+            "name": "Pages",
+            "slug": "pages",
+            "plural": "Pages",
+            "plural_slug": "pages",
+            "singular": "Page",
+            "singular_slug": "page",
+            "excerpt": "Simple page",
+            "is_published": 1,
+            "is_commentable": 1,
+            "content_statuses": [
+                "draft",
+                "published"
+            ]
+        },
+        "groups": [
+            {
+                "name": "Default",
+                "slug": "default",
+                "fields": [
+                    {
+                        "name": "SEO Meta Tags",
+                        "type": {
+                            "slug": "seo-meta-tags"
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+]

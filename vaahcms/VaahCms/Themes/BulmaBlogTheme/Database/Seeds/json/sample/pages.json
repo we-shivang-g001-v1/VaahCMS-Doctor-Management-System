@@ -1,0 +1,95 @@
+[
+    {
+        "name": "Home",
+        "slug": "home",
+        "permalink": "home",
+        "template_slug": "home",
+        "content": {
+            "default": {
+                "seo-meta-tags": {
+                    "seo_description":{
+                        "content":"This is home page.",
+                        "maxlength":200,
+                        "name":"SEO Meta Description",
+                        "type":"textarea",
+                        "message":"Description of content (maximum 200 characters)"
+                    },
+                    "seo_keywords":{
+                        "content":"home,page",
+                        "maxlength":200,
+                        "name":"SEO Meta Keywords",
+                        "type":"textarea"
+                    },
+                    "seo_title":{
+                        "content":"Home",
+                        "maxlength":70,
+                        "name":"SEO Title",
+                        "type":"text"
+                    }
+                }
+            }
+        }
+    },
+    {
+        "name": "About Us",
+        "slug": "about-us",
+        "permalink": "about-us",
+        "template_slug": "about-us",
+        "content": {
+            "default": {
+                "seo-meta-tags": {
+                    "seo_description":{
+                        "content":"This is About Us page.",
+                        "maxlength":200,
+                        "name":"SEO Meta Description",
+                        "type":"textarea",
+                        "message":"Description of content (maximum 200 characters)"
+                    },
+                    "seo_keywords":{
+                        "content":"About Us,page",
+                        "maxlength":200,
+                        "name":"SEO Meta Keywords",
+                        "type":"textarea"
+                    },
+                    "seo_title":{
+                        "content":"About Us",
+                        "maxlength":70,
+                        "name":"SEO Title",
+                        "type":"text"
+                    }
+                }
+            }
+        }
+    },
+    {
+        "name": "Contact Us",
+        "slug": "contact-us",
+        "permalink": "contact-us",
+        "template_slug": "contact-us",
+        "content": {
+            "default": {
+                "seo-meta-tags": {
+                    "seo_description":{
+                        "content":"This is Contact Us page.",
+                        "maxlength":200,
+                        "name":"SEO Meta Description",
+                        "type":"textarea",
+                        "message":"Description of content (maximum 200 characters)"
+                    },
+                    "seo_keywords":{
+                        "content":"Contact Us,page",
+                        "maxlength":200,
+                        "name":"SEO Meta Keywords",
+                        "type":"textarea"
+                    },
+                    "seo_title":{
+                        "content":"Contact Us",
+                        "maxlength":70,
+                        "name":"SEO Title",
+                        "type":"text"
+                    }
+                }
+            }
+        }
+    }
+]

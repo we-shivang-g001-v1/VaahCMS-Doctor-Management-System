@@ -1,0 +1,111 @@
+[
+    {
+        "template": {
+            "name": "Default",
+            "type": "page",
+            "file_path": "frontend.default"
+        },
+        "groups": [
+        ]
+    },
+    {
+        "template": {
+            "name": "Home",
+            "type": "page",
+            "file_path": "frontend.home"
+        },
+        "groups": [
+        ]
+
+    },
+    {
+        "template": {
+            "name": "About Us",
+            "type": "page",
+            "file_path": "frontend.pages.about-us"
+        },
+        "groups": [
+            {
+                "name": "Header",
+                "slug": "header",
+                "fields": [
+                    {
+                        "name": "Headline",
+                        "slug": "headline",
+                        "meta": {
+                            "default": "About Us"
+                        },
+                        "type": {
+                            "slug": "text"
+                        }
+                    },
+                    {
+                        "name": "Sub Headline",
+                        "slug": "sub-headline",
+                        "meta": {
+                        },
+                        "type": {
+                            "slug": "textarea"
+                        }
+                    },
+                    {
+                        "name": "Content",
+                        "slug": "content",
+                        "meta": {
+                            "default": "What is Lorem Ipsum?\nLorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.\n\nWhy do we use it?\nIt is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using 'Content here, content here', making it look like readable English. Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text, and a search for 'lorem ipsum' will uncover many web sites still in their infancy. Various versions have evolved over the years, sometimes by accident, sometimes on purpose (injected humour and the like)."
+                        },
+                        "type": {
+                            "slug": "editor"
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "template": {
+            "name": "Contact Us",
+            "type": "page",
+            "file_path": "frontend.pages.contact-us"
+        },
+        "groups": [
+            {
+                "name": "Header",
+                "slug": "header",
+                "fields": [
+                    {
+                        "name": "Headline",
+                        "slug": "headline",
+                        "meta": {
+                            "default": "Contact Us"
+                        },
+                        "type": {
+                            "slug": "text"
+                        }
+                    }
+                ]
+            }
+        ]
+
+    },
+    {
+        "template": {
+            "name": "Home",
+            "type": "page",
+            "file_path": "frontend.home"
+        },
+        "groups": [
+        ]
+
+    },
+    {
+        "template": {
+            "name": "Single Blog",
+            "type": "page",
+            "file_path": "frontend.pages.single-blog"
+        },
+        "groups": [
+        ]
+
+    }
+]

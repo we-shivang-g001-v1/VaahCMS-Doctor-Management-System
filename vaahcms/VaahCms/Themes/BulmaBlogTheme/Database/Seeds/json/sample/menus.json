@@ -1,0 +1,26 @@
+[
+    {
+        "name": "Home",
+        "type": "content",
+        "parent": null,
+        "menu_slug": "top-menu",
+        "theme_location": "top",
+        "is_home": true
+    },
+    {
+        "name": "About Us",
+        "type": "content",
+        "parent": null,
+        "menu_slug": "top-menu",
+        "theme_location": "top",
+        "is_home": false
+    },
+    {
+        "name": "Contact Us",
+        "type": "content",
+        "parent": null,
+        "menu_slug": "top-menu",
+        "theme_location": "top",
+        "is_home": false
+    }
+]

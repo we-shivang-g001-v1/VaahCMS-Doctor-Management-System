@@ -1,0 +1,331 @@
+[
+
+    {
+        "name": "Text",
+        "excerpt": "",
+        "meta": {
+            "opening_tag": "<p class='text'>",
+            "closing_tag": "</p>",
+            "container_opening_tag": "",
+            "container_closing_tag": "",
+            "is_hidden": false
+        }
+    },
+    {
+        "name": "Textarea",
+        "excerpt": "",
+        "meta": {
+            "opening_tag": "<p class='text-area'>",
+            "closing_tag": "</p>",
+            "container_opening_tag": "",
+            "container_closing_tag": "",
+            "is_hidden": false
+        }
+    },
+    {
+        "name": "Title",
+        "excerpt": "",
+        "meta": {
+            "opening_tag": "<h2 class='title'>",
+            "closing_tag": "</h2>",
+            "container_opening_tag": "",
+            "container_closing_tag": "",
+            "is_hidden": false
+        }
+    },
+    {
+        "name": "Slug",
+        "excerpt": "",
+        "meta": {
+            "opening_tag": "<p class='slug'>",
+            "closing_tag": "</p>",
+            "container_opening_tag": "",
+            "container_closing_tag": "",
+            "is_hidden": true
+        }
+    },
+    {
+        "name": "Editor",
+        "excerpt": "",
+        "meta": {
+            "opening_tag": "<p class='editor'>",
+            "closing_tag": "</p>",
+            "container_opening_tag": "",
+            "container_closing_tag": "",
+            "is_hidden": false
+        }
+    },
+    {
+        "name": "Visual Editor",
+        "excerpt": ""
+    },
+    {
+        "name": "Select",
+        "excerpt": "",
+        "meta": {
+            "opening_tag": "<p class='select'>",
+            "closing_tag": "</p>",
+            "container_opening_tag": null,
+            "container_closing_tag": null,
+            "is_hidden": false,
+            "is_multiple": false,
+            "option": [
+                "Default"
+            ]
+        }
+    },
+    {
+        "name": "Image",
+        "excerpt": "",
+        "meta": {
+            "opening_tag": "<p class='image'>",
+            "closing_tag": "</p>",
+            "container_opening_tag": "",
+            "container_closing_tag": "",
+            "is_hidden": false
+        }
+    },
+    {
+        "name": "Media",
+        "excerpt": "",
+        "meta": {
+            "opening_tag": "<p class='media'>",
+            "closing_tag": "</p>",
+            "container_opening_tag": "",
+            "container_closing_tag": "",
+            "is_hidden": false
+        }
+    },
+    {
+        "name": "Markdown",
+        "excerpt": "",
+        "meta": {
+            "opening_tag": "<p class='markdown'>",
+            "closing_tag": "</p>",
+            "container_opening_tag": "",
+            "container_closing_tag": "",
+            "is_hidden": false
+        }
+    },
+    {
+        "name": "SEO Meta Tags",
+        "excerpt": "",
+        "meta": {
+            "opening_tag": "<li>",
+            "closing_tag": "</li>",
+            "container_opening_tag": "<ul class='seo-meta-tags'>",
+            "container_closing_tag": "</ul>",
+            "is_hidden": true
+        }
+    },
+    {
+        "name": "Number",
+        "excerpt": "",
+        "meta": {
+            "opening_tag": "<p class='number'>",
+            "closing_tag": "</p>",
+            "container_opening_tag": "",
+            "container_closing_tag": "",
+            "is_hidden": false
+        }
+    },
+    {
+        "name": "Boolean",
+        "excerpt": "",
+        "meta": {
+            "opening_tag": "<p class='boolean'>",
+            "closing_tag": "</p>",
+            "container_opening_tag": "",
+            "container_closing_tag": "",
+            "is_hidden": false
+        }
+    },
+    {
+        "name": "Date",
+        "excerpt": "",
+        "meta": {
+            "opening_tag": "<p class='date'>",
+            "closing_tag": "</p>",
+            "container_opening_tag": "",
+            "container_closing_tag": "",
+            "is_hidden": false
+        }
+    },
+    {
+        "name": "Time",
+        "excerpt": "",
+        "meta": {
+            "opening_tag": "<p class='time'>",
+            "closing_tag": "</p>",
+            "container_opening_tag": "",
+            "container_closing_tag": "",
+            "is_hidden": false
+        }
+    },
+    {
+        "name": "Date Time",
+        "excerpt": "",
+        "meta": {
+            "opening_tag": "<p class='date-time'>",
+            "closing_tag": "</p>",
+            "container_opening_tag": "",
+            "container_closing_tag": "",
+            "is_hidden": false
+        }
+    },
+    {
+        "name": "Email",
+        "excerpt": "",
+        "meta": {
+            "opening_tag": "<p class='email'>",
+            "closing_tag": "</p>",
+            "container_opening_tag": "",
+            "container_closing_tag": "",
+            "is_hidden": false
+        }
+    },
+    {
+        "name": "Password",
+        "excerpt": "",
+        "meta": {
+            "opening_tag": "<p class='password'>",
+            "closing_tag": "</p>",
+            "container_opening_tag": "",
+            "container_closing_tag": "",
+            "is_hidden": false
+        }
+    },
+    {
+        "name": "UUID",
+        "excerpt": "",
+        "meta": {
+            "opening_tag": "<p class='uuid'>",
+            "closing_tag": "</p>",
+            "container_opening_tag": "",
+            "container_closing_tag": "",
+            "is_hidden": false
+        }
+    },
+    {
+        "name": "Currency Code",
+        "excerpt": "",
+        "meta": {
+            "opening_tag": "<p class='currency-code'>",
+            "closing_tag": "</p>",
+            "container_opening_tag": "",
+            "container_closing_tag": "",
+            "is_hidden": false
+        }
+    },
+    {
+        "name": "Price",
+        "excerpt": "",
+        "meta": {
+            "opening_tag": "<p class='price'>",
+            "closing_tag": "</p>",
+            "container_opening_tag": "",
+            "container_closing_tag": "",
+            "is_hidden": false
+        }
+    },
+    {
+        "name": "List",
+        "excerpt": "",
+        "meta": {
+            "opening_tag": "<li>",
+            "closing_tag": "</li>",
+            "container_opening_tag": "<ul class='list'>",
+            "container_closing_tag": "</ul>",
+            "is_hidden": false
+        }
+    },
+
+    {
+        "name": "Image Group",
+        "excerpt": "",
+        "meta": {
+            "opening_tag": "<div class=\"image-container\">",
+            "closing_tag": "</div>",
+            "container_opening_tag": "<div class=\"image-group\">",
+            "container_closing_tag": "</div>",
+            "is_hidden": false
+        }
+    },
+    {
+        "name": "Phone Number",
+        "excerpt": "",
+        "meta": {
+            "opening_tag": "<p class='phone-number'>",
+            "closing_tag": "</p>",
+            "container_opening_tag": "",
+            "container_closing_tag": "",
+            "is_hidden": false
+        }
+    },
+    {
+        "name": "Address",
+        "excerpt": "",
+        "meta": {
+            "opening_tag": "<li>",
+            "closing_tag": "</li>",
+            "container_opening_tag": "<ul class='address'>",
+            "container_closing_tag": "</ul>",
+            "is_hidden": false
+        }
+    },
+    {
+        "name": "Relation",
+        "excerpt": "",
+        "meta": {
+            "opening_tag": "<p class='relation'>",
+            "closing_tag": "</p>",
+            "container_opening_tag": null,
+            "container_closing_tag": null,
+            "type": null,
+            "filter_id": null,
+            "is_hidden": false,
+            "is_multiple": false
+        }
+    },
+    {
+        "name": "Tags",
+        "excerpt": "",
+        "meta": {
+            "opening_tag": "<li>",
+            "closing_tag": "</li>",
+            "container_opening_tag": "<ul class='tags'>",
+            "container_closing_tag": "</ul>",
+            "is_hidden": false
+
+        }
+    },
+    {
+        "name": "Json",
+        "excerpt": "",
+        "meta": {
+            "is_hidden": false
+        }
+    },
+    {
+        "name": "Twitter Card",
+        "excerpt": "",
+        "meta": {
+            "opening_tag": "<li>",
+            "closing_tag": "</li>",
+            "container_opening_tag": "<ul class='twitter-card'>",
+            "container_closing_tag": "</ul>",
+            "is_hidden": true
+        }
+    },
+    {
+        "name": "Facebook Card",
+        "excerpt": "",
+        "meta": {
+            "opening_tag": "<li>",
+            "closing_tag": "</li>",
+            "container_opening_tag": "<ul class='facebook-card'>",
+            "container_closing_tag": "</ul>",
+            "is_hidden": true
+        }
+    }
+]

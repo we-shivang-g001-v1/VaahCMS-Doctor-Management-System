@@ -1,0 +1,80 @@
+[
+    {
+        "content": {
+            "name": "Blog",
+            "slug": "blog",
+            "plural": "Blogs",
+            "plural_slug": "blogs",
+            "singular": "Blog",
+            "singular_slug": "blog",
+            "excerpt": "Simple blog",
+            "is_published": 1,
+            "is_commentable": 1,
+            "content_statuses": [
+                "draft",
+                "published"
+            ]
+        },
+        "groups": [
+            {
+                "name": "Default",
+                "slug": "default",
+                "fields": [
+                    {
+                        "name": "Title",
+                        "meta": {
+                            "default": "What is Lorem Ipsum?"
+                        },
+                        "type": {
+                            "slug": "title"
+                        }
+                    },
+                    {
+                        "name": "Slug",
+                        "meta": {
+                            "default": "slug"
+                        },
+                        "type": {
+                            "slug": "slug"
+                        }
+                    },
+                    {
+                        "name": "Thumbnail Image",
+                        "meta": {
+                            "default": ""
+                        },
+                        "type": {
+                            "slug": "image"
+                        }
+                    },
+                    {
+                        "name": "Content",
+                        "meta": {
+                            "default": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."
+                        },
+                        "type": {
+                            "slug": "editor"
+                        }
+                    },
+                    {
+                        "name": "Category",
+                        "meta": {
+                            "default": "Uncategorized",
+                            "is_multiple": true,
+                            "type": "Taxonomy"
+                        },
+                        "type": {
+                            "slug": "relation"
+                        }
+                    },
+                    {
+                        "name": "SEO Meta Tags",
+                        "type": {
+                            "slug": "seo-meta-tags"
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+]

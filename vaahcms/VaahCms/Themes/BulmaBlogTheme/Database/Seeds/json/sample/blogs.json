@@ -1,0 +1,42 @@
+[
+    {
+        "name": "Lorem Ipsum 1",
+        "template_slug": "single-blog",
+        "permalink": "blog-1"
+    },
+    {
+        "name": "Lorem Ipsum 2",
+        "template_slug": "single-blog",
+        "permalink": "blog-2"
+    },
+    {
+        "name": "Lorem Ipsum 3",
+        "template_slug": "single-blog",
+        "permalink": "blog-3"
+    },
+    {
+        "name": "Lorem Ipsum 4",
+        "template_slug": "single-blog",
+        "permalink": "blog-4"
+    },
+    {
+        "name": "Lorem Ipsum 5",
+        "template_slug": "single-blog",
+        "permalink": "blog-5"
+    },
+    {
+        "name": "Lorem Ipsum 6",
+        "template_slug": "single-blog",
+        "permalink": "blog-6"
+    },
+    {
+        "name": "Lorem Ipsum 7",
+        "template_slug": "single-blog",
+        "permalink": "blog-7"
+    },
+    {
+        "name": "Lorem Ipsum 8",
+        "template_slug": "single-blog",
+        "permalink": "blog-8"
+    }
+]

@@ -1,14 +1,12 @@
 <script setup>
-import {onMounted, ref, watch} from "vue";
-import { useDoctorStore } from '../../stores/store-doctors'
+import {onMounted, ref, watch, computed} from "vue";
+import { useAppointmentStore } from '../../stores/store-appointments'
 
 import VhField from './../../vaahvue/vue-three/primeflex/VhField.vue'
 import {useRoute} from 'vue-router';
 
-
 const  isValidTime = (date) => date instanceof Date && !isNaN (date.getTime())
-
-const store = useDoctorStore();
+const store = useAppointmentStore();
 const route = useRoute();
 
 onMounted(async () => {
@@ -29,7 +27,23 @@ const form_menu = ref();
 const toggleFormMenu = (event) => {
     form_menu.value.toggle(event);
 };
+
+
+
+
 //--------/form_menu
+// Fetch the selected doctor's full details
+const selectedDoctor = computed(() => {
+    return store.assets.doctor.find(doctor => doctor.id === store.item.doctor_id) || {};
+});
+
+onMounted(async () => {
+    if ((!store.item || Object.keys(store.item).length < 1) && route.params && route.params.id) {
+        await store.getItem(route.params.id);
+    }
+    await store.getFormMenu();
+});
+
 
 </script>
 <template>
@@ -64,14 +78,14 @@ const toggleFormMenu = (event) => {
                     <Button class="p-button-sm"
                             v-tooltip.left="'View'"
                             v-if="store.item && store.item.id"
-                            data-testid="doctors-view_item"
+                            data-testid="appointments-view_item"
                             @click="store.toView(store.item)"
                             icon="pi pi-eye"/>
 
                     <Button label="Save"
                             class="p-button-sm"
                             v-if="store.item && store.item.id"
-                            data-testid="doctors-save"
+                            data-testid="appointments-save"
                             @click="store.itemAction('save')"
                             icon="pi pi-save"/>
 
@@ -79,7 +93,7 @@ const toggleFormMenu = (event) => {
                             v-else
                             @click="store.itemAction('create-and-new')"
                             class="p-button-sm"
-                            data-testid="doctors-create-and-new"
+                            data-testid="appointments-create-and-new"
                             icon="pi pi-save"/>
 
 
@@ -88,7 +102,7 @@ const toggleFormMenu = (event) => {
                         type="button"
                         @click="toggleFormMenu"
                         class="p-button-sm"
-                        data-testid="doctors-form-menu"
+                        data-testid="appointments-form-menu"
                         icon="pi pi-angle-down"
                         aria-haspopup="true"/>
 
@@ -100,7 +114,7 @@ const toggleFormMenu = (event) => {
 
                     <Button class="p-button-primary p-button-sm"
                             icon="pi pi-times"
-                            data-testid="doctors-to-list"
+                            data-testid="appointments-to-list"
                             @click="store.toList()">
                     </Button>
                 </div>
@@ -137,91 +151,100 @@ const toggleFormMenu = (event) => {
                 </Message>
 
 
-                <VhField label="Name">
+                <VhField label="Select Patient">
+                    <Dropdown
+                        filter
+                        name="items-patient"
+                        data-testid="items-patient"
+                        placeholder="Select Patient"
+                        :options="store.assets.patients"
+                        v-model="store.item.patient_id"
+                        option-label="name"
+                        class="w-full"
+                        showClear
+                        option-value="id"
+                    />
+                </VhField>
+                <VhField label="Select Doctor">
+                    <Dropdown
+                        filter
+                        name="items-doctor"
+                        data-testid="items-doctor"
+                        placeholder="Select Doctor"
+                        :options="store.assets.doctor"
+                        v-model="store.item.doctor_id"
+                        option-label="name"
+                        option-value="id"
+                        class="w-full"
+                        showClear
+                    />
+                   
+                </VhField>
+
+                <VhField label="Doctor's Information"  v-if="store.item.doctor_id" >
+
+                    <b>
+                        Email-
+                    </b> {{selectedDoctor.email}}<br>
+                    <b>Phone</b>
+                    - {{selectedDoctor.phone}}<br>
+                    <b>Specialization
+                    </b>- {{selectedDoctor.specialization}}<br>
+                    <b>
+                        Shift Time-</b>
+
+                    {{selectedDoctor.shift_start_time}} -
+                    {{selectedDoctor.shift_end_time}}<br>
+                    (Please Select the time in the given time slot).
+
+                </VhField>
+                <VhField label="Date and Time" required>
                     <div class="p-inputgroup">
-                        <InputText class="w-full"
-                                   placeholder="Enter the name"
-                                   name="doctors-name"
-                                   data-testid="doctors-name"
-                                   @update:modelValue="store.watchItem"
-                                   v-model="store.item.name" required/>
-                        <div class="required-field hidden"></div>
+                        <Calendar
+                            name="items-date"
+                            date-format="yy-mm-dd"
+                            :showIcon="true"
+                            :minDate="today_date"
+                            data-testid="items-date"
+                            @date-select="handleDateChange($event,'date')"
+                            v-model="store.item.date "
+                            :pt="{
+                                  monthPicker:{class:'w-15rem'},
+                                  yearPicker:{class:'w-15rem'}
+                              }"
+                            placeholder="Select Appointment Date"
+                        />
+                        <Calendar
+                            v-model="store.item.slot_start_time"
+                            :pt="{
+                                  monthPicker:{class:'w-15rem'},
+                                  yearPicker:{class:'w-15rem'}
+                              }"
+                            time-only
+                            placeholder="Appointment Start Time"
+                        />
+                        <Calendar
+                            v-model="store.item.slot_end_time"
+                            :minDate="isValidTime(store.item.slot_start_time) ? store.item.slot_start_time : null"
+                            :pt="{
+                                  monthPicker:{class:'w-15rem'},
+                                  yearPicker:{class:'w-15rem'}
+                              }"
+                            time-only
+                            placeholder="Appointment End Time"
+                        />
                     </div>
                 </VhField>
 
-                <VhField label="Slug">
-                    <div class="p-inputgroup">
-                        <InputText class="w-full"
-                                   placeholder="Enter the slug"
-                                   name="doctors-slug"
-                                   data-testid="doctors-slug"
-                                   v-model="store.item.slug" required/>
-                        <div class="required-field hidden"></div>
-                    </div>
-                </VhField>
 
-                <VhField label="Specialization">
-                    <div class="p-inputgroup">
-                        <InputText class="w-full"
-                                   placeholder="Enter the Specialization"
-                                   name="doctors-specialization"
-                                   data-testid="doctors-specialization"
-                                   v-model="store.item.specialization" required/>
-                        <div class="required-field hidden"></div>
-                    </div>
-                </VhField>
-                <VhField label="Email">
-                    <div class="p-inputgroup">
-                        <InputText class="w-full"
-                                   placeholder="Enter the Email"
-                                   name="doctors-email"
-                                   data-testid="doctors-email"
-                                   v-model="store.item.email" required/>
-                        <div class="required-field hidden"></div>
-                    </div>
-                </VhField>
-                <VhField label="Phone">
-                    <div class="p-inputgroup">
-                        <InputNumber class="w-full"
-                                   placeholder="Enter the Phone"
-                                   name="doctors-phone"
-                                   data-testid="doctors-phone"
-                                   v-model="store.item.phone" required/>
-                        <div class="required-field hidden"></div>
-                    </div>
-                </VhField>
-                <VhField label="Time">
-                    <div class="p-inputgroup">
-                        <Calendar
-                            v-model="store.item.shift_start_time"
-                            :pt="{
-                  monthPicker:{class:'w-15rem'},
-                  yearPicker:{class:'w-15rem'}
-              }"ocot
-                            time-only
-                            placeholder="Shift Start Time"
-                        />
-                        <Calendar
-                            v-model="store.item.shift_end_time"
-                            :minDate="isValidTime(store.item.shift_start_time) ? store.item.shift_start_time : null"
-                            :pt="{
-                  monthPicker:{class:'w-15rem'},
-                  yearPicker:{class:'w-15rem'}
-              }"
-                            time-only
-                            placeholder="Shift End Time"
-                        />
-                        <div class="required-field hidden"></div>
-                    </div>
-                </VhField>
 
 
                 <VhField label="Is Active">
                     <InputSwitch v-bind:false-value="0"
                                  v-bind:true-value="1"
                                  class="p-inputswitch-sm"
-                                 name="doctors-active"
-                                 data-testid="doctors-active"
+                                 name="appointments-active"
+                                 data-testid="appointments-active"
                                  v-model="store.item.is_active"/>
                 </VhField>
 
@@ -231,3 +254,5 @@ const toggleFormMenu = (event) => {
     </div>
 
 </template>
+
+

@@ -37,6 +37,10 @@ const items = ref([
                 label: 'Patient',
                 icon: 'fa-regular fa-chart-bar',
                 route: "/patients"
+            },{
+                label: 'Appointment',
+                icon: 'fa-regular fa-chart-bar',
+                route: "/appointments"
             },
         ]
     },

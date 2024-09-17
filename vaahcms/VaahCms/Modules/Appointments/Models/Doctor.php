@@ -577,6 +577,12 @@ class Doctor extends VaahModel
         $rules = array(
             'name' => 'required|max:150',
             'slug' => 'required|max:150',
+            'specialization' => 'required|max:20',
+            'email' => 'required|max:150',
+            'phone' => 'required|max:11',
+            'shift_start_time' => 'required|max:150',
+            'shift_end_time' => 'required|max:150',
+
         );
 
         $validator = \Validator::make($inputs, $rules);

@@ -186,6 +186,7 @@ const toggleFormMenu = (event) => {
                                    placeholder="Enter the Phone"
                                    name="doctors-phone"
                                    data-testid="doctors-phone"
+                                     :use-grouping="false"
                                    v-model="store.item.phone" required/>
                         <div class="required-field hidden"></div>
                     </div>

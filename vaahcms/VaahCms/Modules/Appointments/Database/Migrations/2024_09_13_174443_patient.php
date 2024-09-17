@@ -22,7 +22,7 @@ class Patient extends Migration
                 $table->string('name')->nullable()->index();
                 $table->string('slug')->nullable()->index();
                 $table->string('email')->nullable()->index();
-                $table->integer('phone')->nullable()->index();
+                $table->string('phone')->nullable()->index();
                 $table->boolean('is_active')->nullable()->index();
 
 

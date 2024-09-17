@@ -80,36 +80,7 @@ class Appointment extends VaahModel
         );
         return $fillable_columns;
     }
-    //-------------------------------------------------
 
-//    protected function slotStartTime(): Attribute
-//    {
-//
-//        return Attribute::make(
-//            get: function (string $value = null,) {
-//                $timezone = Session::get('user_timezone');
-//
-//                return Carbon::parse($value)
-//                    ->setTimezone($timezone)
-//                    ->format('H:i');
-//            },
-//        );
-//    }
-
-    //-------------------------------------------------
-//    protected function slotEndTime(): Attribute
-//    {
-//        return Attribute::make(
-//            get: function (string $value = null,) {
-//                $timezone = Session::get('user_timezone');
-//                return Carbon::parse($value)
-//                    ->setTimezone($timezone)
-//                    ->format('H:i');
-//            },
-//        );
-//    }
-
-    //-------------------------------------------------
 
     //-------------------------------------------------
 
@@ -200,6 +171,7 @@ class Appointment extends VaahModel
     }
 
     //-------------------------------------------------
+    //-------------------------------------------------
     public static function createItem($request)
     {
         $inputs = $request->all();
@@ -232,13 +204,55 @@ class Appointment extends VaahModel
         $item->fill($inputs);
         $item->save();
 
-        // Return success response
+        $subject = 'Appointment Booked - Mail';
+
+        self::appointmentMail($inputs, $subject);
+
         $response = self::getItem($item->id);
-        $response['messages'][] = trans("vaahcms-general.saved_successfully");
+        $response['messages'][] = trans("appointment booked successfully");
         return $response;
     }
 
 
+    //-------------------------------------------------
+
+    public static function formatTime($time, $timezone, $format = 'H:i')
+    {
+        return Carbon::parse($time)
+            ->setTimezone($timezone)
+            ->format($format);
+    }
+
+    //-------------------------------------------------
+
+    public static function appointmentMail($inputs, $subject)
+    {
+        $doctor = Doctor::find($inputs['doctor_id']);
+        $patient = Patient::find($inputs['patient_id']);
+        $timezone = Session::get('user_timezone');
+        $date = Carbon::parse($inputs['date'])->toDateString();
+        $slot_start_time = self::formatTime($inputs['slot_start_time'], $timezone);
+        $slot_end_time = self::formatTime($inputs['slot_end_time'], $timezone);
+        $message_patient = sprintf(
+            'Hello, %s, You have an appointment is scheduled with Dr. %s on %s from %s to %s.',
+            $patient->name,
+            $doctor->name,
+            $date,
+            $slot_start_time,
+            $slot_end_time
+        );
+        $message_doctor=sprintf(
+            'Hello, DR. %s, You have an appointment scheduled with Patient %s on %s from %s to %s.',
+            $doctor->name,
+            $patient->name,
+            $date,
+            $slot_start_time,
+            $slot_end_time
+        );
+        VaahMail::dispatchGenericMail($subject, $message_doctor, $doctor->email);
+        VaahMail::dispatchGenericMail($subject, $message_patient, $patient->email);
+
+    }
     //-------------------------------------------------
     public function scopeGetSorted($query, $filter)
     {

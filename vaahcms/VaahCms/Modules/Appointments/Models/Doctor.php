@@ -161,8 +161,10 @@ class Doctor extends VaahModel
         }
 
 
+
         // check if name exist
         $item = self::where('name', $inputs['name'])->withTrashed()->first();
+
 
         if ($item) {
             $error_message = "This name is already exist".($item->deleted_at?' in trash.':'.');
@@ -183,10 +185,14 @@ class Doctor extends VaahModel
 
         $item = new self();
         $item->fill($inputs);
+
         $item->save();
 
         $response = self::getItem($item->id);
+
+
         $response['messages'][] = trans("vaahcms-general.saved_successfully");
+
         return $response;
 
     }
@@ -466,6 +472,7 @@ class Doctor extends VaahModel
         {
             $response['success'] = false;
             $response['errors'][] = 'Record not found with ID: '.$id;
+
             return $response;
         }
         $response['success'] = true;

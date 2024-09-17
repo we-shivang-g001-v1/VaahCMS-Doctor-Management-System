@@ -143,8 +143,12 @@ class DoctorsController extends Controller
     public function createItem(Request $request)
     {
         try{
+
             return Doctor::createItem($request);
-        }catch (\Exception $e){
+
+
+        }
+        catch (\Exception $e){
             $response = [];
             $response['success'] = false;
             if(env('APP_DEBUG')){

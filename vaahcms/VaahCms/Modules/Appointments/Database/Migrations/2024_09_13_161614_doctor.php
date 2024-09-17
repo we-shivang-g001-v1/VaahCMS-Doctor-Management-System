@@ -23,7 +23,7 @@ class Doctor extends Migration
                 $table->string('slug')->nullable()->index();
                 $table->string('specialization')->nullable()->index();
                 $table->string('email')->nullable()->index();
-                $table->integer('phone')->nullable()->index();
+                $table->string('phone')->nullable()->index();
                 $table->time('shift_start_time')->nullable()->index();
                 $table->time('shift_end_time')->nullable()->index();
                 $table->boolean('is_active')->nullable()->index();

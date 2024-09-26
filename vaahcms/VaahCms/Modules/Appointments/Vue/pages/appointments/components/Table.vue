@@ -60,14 +60,10 @@ function convertUTCtoIST(utcTimeString) {
                  </template>
 
              </Column>
-             <Column field="status" header="Status"
-                     class="overflow-wrap-anywhere"
-                     :sortable="true">
-
+             <Column field="status" header="Status" class="overflow-wrap-anywhere" :sortable="true">
                  <template #body="prop">
-                     {{prop.data.status}}
+                     {{ prop.data.status === null ? 'null' : (prop.data.status === 1 ? 'Booked' : 'Cancel') }}
                  </template>
-
              </Column>
              <Column field="date" header="Date and Slot"
                      class="overflow-wrap-anywhere"
@@ -125,6 +121,13 @@ function convertUTCtoIST(utcTimeString) {
                                 v-tooltip.top="'Update'"
                                 @click="store.toEdit(prop.data)"
                                 icon="pi pi-pencil" />
+
+                        <Button class="p-button-tiny p-button-danger p-button-text"
+                                data-testid="appoinments-table-action-trash"
+                                v-if="store.isViewLarge() && !prop.data.deleted_at"
+                                @click="store.confirmToCancelAppointment( prop.data)"
+                                v-tooltip.top="'Cancel Appointment'"
+                                icon="pi pi-times" />
 
                         <Button class="p-button-tiny p-button-danger p-button-text"
                                 data-testid="appointments-table-action-trash"

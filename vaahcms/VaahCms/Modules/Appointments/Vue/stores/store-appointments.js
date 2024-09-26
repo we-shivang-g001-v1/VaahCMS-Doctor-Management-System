@@ -528,7 +528,17 @@ export const useAppointmentStore = defineStore({
             this.action.type = 'delete';
             vaah().confirmDialogDelete(this.listAction);
         },
+
+        confirmToCancelAppointment(data) {
+            this.table_item_data = data;
+            this.form.type = 'delete';
+            vaah().confirmDialogDelete(this.confirmToCancelAppointmentAfter);
+        },
         //---------------------------------------------------------------------
+        confirmToCancelAppointmentAfter() {
+            this.itemAction('delete', this.table_item_data);
+
+        },
         confirmDeleteAll()
         {
             this.action.type = 'delete-all';

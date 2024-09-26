@@ -581,6 +581,7 @@ class Appointment extends VaahModel
             return $response;
         }
         $item->fill($inputs);
+        $item->status = 1;
         $item->save();
 
         // Return success response
@@ -592,20 +593,45 @@ class Appointment extends VaahModel
     //-------------------------------------------------
     public static function deleteItem($request, $id): array
     {
+        // Fetch the item, including trashed records
         $item = self::where('id', $id)->withTrashed()->first();
+
+        // Check if the item exists
         if (!$item) {
             $response['success'] = false;
             $response['errors'][] = trans("vaahcms-general.record_does_not_exist");
             return $response;
         }
-        $item->forceDelete();
 
+        // Update the status to 0 (soft delete behavior)
+        $item->status = 0;
+        $item->save();
+
+        $subject='Appointment Cancelled - Mail';
+        $patient = Patient::find($item['patient_id']);
+        $doctor = Doctor::find($item['doctor_id']);
+        $date = Carbon::parse($item['date'])->toDateString();
+
+        $start_time = $item['slot_start_time'];
+        $end_time = $item['slot_end_time'];
+        $message = sprintf(
+            'Hello %s, Your appointment with Dr. %s on %s from %s to %s is cancelled by doctor',
+            $patient->name,
+            $doctor->name,
+            $date,
+            $start_time,
+            $end_time
+        );
+        VaahMail::dispatchGenericMail($subject, $message, $patient->email);
+
+        // Prepare the response
         $response['success'] = true;
         $response['data'] = [];
-        $response['messages'][] = trans("vaahcms-general.record_has_been_deleted");
+        $response['messages'][] = trans("Appointment cancel");
 
         return $response;
     }
+
     //-------------------------------------------------
     public static function itemAction($request, $id, $type): array
     {

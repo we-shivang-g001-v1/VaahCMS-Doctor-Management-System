@@ -38,6 +38,7 @@ class Appointment extends VaahModel
         'date',
         'slot_end_time',
         'doctor_id',
+        'status',
         'is_active',
         'created_by',
         'updated_by',
@@ -176,6 +177,7 @@ class Appointment extends VaahModel
     {
         $inputs = $request->all();
 
+
         // Validate the request inputs
         $validation = self::validation($inputs);
         if (!$validation['success']) {
@@ -202,6 +204,7 @@ class Appointment extends VaahModel
         // Create a new appointment
         $item = new self();
         $item->fill($inputs);
+        $item->status = 1;
         $item->save();
 
         $subject = 'Appointment Booked - Mail';
@@ -210,6 +213,7 @@ class Appointment extends VaahModel
 
         $response = self::getItem($item->id);
         $response['messages'][] = trans("appointment booked successfully");
+
         return $response;
     }
 
@@ -222,6 +226,9 @@ class Appointment extends VaahModel
             ->setTimezone($timezone)
             ->format($format);
     }
+
+    //-------------------------------------------------
+
 
     //-------------------------------------------------
 

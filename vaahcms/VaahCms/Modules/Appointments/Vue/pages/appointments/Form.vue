@@ -44,6 +44,27 @@ onMounted(async () => {
     await store.getFormMenu();
 });
 
+function convertUTCtoIST(utcTimeString) {
+    if (!utcTimeString) return ''; // Return empty if no time is provided
+
+    // Split the time string into hours, minutes, and seconds
+    const [utcHours, utcMinutes, utcSeconds] = utcTimeString.split(':').map(Number);
+
+    // Create a new Date object set to midnight (00:00:00 UTC)
+    const utcDate = new Date(Date.UTC(1970, 0, 1, utcHours, utcMinutes, utcSeconds));
+
+    // Add IST offset (5 hours 30 minutes) in milliseconds
+    const istOffset = 5.5 * 60 * 60 * 1000;
+    const istDate = new Date(utcDate.getTime() + istOffset);
+
+    // Return the IST time in HH:mm:ss format
+    return istDate.toLocaleTimeString('en-IN', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false, // 24-hour format
+    });
+}
+
 
 </script>
 <template>
@@ -178,7 +199,7 @@ onMounted(async () => {
                         class="w-full"
                         showClear
                     />
-                   
+
                 </VhField>
 
                 <VhField label="Doctor's Information"  v-if="store.item.doctor_id" >
@@ -193,8 +214,9 @@ onMounted(async () => {
                     <b>
                         Shift Time-</b>
 
-                    {{selectedDoctor.shift_start_time}} -
-                    {{selectedDoctor.shift_end_time}}<br>
+                    {{ convertUTCtoIST(selectedDoctor.shift_start_time) }} -
+                    {{ convertUTCtoIST(selectedDoctor.shift_end_time) }}
+                    <br>
                     (Please Select the time in the given time slot).
 
                 </VhField>

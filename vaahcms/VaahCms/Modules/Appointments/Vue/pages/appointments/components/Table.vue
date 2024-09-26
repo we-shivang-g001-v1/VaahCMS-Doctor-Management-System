@@ -5,6 +5,20 @@ import { useAppointmentStore } from '../../../stores/store-appointments'
 const store = useAppointmentStore();
 const useVaah = vaah();
 
+function convertUTCtoIST(utcTimeString) {
+    if (!utcTimeString) return '';
+    const [utcHours, utcMinutes, utcSeconds] = utcTimeString.split(':').map(Number);
+    const utcDate = new Date(Date.UTC(1970, 0, 1, utcHours, utcMinutes, utcSeconds));
+    const istOffset = 5.5 * 60 * 60 * 1000;
+    const istDate = new Date(utcDate.getTime() + istOffset);
+    return istDate.toLocaleTimeString('en-IN', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false, // 24-hour format
+    });
+}
+
+
 </script>
 
 <template>
@@ -46,12 +60,21 @@ const useVaah = vaah();
                  </template>
 
              </Column>
+             <Column field="status" header="Status"
+                     class="overflow-wrap-anywhere"
+                     :sortable="true">
+
+                 <template #body="prop">
+                     {{prop.data.status}}
+                 </template>
+
+             </Column>
              <Column field="date" header="Date and Slot"
                      class="overflow-wrap-anywhere"
                      :sortable="true">
 
                  <template #body="prop">
-                     {{prop.data?.date}} at {{prop.data.slot_start_time}} - {{prop.data?.slot_end_time}}
+                     {{prop.data?.date}} at {{ convertUTCtoIST(prop.data.slot_start_time) }} - {{ convertUTCtoIST(prop.data.slot_end_time) }}
                  </template>
 
              </Column>

@@ -154,6 +154,7 @@ class Doctor extends VaahModel
     {
 
         $inputs = $request->all();
+        dd($request);
 
         $validation = self::validation($inputs);
         if (!$validation['success']) {

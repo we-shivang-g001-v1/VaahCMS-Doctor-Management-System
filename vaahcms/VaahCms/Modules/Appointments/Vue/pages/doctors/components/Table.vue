@@ -5,6 +5,30 @@ import { useDoctorStore } from '../../../stores/store-doctors'
 const store = useDoctorStore();
 const useVaah = vaah();
 
+
+function convertUTCtoIST(utcTimeString) {
+    if (!utcTimeString) return ''; // Return empty if no time is provided
+
+    // Split the time string into hours, minutes, and seconds
+    const [utcHours, utcMinutes, utcSeconds] = utcTimeString.split(':').map(Number);
+
+    // Create a new Date object set to midnight (00:00:00 UTC)
+    const utcDate = new Date(Date.UTC(1970, 0, 1, utcHours, utcMinutes, utcSeconds));
+
+    // Add IST offset (5 hours 30 minutes) in milliseconds
+    const istOffset = 5.5 * 60 * 60 * 1000;
+    const istDate = new Date(utcDate.getTime() + istOffset);
+
+    // Return the IST time in HH:mm:ss format
+    return istDate.toLocaleTimeString('en-IN', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false, // 24-hour format
+    });
+}
+
+
+
 </script>
 
 <template>
@@ -72,7 +96,8 @@ const useVaah = vaah();
                      :sortable="true">
 
                  <template #body="prop">
-                     {{prop.data.shift_start_time}}
+                     {{ convertUTCtoIST(prop.data.shift_start_time) }}
+<!--                     {{prop.data.shift_start_time}}-->
                  </template>
 
              </Column>
@@ -81,12 +106,13 @@ const useVaah = vaah();
                      :sortable="true">
 
                  <template #body="prop">
-                     {{prop.data.shift_end_time}}
+
+                     {{ convertUTCtoIST(prop.data.shift_end_time) }}
+<!--                     {{prop.data.shift_end_time}}-->
+
                  </template>
 
              </Column>
-
-
 
                 <Column field="updated_at" header="Updated"
                         v-if="store.isViewLarge()"

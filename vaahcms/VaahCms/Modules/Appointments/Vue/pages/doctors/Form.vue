@@ -6,7 +6,7 @@ import VhField from './../../vaahvue/vue-three/primeflex/VhField.vue'
 import {useRoute} from 'vue-router';
 
 
-const  isValidTime = (date) => date instanceof Date && !isNaN (date.getTime())
+
 
 const store = useDoctorStore();
 const route = useRoute();
@@ -30,7 +30,7 @@ const toggleFormMenu = (event) => {
     form_menu.value.toggle(event);
 };
 //--------/form_menu
-
+const isValidTime = (date) => date instanceof Date && !isNaN (date.getTime());
 </script>
 <template>
 

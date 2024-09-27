@@ -19,6 +19,12 @@ class patientsController extends Controller
 
     public function getAssets(Request $request)
     {
+        if (!\Auth::user()->hasPermission('appointments-has-access-of-patient')) {
+        $response['success'] = false;
+        $response['errors'][] = trans("vaahcms::messages.permission_denied");
+
+        return response()->json($response);
+    }
 
         try{
 

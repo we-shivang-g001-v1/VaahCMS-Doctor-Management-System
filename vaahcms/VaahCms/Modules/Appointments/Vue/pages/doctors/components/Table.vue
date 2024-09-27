@@ -162,7 +162,7 @@ function convertUTCtoIST(utcTimeString) {
 
                         <Button class="p-button-tiny p-button-danger p-button-text"
                                 data-testid="doctors-table-action-trash"
-                                v-if="store.isViewLarge() && !prop.data.deleted_at"
+                                v-if="store.isViewLarge() && !prop.data.deleted_at && store.hasPermission(store.assets.permission, 'appointments-has-access-of-patient')"
                                 @click="store.itemAction('trash', prop.data)"
                                 v-tooltip.top="'Trash'"
                                 icon="pi pi-trash" />

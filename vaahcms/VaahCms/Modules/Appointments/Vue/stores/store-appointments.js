@@ -113,6 +113,9 @@ export const useAppointmentStore = defineStore({
                     break
             }
         },
+        hasPermission(permissions, slug) {
+            return vaah().hasPermission(permissions, slug);
+        },
         //---------------------------------------------------------------------
         async updateQueryFromUrl(route)
         {

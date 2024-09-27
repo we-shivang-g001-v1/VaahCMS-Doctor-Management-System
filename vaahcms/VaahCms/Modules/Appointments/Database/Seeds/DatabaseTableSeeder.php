@@ -3,6 +3,7 @@ namespace VaahCms\Modules\Appointments\Database\Seeds;
 
 
 use Illuminate\Database\Seeder;
+use WebReinvent\VaahCms\Libraries\VaahSeeder;
 
 class DatabaseTableSeeder extends Seeder
 {
@@ -13,7 +14,7 @@ class DatabaseTableSeeder extends Seeder
      */
     public function run()
     {
-        $this->seeds();
+        VaahSeeder::permissions(__DIR__.'/json/permission.json');
     }
 
     /**
@@ -25,6 +26,7 @@ class DatabaseTableSeeder extends Seeder
     {
 
     }
+
 
 
 }

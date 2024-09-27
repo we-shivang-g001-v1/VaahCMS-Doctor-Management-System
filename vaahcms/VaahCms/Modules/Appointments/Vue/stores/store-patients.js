@@ -113,6 +113,10 @@ export const usepatientStore = defineStore({
                     break
             }
         },
+
+        hasPermission(permissions, slug) {
+            return vaah().hasPermission(permissions, slug);
+        },
         //---------------------------------------------------------------------
         async updateQueryFromUrl(route)
         {

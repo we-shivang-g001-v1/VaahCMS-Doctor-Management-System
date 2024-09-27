@@ -19,6 +19,8 @@ const menu_pt = ref({
   })
 });
 
+
+
 const items = ref([
     {
         label: 'Appointments',
@@ -37,7 +39,8 @@ const items = ref([
                 label: 'Patient',
                 icon: 'fa-regular fa-chart-bar',
                 route: "/patients"
-            },{
+            },
+            {
                 label: 'Appointment',
                 icon: 'fa-regular fa-chart-bar',
                 route: "/appointments"
@@ -45,6 +48,7 @@ const items = ref([
         ]
     },
 ]);
+ 
 
 </script>
 <template>
@@ -66,6 +70,7 @@ const items = ref([
         </template>
       </Menu>
     </div>
+
 
 </template>
 

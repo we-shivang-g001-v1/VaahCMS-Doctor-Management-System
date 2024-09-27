@@ -116,11 +116,13 @@ function convertUTCtoIST(utcTimeString) {
                                 @click="store.toView(prop.data)"
                                 icon="pi pi-eye" />
 
-                        <Button v-if="store.hasPermission(store.assets.permission, 'appointments-has-access-of-patient')" class="p-button-tiny p-button-text"
-                                data-testid="appointments-table-to-edit"
-                                v-tooltip.top="'Update'"
-                                @click="store.toEdit(prop.data)"
-                                icon="pi pi-pencil" />
+                        <Button  v-if="!store.hasPermission(store.assets.permission, 'appointments-has-access-of-doctor-section')" class="p-button-tiny p-button-text"
+                            data-testid="appointments-table-to-edit"
+                            v-tooltip.top="'Update'"
+                            @click="store.toEdit(prop.data)"
+                            icon="pi pi-pencil"
+                           />
+
 
                         <Button class="p-button-tiny p-button-danger p-button-text"
                                 data-testid="appoinments-table-action-trash"
@@ -131,7 +133,7 @@ function convertUTCtoIST(utcTimeString) {
 
                         <Button  class="p-button-tiny p-button-danger p-button-text"
                                 data-testid="appointments-table-action-trash"
-                                v-if="store.isViewLarge() && !prop.data.deleted_at && store.hasPermission(store.assets.permission, 'appointments-has-access-of-patient')"
+                                v-if="store.isViewLarge() && !prop.data.deleted_at && store.hasPermission(store.assets.permission, 'appointments-has-access-of-patient') && store.hasPermission(store.assets.permission, 'appointments-has-access-of-doctor-section')"
                                 @click="store.itemAction('trash', prop.data)"
                                 v-tooltip.top="'Trash'"
                                 icon="pi pi-trash" />

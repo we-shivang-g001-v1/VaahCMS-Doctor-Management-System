@@ -39,6 +39,7 @@ class Appointment extends VaahModel
         'slot_end_time',
         'doctor_id',
         'status',
+        'reason',
         'is_active',
         'created_by',
         'updated_by',
@@ -226,10 +227,6 @@ class Appointment extends VaahModel
             ->setTimezone($timezone)
             ->format($format);
     }
-
-    //-------------------------------------------------
-
-
     //-------------------------------------------------
 
     public static function appointmentMail($inputs, $subject)
@@ -582,6 +579,7 @@ class Appointment extends VaahModel
         }
         $item->fill($inputs);
         $item->status = 1;
+        $item->reason = "Time Updated by Patient";
         $item->save();
         $subject = 'Appointment Update - Mail';
 
@@ -604,6 +602,9 @@ class Appointment extends VaahModel
             $response['errors'][] = trans("vaahcms-general.record_does_not_exist");
             return $response;
         }
+        $user =\Auth::user();
+        $name = $user->display_name;
+        $item->reason = "Cancelled by  $name";
 
         // Update the status to 0 (soft delete behavior)
         $item->status = 0;

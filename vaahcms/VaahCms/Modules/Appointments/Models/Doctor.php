@@ -1,5 +1,6 @@
 <?php namespace VaahCms\Modules\Appointments\Models;
 
+use Carbon\Carbon;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Http\Request;
@@ -9,6 +10,8 @@ use WebReinvent\VaahCms\Models\VaahModel;
 use WebReinvent\VaahCms\Traits\CrudWithUuidObservantTrait;
 use WebReinvent\VaahCms\Models\User;
 use WebReinvent\VaahCms\Libraries\VaahSeeder;
+use WebReinvent\VaahCms\Libraries\VaahMail;
+use Illuminate\Support\Facades\Session;
 
 class Doctor extends VaahModel
 {
@@ -154,7 +157,6 @@ class Doctor extends VaahModel
     {
 
         $inputs = $request->all();
-        dd($request);
 
         $validation = self::validation($inputs);
         if (!$validation['success']) {
@@ -483,48 +485,149 @@ class Doctor extends VaahModel
 
     }
     //-------------------------------------------------
+
     public static function updateItem($request, $id)
     {
         $inputs = $request->all();
 
+        // Validate the inputs
         $validation = self::validation($inputs);
         if (!$validation['success']) {
             return $validation;
         }
 
-        // check if name exist
+        // Check if name already exists
         $item = self::where('id', '!=', $id)
             ->withTrashed()
-            ->where('name', $inputs['name'])->first();
+            ->where('name', $inputs['name'])
+            ->first();
 
-         if ($item) {
-             $error_message = "This name is already exist".($item->deleted_at?' in trash.':'.');
-             $response['success'] = false;
-             $response['errors'][] = $error_message;
-             return $response;
-         }
+        if ($item) {
+            $error_message = "This name already exists" . ($item->deleted_at ? ' in trash.' : '.');
+            return [
+                'success' => false,
+                'errors' => [$error_message]
+            ];
+        }
 
-         // check if slug exist
-         $item = self::where('id', '!=', $id)
-             ->withTrashed()
-             ->where('slug', $inputs['slug'])->first();
+        // Check if slug already exists
+        $item = self::where('id', '!=', $id)
+            ->withTrashed()
+            ->where('slug', $inputs['slug'])
+            ->first();
 
-         if ($item) {
-             $error_message = "This slug is already exist".($item->deleted_at?' in trash.':'.');
-             $response['success'] = false;
-             $response['errors'][] = $error_message;
-             return $response;
-         }
+        if ($item) {
+            $error_message = "This slug already exists" . ($item->deleted_at ? ' in trash.' : '.');
+            return [
+                'success' => false,
+                'errors' => [$error_message]
+            ];
+        }
 
-        $item = self::where('id', $id)->withTrashed()->first();
+        $item = self::where('id', $id)
+            ->withTrashed()
+            ->first();
+
+        $working_hours_changed = ($item->shift_start_time != $inputs['shift_start_time']) ||
+            ($item->shift_end_time != $inputs['shift_end_time']);
+
         $item->fill($inputs);
         $item->save();
+
+        if ($working_hours_changed) {
+
+            $appointments = Appointment::where('doctor_id', $id)
+                ->where('patient_id', '!=', null)
+                ->get();
+
+
+            foreach ($appointments as $appointment) {
+                $subject = 'Appointment Rescheduled - Doctor Working Hours Changed';
+                self::sendRescheduleMail($appointment, $subject);
+
+
+
+                $appointment->status = 0;
+                $appointment->reason = 'Doctor Change Their Timimgs';
+                $appointment->save();
+            }
+        }
 
         $response = self::getItem($item->id);
         $response['messages'][] = trans("vaahcms-general.saved_successfully");
         return $response;
 
     }
+    public static function formatTime($time, $timezone, $format = 'H:i')
+    {
+        return Carbon::parse($time)
+            ->setTimezone($timezone)
+            ->format($format);
+    }
+
+    public static function sendRescheduleMail($inputs, $subject)
+    {
+        $doctor = Doctor::find($inputs['doctor_id']);
+        $patient = Patient::find($inputs['patient_id']);
+        $timezone = Session::get('user_timezone');
+        $date = Carbon::parse($inputs['date'])->toDateString();
+        $slot_start_time = self::formatTime($inputs['slot_start_time'], $timezone);
+        $slot_end_time = self::formatTime($inputs['slot_end_time'], $timezone);
+        $message_patient = sprintf(
+            'Hello, %s, Your  doctor have changed there timings go and update your booking accordingly  Dr. %s on %s from %s to %s.',
+            $patient->name,
+            $doctor->name,
+            $date,
+            $slot_start_time,
+            $slot_end_time
+        );
+
+        VaahMail::dispatchGenericMail($subject, $message_patient, $patient->email);
+
+    }
+
+//    public static function updateItem($request, $id)
+//    {
+//        $inputs = $request->all();
+//
+//        $validation = self::validation($inputs);
+//        if (!$validation['success']) {
+//            return $validation;
+//        }
+//
+//        // check if name exist
+//        $item = self::where('id', '!=', $id)
+//            ->withTrashed()
+//            ->where('name', $inputs['name'])->first();
+//
+//         if ($item) {
+//             $error_message = "This name is already exist".($item->deleted_at?' in trash.':'.');
+//             $response['success'] = false;
+//             $response['errors'][] = $error_message;
+//             return $response;
+//         }
+//
+//         // check if slug exist
+//         $item = self::where('id', '!=', $id)
+//             ->withTrashed()
+//             ->where('slug', $inputs['slug'])->first();
+//
+//         if ($item) {
+//             $error_message = "This slug is already exist".($item->deleted_at?' in trash.':'.');
+//             $response['success'] = false;
+//             $response['errors'][] = $error_message;
+//             return $response;
+//         }
+//
+//        $item = self::where('id', $id)->withTrashed()->first();
+//        $item->fill($inputs);
+//        $item->save();
+//
+//        $response = self::getItem($item->id);
+//        $response['messages'][] = trans("vaahcms-general.saved_successfully");
+//        return $response;
+//
+//    }
     //-------------------------------------------------
     public static function deleteItem($request, $id): array
     {

@@ -1,5 +1,5 @@
 <script setup>
-import {reactive, ref} from 'vue';
+import {onMounted, reactive, ref} from 'vue';
 
 import Menu from 'primevue/menu';
 import {useRoute} from 'vue-router';
@@ -18,7 +18,13 @@ const menu_pt = ref({
     route.matched[1].path === props.item.route ? 'p-focus' : ''
   })
 });
+import { useRootStore } from '../stores/root'
+const rootStore = useRootStore();
+onMounted(async () => {
+    await rootStore.getAssets();
+});
 
+console.log(rootStore);
 
 
 const items = ref([
@@ -48,7 +54,8 @@ const items = ref([
         ]
     },
 ]);
- 
+console.log(data);
+
 
 </script>
 <template>

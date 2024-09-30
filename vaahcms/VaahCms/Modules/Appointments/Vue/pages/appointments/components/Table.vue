@@ -20,6 +20,21 @@ function convertUTCtoIST(utcTimeString) {
 
 
 </script>
+<style>
+.green-reason {
+    color: green;
+    font-weight: bold;
+}
+
+.red-reason {
+    color: red;
+    font-weight: bold;
+}
+
+.na-reason {
+    color: gray;
+}
+</style>
 
 <template>
 
@@ -88,6 +103,23 @@ function convertUTCtoIST(utcTimeString) {
                     </template>
 
                 </Column>
+             <Column field="reason" header="Cancellation Reason"
+                     class="overflow-wrap-anywhere"
+                     :sortable="true">
+
+                 <template #body="prop">
+    <span :class="{
+        'green-reason': prop.data.reason === 'Time Updated by Patient',
+        'red-reason': prop.data.reason === 'Doctor Change Their Timimgs',
+        'na-reason': prop.data.reason === 'null',
+        
+    }">
+        {{ prop.data.reason !== 'null' ? prop.data.reason : 'NA' }}
+    </span>
+                 </template>
+
+
+             </Column>
 
             <Column field="is_active" v-if="store.isViewLarge()"
                     :sortable="true"

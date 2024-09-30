@@ -62,7 +62,9 @@ function convertUTCtoIST(utcTimeString) {
              </Column>
              <Column field="status" header="Status" class="overflow-wrap-anywhere" :sortable="true">
                  <template #body="prop">
-                     {{ prop.data.status === null ? 'null' : (prop.data.status === 1 ? 'Booked' : 'Cancel') }}
+        <span :style="{ color: prop.data.status === 1 ? 'green' : 'red', fontWeight: 'bold' }">
+            {{ prop.data.status === null ? 'null' : (prop.data.status === 1 ? 'Booked' : 'Cancel') }}
+        </span>
                  </template>
              </Column>
              <Column field="date" header="Date and Slot"
@@ -116,7 +118,7 @@ function convertUTCtoIST(utcTimeString) {
                                 @click="store.toView(prop.data)"
                                 icon="pi pi-eye" />
 
-                        <Button  v-if="!store.hasPermission(store.assets.permission, 'appointments-has-access-of-doctor-section')" class="p-button-tiny p-button-text"
+                        <Button  v-if="store.hasPermission(store.assets.permission, 'appointments-has-access-of-patient')" class="p-button-tiny p-button-text"
                             data-testid="appointments-table-to-edit"
                             v-tooltip.top="'Update'"
                             @click="store.toEdit(prop.data)"

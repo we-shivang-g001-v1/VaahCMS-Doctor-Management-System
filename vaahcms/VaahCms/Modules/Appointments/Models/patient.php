@@ -274,27 +274,42 @@ class patient extends VaahModel
     //-------------------------------------------------
     public static function getList($request)
     {
+        // Apply sorting to the list based on the filter provided in the request
         $list = self::getSorted($request->filter);
+
+        // Apply the filters: active status, trashed status, and search filter
         $list->isActiveFilter($request->filter);
         $list->trashedFilter($request->filter);
         $list->searchFilter($request->filter);
 
-        $rows = config('vaahcms.per_page');
+        // Select only the specified fields from the database
+        $list->select([
+            'email',
+            'id',
+            'is_active',
+            'phone',
+            'name',
+            'updated_at',
+            'updated_by',
+            'uuid'
+        ]);
 
-        if($request->has('rows'))
-        {
+        // Determine the number of rows per page (from config or request)
+        $rows = config('vaahcms.per_page');
+        if($request->has('rows')) {
             $rows = $request->rows;
         }
 
+        // Paginate the results
         $list = $list->paginate($rows);
 
+        // Prepare the response
         $response['success'] = true;
         $response['data'] = $list;
 
         return $response;
-
-
     }
+
 
     //-------------------------------------------------
     public static function updateList($request)

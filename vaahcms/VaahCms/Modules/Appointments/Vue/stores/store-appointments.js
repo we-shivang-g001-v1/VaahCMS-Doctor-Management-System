@@ -521,6 +521,9 @@ export const useAppointmentStore = defineStore({
             this.item = vaah().clone(this.assets.empty_item);
         },
         //---------------------------------------------------------------------
+
+
+        //---------------------------------------------------------------------
         confirmDelete()
         {
             if(this.action.items.length < 1)
@@ -535,7 +538,7 @@ export const useAppointmentStore = defineStore({
         confirmToCancelAppointment(data) {
             this.table_item_data = data;
             this.form.type = 'delete';
-            vaah().confirmDialogDelete(this.confirmToCancelAppointmentAfter);
+            vaah().confirmDialog('Cancel Confirmation', 'Do you want to cancel appointment ?',this.confirmToCancelAppointmentAfter);
         },
         //---------------------------------------------------------------------
         confirmToCancelAppointmentAfter() {

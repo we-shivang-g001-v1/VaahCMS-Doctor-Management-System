@@ -201,6 +201,41 @@ class Doctor extends VaahModel
     }
 
     //-------------------------------------------------
+    protected function shiftStartTime(): Attribute
+    {
+
+        return Attribute::make(
+            get: function (string $value = null,) {
+                $timezone = Session::get('user_timezone');
+
+                return Carbon::parse($value)
+                    ->setTimezone($timezone)
+                    ->format('H:i');
+            },
+        );
+    }
+    public static function formatTime($time, $format = 'H:i:s A')
+    {
+        return Carbon::parse($time)
+            ->setTimezone("ASIA/KOLKATA")
+            ->format($format);
+    }
+
+    //-------------------------------------------------
+    protected function shiftEndTime(): Attribute
+    {
+        return Attribute::make(
+            get: function (string $value = null,) {
+                $timezone = Session::get('user_timezone');
+                return Carbon::parse($value)
+                    ->setTimezone($timezone)
+                    ->format('H:i');
+            },
+        );
+    }
+    //-------------------------------------------------
+    //-------------------------------------------------
+    //-------------------------------------------------
     public function scopeGetSorted($query, $filter)
     {
 
@@ -576,12 +611,6 @@ class Doctor extends VaahModel
         $response['messages'][] = trans("vaahcms-general.saved_successfully");
         return $response;
 
-    }
-    public static function formatTime($time, $timezone, $format = 'H:i')
-    {
-        return Carbon::parse($time)
-            ->setTimezone($timezone)
-            ->format($format);
     }
 
     public static function sendRescheduleMail($inputs, $subject)

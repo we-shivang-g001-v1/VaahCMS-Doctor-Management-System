@@ -582,9 +582,10 @@ class Appointment extends VaahModel
     {
 
         $item = self::where('id', $id)
-            ->with(['createdByUser', 'updatedByUser', 'deletedByUser'])
+            ->with(['createdByUser', 'updatedByUser', 'deletedByUser','patient','doctor'])
             ->withTrashed()
-            ->first();
+            ->first()
+        ->makeHidden('slot_end_time', 'meta', 'deleted_at', 'doctor_id', 'patient_id', 'doctor', 'patient');
 
         if(!$item)
         {
@@ -594,6 +595,9 @@ class Appointment extends VaahModel
         }
         $response['success'] = true;
         $response['data'] = $item;
+
+        $item->patient_name = $item->patient ? $item->patient->name : null;
+        $item->doctor_name = $item->doctor ? $item->doctor->name : null;
 
         return $response;
 

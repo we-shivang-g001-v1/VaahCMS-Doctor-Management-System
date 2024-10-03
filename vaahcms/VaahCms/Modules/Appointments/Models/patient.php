@@ -28,7 +28,6 @@ class patient extends VaahModel
     protected $fillable = [
         'uuid',
         'name',
-        'slug',
         'email',
         'phone',
         'is_active',
@@ -169,14 +168,14 @@ class patient extends VaahModel
         }
 
         // check if slug exist
-        $item = self::where('slug', $inputs['slug'])->withTrashed()->first();
-
-        if ($item) {
-            $error_message = "This slug is already exist".($item->deleted_at?' in trash.':'.');
-            $response['success'] = false;
-            $response['messages'][] = $error_message;
-            return $response;
-        }
+//        $item = self::where('slug', $inputs['slug'])->withTrashed()->first();
+//
+//        if ($item) {
+//            $error_message = "This slug is already exist".($item->deleted_at?' in trash.':'.');
+//            $response['success'] = false;
+//            $response['messages'][] = $error_message;
+//            return $response;
+//        }
 
         $item = new self();
         $item->fill($inputs);
@@ -512,16 +511,16 @@ class patient extends VaahModel
          }
 
          // check if slug exist
-         $item = self::where('id', '!=', $id)
-             ->withTrashed()
-             ->where('slug', $inputs['slug'])->first();
-
-         if ($item) {
-             $error_message = "This slug is already exist".($item->deleted_at?' in trash.':'.');
-             $response['success'] = false;
-             $response['errors'][] = $error_message;
-             return $response;
-         }
+//         $item = self::where('id', '!=', $id)
+//             ->withTrashed()
+//             ->where('slug', $inputs['slug'])->first();
+//
+//         if ($item) {
+//             $error_message = "This slug is already exist".($item->deleted_at?' in trash.':'.');
+//             $response['success'] = false;
+//             $response['errors'][] = $error_message;
+//             return $response;
+//         }
 
         $item = self::where('id', $id)->withTrashed()->first();
         $item->fill($inputs);
@@ -584,7 +583,6 @@ class patient extends VaahModel
 
         $rules = array(
             'name' => 'required|max:150',
-            'slug' => 'required|max:150',
             'email' => 'required|max:150',
             'phone' => 'required|max:11',
         );

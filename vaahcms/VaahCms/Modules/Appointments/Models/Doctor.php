@@ -31,7 +31,6 @@ class Doctor extends VaahModel
     protected $fillable = [
         'uuid',
         'name',
-        'slug',
         'email',
         'specialization',
         'phone',
@@ -177,14 +176,14 @@ class Doctor extends VaahModel
         }
 
         // check if slug exist
-        $item = self::where('slug', $inputs['slug'])->withTrashed()->first();
-
-        if ($item) {
-            $error_message = "This slug is already exist".($item->deleted_at?' in trash.':'.');
-            $response['success'] = false;
-            $response['messages'][] = $error_message;
-            return $response;
-        }
+//        $item = self::where('slug', $inputs['slug'])->withTrashed()->first();
+//
+//        if ($item) {
+//            $error_message = "This slug is already exist".($item->deleted_at?' in trash.':'.');
+//            $response['success'] = false;
+//            $response['messages'][] = $error_message;
+//            return $response;
+//        }
 
         $item = new self();
         $item->fill($inputs);
@@ -568,18 +567,18 @@ class Doctor extends VaahModel
         }
 
         // Check if slug already exists
-        $item = self::where('id', '!=', $id)
-            ->withTrashed()
-            ->where('slug', $inputs['slug'])
-            ->first();
-
-        if ($item) {
-            $error_message = "This slug already exists" . ($item->deleted_at ? ' in trash.' : '.');
-            return [
-                'success' => false,
-                'errors' => [$error_message]
-            ];
-        }
+//        $item = self::where('id', '!=', $id)
+//            ->withTrashed()
+//            ->where('slug', $inputs['slug'])
+//            ->first();
+//
+//        if ($item) {
+//            $error_message = "This slug already exists" . ($item->deleted_at ? ' in trash.' : '.');
+//            return [
+//                'success' => false,
+//                'errors' => [$error_message]
+//            ];
+//        }
 
         $item = self::where('id', $id)
             ->withTrashed()
@@ -696,7 +695,6 @@ class Doctor extends VaahModel
 
         $rules = array(
             'name' => 'required|max:150',
-            'slug' => 'required|max:150',
             'specialization' => 'required|max:20',
             'email' => 'required|max:150',
             'phone' => 'required|max:11',

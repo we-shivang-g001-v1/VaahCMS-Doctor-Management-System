@@ -23,20 +23,7 @@ onMounted(async () => {
 
     await store.getFormMenu();
 });
-function formatTimeWithAmPm(time) {
-    if (!time) return '';
 
-    const [hours, minutes] = time.split(':');
-    const date = new Date();
-    date.setHours(hours);
-    date.setMinutes(minutes);
-    const amPm = date.getHours() >= 12 ? 'PM' : 'AM';
-
-    let hour = date.getHours() % 12;
-    if (hour === 0) hour = 12;
-
-    return `${hour}:${minutes} ${amPm}`;
-}
 //--------form_menu
 const form_menu = ref();
 const toggleFormMenu = (event) => {
@@ -162,19 +149,16 @@ const isValidTime = (date) => date instanceof Date && !isNaN (date.getTime());
                     </div>
                 </VhField>
 
-                <VhField label="Slug" v-if="showInput">
-                    <div class="p-inputgroup">
-                        <InputText
-                            class="w-full"
-                            placeholder="Enter the slug"
-                            name="doctors-slug"
-                            data-testid="doctors-slug"
-                            v-model="store.item.slug"
-                            required
-                        />
-                        <div class="required-field hidden"></div>
-                    </div>
-                </VhField>
+<!--                <VhField label="Slug">-->
+<!--                    <div class="p-inputgroup">-->
+<!--                        <InputText class="w-full"-->
+<!--                                   placeholder="Enter the slug"-->
+<!--                                   name="doctors-slug"-->
+<!--                                   data-testid="doctors-slug"-->
+<!--                                   v-model="store.item.slug" required/>-->
+<!--                        <div class="required-field hidden"></div>-->
+<!--                    </div>-->
+<!--                </VhField>-->
 
                 <VhField label="Specialization">
                     <div class="p-inputgroup">

@@ -196,7 +196,7 @@ class Appointment extends VaahModel
         if ($existingAppointment) {
             $error_message = "This patient already has an appointment with this doctor on this date" . ($existingAppointment->deleted_at ? ' (in trash).' : '.');
             $response['success'] = false;
-            $response['messages'][] = $error_message;
+            $response['errors'][] = $error_message;
             return $response;
         }
 
@@ -220,7 +220,7 @@ class Appointment extends VaahModel
         if ($existingTimeSlot) {
             $error_message = "This time slot is already booked for this doctor. Please select a different time.";
             $response['success'] = false;
-            $response['messages'][] = $error_message;
+            $response['errors'][] = $error_message;
             return $response;
         }
 
@@ -228,7 +228,7 @@ class Appointment extends VaahModel
         $item = new self();
         $item->fill($inputs);
         $item-> status = 1;
-        dd($item);
+
 
         $item->save();
 
@@ -363,39 +363,64 @@ class Appointment extends VaahModel
             return $query;
         }
         $search_array = explode(' ',$filter['q']);
-        foreach ($search_array as $search_item){
+
+        foreach ($search_array as $search_item) {
             $query->where(function ($q1) use ($search_item) {
-                $q1->where('name', 'LIKE', '%' . $search_item . '%')
-                    ->orWhere('slug', 'LIKE', '%' . $search_item . '%')
-                    ->orWhere('id', 'LIKE', $search_item . '%');
+                $q1->whereHas('doctor', function ($query) use ($search_item) {
+                    $query->where('name', 'LIKE', '%' . $search_item . '%');
+                })
+                    ->orWhereHas('patient', function ($query) use ($search_item) {
+                        $query->where('name', 'LIKE', '%' . $search_item . '%');
+                    })
+                    ->orWhere(function ($query) use ($search_item) {
+                        if (strtolower($search_item) === 'booked') {
+                            $query->where('status', 1);
+                        } elseif (strtolower($search_item) === 'cancelled') {
+                            $query->where('status', 0);
+                        }
+                    });
             });
         }
-
     }
 
     //-------------------------------------------------
     public static function getList($request)
     {
-        $list = self::getSorted($request->filter);
-        $list->isActiveFilter($request->filter);
-        $list->trashedFilter($request->filter);
-        $list->searchFilter($request->filter);
+        try {
+            // Apply sorting and filters (assumed methods: getSorted, isActiveFilter, trashedFilter, searchFilter)
+            $list = self::getSorted($request->filter);
+            $list->isActiveFilter($request->filter);
+            $list->trashedFilter($request->filter);
+            $list->searchFilter($request->filter);
 
-        $rows = config('vaahcms.per_page');
+            // Include related doctor and patient data
+            $list = $list->with(['doctor:id,name', 'patient:id,name']);
 
-        if($request->has('rows'))
-        {
-            $rows = $request->rows;
+            // Set the pagination rows
+            $rows = config('vaahcms.per_page');
+            if ($request->has('rows')) {
+                $rows = $request->rows;
+            }
+
+            // Paginate the result
+            $list = $list->paginate($rows);
+
+            // Prepare the response
+            $response['success'] = true;
+            $response['data'] = $list;
+
+        } catch (\Exception $e) {
+            // Handle exceptions
+            $response['success'] = false;
+            if (env('APP_DEBUG')) {
+                $response['errors'][] = $e->getMessage();
+                $response['hint'] = $e->getTrace();
+            } else {
+                $response['errors'][] = trans("vaahcms-general.something_went_wrong");
+            }
         }
 
-        $list = $list->paginate($rows);
-
-        $response['success'] = true;
-        $response['data'] = $list;
-
         return $response;
-
-
     }
 
     //-------------------------------------------------
@@ -635,8 +660,16 @@ class Appointment extends VaahModel
             $response['errors'][] = trans("vaahcms-general.record_does_not_exist");
             return $response;
         }
-        $user =\Auth::user();
-        $name = $user->display_name;
+
+        $user = \Auth::user();
+
+        if ($user) {
+            // If the user exists, use the display_name or set 'Admin' if it's null
+            $name = $user->display_name ?? 'Admin';
+        } else {
+            // Fallback in case the user is not authenticated (optional)
+            $name = 'Admin';
+        }
         $item->reason = "Cancelled by  $name";
 
         // Update the status to 0 (soft delete behavior)

@@ -65,15 +65,18 @@ class AppointmentsController extends Controller
     //----------------------------------------------------------
     public function getList(Request $request)
     {
-        try {
-            // Fetch appointments with related doctor and patient information
-            $appointments = Appointment::with(['doctor:id,name', 'patient:id,name'])
-                ->paginate(config('vaahcms.per_page'));
 
-            return [
-                'success' => true,
-                'data' => $appointments,
-            ];
+        try {
+            return Appointment::getList($request);
+            // Fetch appointments with related doctor and patient information
+//            $appointments = Appointment::with(['doctor:id,name', 'patient:id,name'])
+//                ->paginate(config('vaahcms.per_page'));
+//
+//
+//            return [
+//                'success' => true,
+//                'data' => $appointments,
+//            ];
 
         } catch (\Exception $e) {
             $response = [];

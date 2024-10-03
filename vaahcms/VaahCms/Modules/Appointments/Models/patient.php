@@ -473,6 +473,9 @@ class patient extends VaahModel
             ->with(['createdByUser', 'updatedByUser', 'deletedByUser'])
             ->withTrashed()
             ->first();
+        if($item){
+            $item ->makeHidden(['slug','meta','uuid']);
+        }
 
         if(!$item)
         {

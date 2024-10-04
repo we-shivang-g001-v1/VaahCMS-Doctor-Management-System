@@ -87,12 +87,15 @@ const toggleCreateMenu = (event) => {
 
                     <div class="p-inputgroup">
 
-                    <Button data-testid="doctors-list-create"
+
+                    <Button  v-if="store.assets.permission['appointments-has-access-of-doctor-section']"
+                        data-testid="doctors-list-create"
                             class="p-button-sm"
                             @click="store.toForm()">
                         <i class="pi pi-plus mr-1"></i>
                         Create
                     </Button>
+
 
                     <Button data-testid="doctors-list-reload"
                             class="p-button-sm"

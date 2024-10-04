@@ -14,7 +14,7 @@ onMounted(async () => {
      * Fetch the record from the database
      */
     if((!store.item || Object.keys(store.item).length < 1)
-            && route.params && route.params.id)
+        && route.params && route.params.id)
     {
         await store.getItem(route.params.id);
     }
@@ -293,5 +293,3 @@ function formatTimeWithAmPm(time) {
     </div>
 
 </template>
-
-

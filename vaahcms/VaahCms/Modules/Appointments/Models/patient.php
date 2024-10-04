@@ -167,15 +167,7 @@ class patient extends VaahModel
             return $response;
         }
 
-        // check if slug exist
-//        $item = self::where('slug', $inputs['slug'])->withTrashed()->first();
-//
-//        if ($item) {
-//            $error_message = "This slug is already exist".($item->deleted_at?' in trash.':'.');
-//            $response['success'] = false;
-//            $response['messages'][] = $error_message;
-//            return $response;
-//        }
+
 
         $item = new self();
         $item->fill($inputs);
@@ -264,7 +256,8 @@ class patient extends VaahModel
         foreach ($search_array as $search_item){
             $query->where(function ($q1) use ($search_item) {
                 $q1->where('name', 'LIKE', '%' . $search_item . '%')
-                    ->orWhere('slug', 'LIKE', '%' . $search_item . '%')
+                    ->orWhere('email', 'LIKE', '%' . $search_item . '%')
+                    ->orWhere('phone', 'LIKE', '%' . $search_item . '%')
                     ->orWhere('id', 'LIKE', $search_item . '%');
             });
         }
@@ -492,44 +485,40 @@ class patient extends VaahModel
     {
         $inputs = $request->all();
 
-        $validation = self::validation($inputs);
+        // Pass the ID to the validation to ignore this record when checking for uniqueness
+        $validation = self::validation($inputs, $id);
         if (!$validation['success']) {
             return $validation;
         }
 
-        // check if name exist
+        // Check if name exists in other records
         $item = self::where('id', '!=', $id)
             ->withTrashed()
             ->where('name', $inputs['name'])->first();
 
-         if ($item) {
-             $error_message = "This name is already exist".($item->deleted_at?' in trash.':'.');
-             $response['success'] = false;
-             $response['errors'][] = $error_message;
-             return $response;
-         }
+        if ($item) {
+            $error_message = "This name already exists" . ($item->deleted_at ? ' in trash.' : '.');
+            $response['success'] = false;
+            $response['errors'][] = $error_message;
+            return $response;
+        }
 
-         // check if slug exist
-//         $item = self::where('id', '!=', $id)
-//             ->withTrashed()
-//             ->where('slug', $inputs['slug'])->first();
-//
-//         if ($item) {
-//             $error_message = "This slug is already exist".($item->deleted_at?' in trash.':'.');
-//             $response['success'] = false;
-//             $response['errors'][] = $error_message;
-//             return $response;
-//         }
-
+        // Retrieve the item to update
         $item = self::where('id', $id)->withTrashed()->first();
+        if (!$item) {
+            $response['success'] = false;
+            $response['errors'][] = "Record not found with ID: " . $id;
+            return $response;
+        }
+
         $item->fill($inputs);
         $item->save();
 
         $response = self::getItem($item->id);
         $response['messages'][] = trans("vaahcms-general.saved_successfully");
         return $response;
-
     }
+
     //-------------------------------------------------
     public static function deleteItem($request, $id): array
     {
@@ -577,12 +566,12 @@ class patient extends VaahModel
     }
     //-------------------------------------------------
 
-    public static function validation($inputs)
+    public static function validation($inputs, $id = null)
     {
 
         $rules = array(
             'name' => 'required|max:150',
-            'email' => 'required|email|max:150|unique:patient,email',
+            'email' => 'required|max:150|email|unique:patient,email' . ($id ? ",$id" : ''), // Add the unique rule
             'phone' => 'required|max:11',
         );
 

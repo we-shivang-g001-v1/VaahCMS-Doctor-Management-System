@@ -86,7 +86,6 @@ const toggleCreateMenu = (event) => {
                 <template #icons>
 
                     <div class="p-inputgroup">
-                        {{store.assets.permission[1]}}
 
                     <Button data-testid="appointments-list-create"
                             class="p-button-sm"

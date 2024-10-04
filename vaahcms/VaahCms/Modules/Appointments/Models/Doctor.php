@@ -323,7 +323,6 @@ class Doctor extends VaahModel
         // Start by applying sorting to the list
         $list = self::getSorted($request->filter);
 
-        // Apply the active, trashed, and search filters
         $list->isActiveFilter($request->filter);
         $list->trashedFilter($request->filter);
         $list->searchFilter($request->filter);
@@ -339,9 +338,10 @@ class Doctor extends VaahModel
             'name',
             'specialization',
             'updated_at',
-            'updated_by',
-            'uuid'
+
         ]);
+
+
 
         // Set default rows per page
         $rows = config('vaahcms.per_page');
@@ -566,19 +566,6 @@ class Doctor extends VaahModel
             ];
         }
 
-        // Check if slug already exists
-//        $item = self::where('id', '!=', $id)
-//            ->withTrashed()
-//            ->where('slug', $inputs['slug'])
-//            ->first();
-//
-//        if ($item) {
-//            $error_message = "This slug already exists" . ($item->deleted_at ? ' in trash.' : '.');
-//            return [
-//                'success' => false,
-//                'errors' => [$error_message]
-//            ];
-//        }
 
         $item = self::where('id', $id)
             ->withTrashed()
@@ -696,7 +683,7 @@ class Doctor extends VaahModel
         $rules = array(
             'name' => 'required|max:150',
             'specialization' => 'required|max:20',
-            'email' => 'required|max:150',
+            'email' => 'required|email|max:150|unique:doctor,email',
             'phone' => 'required|max:11',
             'shift_start_time' => 'required|max:150',
             'shift_end_time' => 'required|max:150',
@@ -725,7 +712,6 @@ class Doctor extends VaahModel
         return $item;
     }
 
-    //-------------------------------------------------
     //-------------------------------------------------
     public static function seedSampleItems($records=100)
     {

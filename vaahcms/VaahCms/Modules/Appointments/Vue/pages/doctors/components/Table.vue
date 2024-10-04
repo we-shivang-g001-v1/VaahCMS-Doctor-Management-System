@@ -135,7 +135,8 @@ function formatTimeWithAmPm(time) {
                         :sortable="true">
 
                     <template #body="prop">
-                        {{useVaah.strToSlug(prop.data.updated_at)}}
+                        {{ useVaah.strToSlug(prop.data.updated_at.split(' ')[0]) }}
+                        {{ useVaah.strToSlug(formatTimeWithAmPm(prop.data.updated_at.split(' ')[1])) }}
                     </template>
 
                 </Column>

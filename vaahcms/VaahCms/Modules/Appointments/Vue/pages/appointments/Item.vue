@@ -122,10 +122,10 @@ const toggleItemMenu = (event) => {
                     <template v-for="(value, column) in store.item ">
 
                         <template v-if="column === 'created_by' || column === 'updated_by'
-                        || column === 'deleted_by'">
+                        || column === 'deleted_by'|| column === 'doctor_id'|| column === 'patient_id' ">
                         </template>
 
-                        <template v-else-if="column === 'id' || column === 'uuid'">
+                        <template v-else-if="column === 'id'">
                             <VhViewRow :label="column"
                                        :value="value"
                                        :can_copy="true"
@@ -147,11 +147,49 @@ const toggleItemMenu = (event) => {
                             />
                         </template>
 
-                        <template v-else>
+                        <template v-else-if="column === 'doctor'">
+                            <VhViewRow :label="column"
+                                       :value="value.name"
+                            />
+                        </template>
+                        <template v-else-if="column === 'patient'">
+                            <VhViewRow :label="column"
+                                       :value="value.name"
+                            />
+                        </template>
+                        <template v-else-if="column === 'date'">
                             <VhViewRow :label="column"
                                        :value="value"
-                                       />
+                            />
                         </template>
+                        <template v-else-if="column === 'slot_start_time'">
+                            <VhViewRow :label="column"
+                                       :value="value"
+                            />
+                        </template>
+                        <template v-else-if="column === 'slot_end_time'">
+                            <VhViewRow :label="column"
+                                       :value="value"
+                            />
+                        </template>
+                        <template v-else-if="column === 'reason'">
+                            <VhViewRow
+                                :label="column"
+                                :value="value ? value : 'NA'"
+                            />
+                        </template>
+                        <template v-else-if="column === 'status'">
+                            <VhViewRow
+                                :label="column"
+                                :value="value === 1 ? 'Booked' : 'Cancelled'"
+                            />
+                        </template>
+
+<!--                        <template v-else>-->
+<!--                            <VhViewRow :label="column"-->
+<!--                                       :value="value"-->
+<!--                                       />-->
+<!--                        </template>-->
 
 
                     </template>

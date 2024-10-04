@@ -24,6 +24,22 @@ onMounted(async () => {
     await store.getFormMenu();
 });
 
+function formatTimeWithAmPm(time) {
+    if (!time) return '';
+
+    const [hours, minutes] = time.split(':');
+    const date = new Date();
+    date.setHours(hours);
+    date.setMinutes(minutes);
+    const amPm = date.getHours() >= 12 ? 'PM' : 'AM';
+
+    let hour = date.getHours() % 12;
+    if (hour === 0) hour = 12;
+
+    // Corrected template literal
+    return `${hour}:${minutes} ${amPm}`;
+}
+
 //--------form_menu
 const form_menu = ref();
 const toggleFormMenu = (event) => {
@@ -193,25 +209,29 @@ const isValidTime = (date) => date instanceof Date && !isNaN (date.getTime());
                 </VhField>
                 <VhField label="Time">
                     <div class="p-inputgroup">
+
                         <Calendar
                             v-model="store.item.shift_start_time"
-                            :pt="{
-                  monthPicker:{class:'w-15rem'},
-                  yearPicker:{class:'w-15rem'}
-              }"ocot
-                            time-only
-                            placeholder="Shift Start Time"
+                            :hourFormat="'12'"
+                        :pt="{
+                        monthPicker: {class: 'w-15rem'},
+                        yearPicker: {class: 'w-15rem'}
+                        }"
+                        time-only
+                        placeholder="Shift Start Time"
                         />
                         <Calendar
                             v-model="store.item.shift_end_time"
-                            :minDate="isValidTime(store.item.shift_start_time) ? store.item.shift_start_time : null"
+                            showTime hourFormat="12"
+                            store.item.shift_start_time
                             :pt="{
-                  monthPicker:{class:'w-15rem'},
-                  yearPicker:{class:'w-15rem'}
-              }"
+        monthPicker: {class: 'w-15rem'},
+        yearPicker: {class: 'w-15rem'}
+    }"
                             time-only
-                            placeholder="Shift End Time"
+                        placeholder="Shift End Time"
                         />
+
                         <div class="required-field hidden"></div>
                     </div>
                 </VhField>

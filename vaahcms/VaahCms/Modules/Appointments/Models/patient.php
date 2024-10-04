@@ -289,8 +289,7 @@ class patient extends VaahModel
             'phone',
             'name',
             'updated_at',
-            'updated_by',
-            'uuid'
+
         ]);
 
         // Determine the number of rows per page (from config or request)
@@ -583,7 +582,7 @@ class patient extends VaahModel
 
         $rules = array(
             'name' => 'required|max:150',
-            'email' => 'required|max:150',
+            'email' => 'required|email|max:150|unique:patient,email',
             'phone' => 'required|max:11',
         );
 

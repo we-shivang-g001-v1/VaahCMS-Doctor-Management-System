@@ -243,10 +243,6 @@ class Appointment extends VaahModel
 
         return $response;
     }
-
-
-
-
     //-------------------------------------------------
 
     public static function formatTime($time, $timezone, $format = 'H:i')
@@ -392,9 +388,7 @@ class Appointment extends VaahModel
             $list->isActiveFilter($request->filter);
             $list->trashedFilter($request->filter);
             $list->searchFilter($request->filter);
-
-            // Include related doctor and patient data
-            $list = $list->with(['doctor:id,name', 'patient:id,name']);
+            $list->with(['patient','doctor']);
 
             // Set the pagination rows
             $rows = config('vaahcms.per_page');
@@ -402,6 +396,20 @@ class Appointment extends VaahModel
                 $rows = $request->rows;
             }
 
+           $list =  $list->select([
+                'id',
+                'doctor_id',
+                'patient_id',
+                'date',
+                'slot_start_time',
+                'slot_end_time',
+                'is_active',
+                'status',
+                'reason',
+               'created_at',
+               'updated_at'
+
+            ]);
             // Paginate the result
             $list = $list->paginate($rows);
 
@@ -419,7 +427,7 @@ class Appointment extends VaahModel
                 $response['errors'][] = trans("vaahcms-general.something_went_wrong");
             }
         }
-
+//        dd($response);
         return $response;
     }
 
@@ -582,10 +590,9 @@ class Appointment extends VaahModel
     {
 
         $item = self::where('id', $id)
-            ->with(['createdByUser', 'updatedByUser', 'deletedByUser','patient','doctor'])
+            ->with(['createdByUser', 'updatedByUser', 'deletedByUser','doctor','patient',])
             ->withTrashed()
-            ->first()
-        ->makeHidden('slot_end_time', 'meta', 'deleted_at', 'doctor_id', 'patient_id', 'doctor', 'patient');
+            ->first();
 
         if(!$item)
         {
@@ -596,8 +603,7 @@ class Appointment extends VaahModel
         $response['success'] = true;
         $response['data'] = $item;
 
-        $item->patient_name = $item->patient ? $item->patient->name : null;
-        $item->doctor_name = $item->doctor ? $item->doctor->name : null;
+
 
         return $response;
 
@@ -824,119 +830,6 @@ class Appointment extends VaahModel
     //-------------------------------------------------
     //-------------------------------------------------
 
-    //-------------------------------------------------
-//    public static function createItem($request)
-//    {
-//        $inputs = $request->all();
-//
-//        // Validate the request inputs
-//        $validation = self::validation($inputs);
-//        if (!$validation['success']) {
-//            return $validation;
-//        }
-//
-//        // Convert the input date to a standard format (e.g., YYYY-MM-DD)
-//        $inputDate = date('Y-m-d', strtotime($inputs['date']));
-//
-//        // Check if the same patient is trying to book an appointment with the same doctor on the same day
-//        $existingAppointment = self::where('patient_id', $inputs['patient_id'])
-//            ->where('doctor_id', $inputs['doctor_id'])
-//            ->whereDate('date', $inputDate) // Ensure it's the same date
-//            ->withTrashed()
-//            ->first();
-//
-//        if ($existingAppointment) {
-//            $error_message = "This patient already has an appointment with this doctor on this date" . ($existingAppointment->deleted_at ? ' (in trash).' : '.');
-//            $response['success'] = false;
-//            $response['messages'][] = $error_message;
-//            return $response;
-//        }
-//
-//        // Check if the time slot is available for the doctor on the same date
-//        $existingTimeSlot = self::where('doctor_id', $inputs['doctor_id'])
-//            ->whereDate('date', $inputDate)
-//            ->where(function($query) use ($inputs) {
-//                $query->where(function ($q) use ($inputs) {
-//                    $q->where('slot_start_time', '<=', $inputs['slot_start_time'])
-//                        ->where('slot_end_time', '>=', $inputs['slot_start_time']);
-//                })->orWhere(function ($q) use ($inputs) {
-//                    $q->where('slot_start_time', '<=', $inputs['slot_end_time'])
-//                        ->where('slot_end_time', '>=', $inputs['slot_end_time']);
-//                })->orWhere(function ($q) use ($inputs) {
-//                    $q->where('slot_start_time', '>=', $inputs['slot_start_time'])
-//                        ->where('slot_end_time', '<=', $inputs['slot_end_time']);
-//                });
-//            })
-//            ->first();
-//
-//        if ($existingTimeSlot) {
-//            $error_message = "This time slot is already booked for this doctor. Please select a different time.";
-//            $response['success'] = false;
-//            $response['messages'][] = $error_message;
-//            return $response;
-//        }
-//
-//        // Create a new appointment
-//        $item = new self();
-//        $item->fill($inputs);
-//        $item->status = 1;
-//        $item->save();
-//
-//        // Send appointment confirmation emails
-//        $subject = 'Appointment Booked - Mail';
-//        self::appointmentMail($inputs, $subject);
-//
-//        $response = self::getItem($item->id);
-//        $response['messages'][] = trans("appointment booked successfully");
-//
-//        return $response;
-//    }
-
-    //-------------------------------------------------
-//    old one
-//    public static function createItem($request)
-//    {
-//        $inputs = $request->all();
-//
-//
-//        // Validate the request inputs
-//        $validation = self::validation($inputs);
-//        if (!$validation['success']) {
-//            return $validation;
-//        }
-//
-//        // Convert the input date to a standard format (e.g., YYYY-MM-DD)
-//        $inputDate = date('Y-m-d', strtotime($inputs['date']));
-//
-//        // Check if the same patient is trying to book an appointment with the same doctor on the same day
-//        $existingAppointment = self::where('patient_id', $inputs['patient_id'])
-//            ->where('doctor_id', $inputs['doctor_id'])
-//            ->whereDate('date', $inputDate) // Ensure it's the same date
-//            ->withTrashed()
-//            ->first();
-//
-//        if ($existingAppointment) {
-//            $error_message = "This patient already has an appointment with this doctor on this date" . ($existingAppointment->deleted_at ? ' (in trash).' : '.');
-//            $response['success'] = false;
-//            $response['messages'][] = $error_message;
-//            return $response;
-//        }
-//
-//        // Create a new appointment
-//        $item = new self();
-//        $item->fill($inputs);
-//        $item->status = 1;
-//        $item->save();
-//
-//        $subject = 'Appointment Booked - Mail';
-//
-//        self::appointmentMail($inputs, $subject);
-//
-//        $response = self::getItem($item->id);
-//        $response['messages'][] = trans("appointment booked successfully");
-//
-//        return $response;
-//    }
 
 
 }

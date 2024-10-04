@@ -64,6 +64,21 @@ function convertUTCtoIST(utcTimeString) {
         hour12: false, // 24-hour format
     });
 }
+function formatTimeWithAmPm(time) {
+    if (!time) return '';
+
+    const [hours, minutes] = time.split(':');
+    const date = new Date();
+    date.setHours(hours);
+    date.setMinutes(minutes);
+    const amPm = date.getHours() >= 12 ? 'PM' : 'AM';
+
+    let hour = date.getHours() % 12;
+    if (hour === 0) hour = 12;
+
+    // Corrected template literal
+    return `${hour}:${minutes} ${amPm}`;
+}
 
 
 </script>
@@ -214,8 +229,8 @@ function convertUTCtoIST(utcTimeString) {
                     <b>
                         Shift Time-</b>
 
-                    {{ convertUTCtoIST(selectedDoctor.shift_start_time) }} -
-                    {{ convertUTCtoIST(selectedDoctor.shift_end_time) }}
+                    {{ formatTimeWithAmPm(convertUTCtoIST(selectedDoctor.shift_start_time)) }} -
+                    {{ formatTimeWithAmPm(convertUTCtoIST(selectedDoctor.shift_end_time)) }}
                     <br>
                     (Please Select the time in the given time slot).
 
@@ -238,6 +253,7 @@ function convertUTCtoIST(utcTimeString) {
                         />
                         <Calendar
                             v-model="store.item.slot_start_time"
+                            showTime hourFormat="12"
                             :pt="{
                                   monthPicker:{class:'w-15rem'},
                                   yearPicker:{class:'w-15rem'}
@@ -247,7 +263,8 @@ function convertUTCtoIST(utcTimeString) {
                         />
                         <Calendar
                             v-model="store.item.slot_end_time"
-                            :minDate="isValidTime(store.item.slot_start_time) ? store.item.slot_start_time : null"
+                            showTime hourFormat="12"
+                            store.item.slot_start_time
                             :pt="{
                                   monthPicker:{class:'w-15rem'},
                                   yearPicker:{class:'w-15rem'}

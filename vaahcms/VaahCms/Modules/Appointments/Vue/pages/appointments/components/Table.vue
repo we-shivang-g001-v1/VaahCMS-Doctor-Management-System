@@ -88,7 +88,7 @@ function formatTimeWithAmPm(time) {
                      :sortable="true">
 
                  <template #body="prop">
-                     {{prop.data.doctor.name}}
+                     {{ prop.data.doctor && prop.data.doctor.name ? prop.data.doctor.name : 'N/A' }}
                  </template>
 
              </Column>

@@ -263,6 +263,7 @@ class Doctor extends VaahModel
     public function scopeTrashedFilter($query, $filter)
     {
 
+
         if(!isset($filter['trashed']))
         {
             return $query;
@@ -351,6 +352,7 @@ class Doctor extends VaahModel
             'type' => 'required',
         );
 
+
         $messages = array(
             'type.required' => trans("vaahcms-general.action_type_is_required"),
         );
@@ -404,6 +406,7 @@ class Doctor extends VaahModel
     //-------------------------------------------------
     public static function deleteList($request): array
     {
+//        dd('hello deleteList');
         $inputs = $request->all();
 
         $rules = array(
@@ -418,15 +421,42 @@ class Doctor extends VaahModel
 
         $validator = \Validator::make($inputs, $rules, $messages);
         if ($validator->fails()) {
-
             $errors = errorsToArray($validator->errors());
             $response['success'] = false;
             $response['errors'] = $errors;
             return $response;
         }
 
+        // Get the IDs of the items to delete
         $items_id = collect($inputs['items'])->pluck('id')->toArray();
-        self::whereIn('id', $items_id)->forceDelete();
+
+        // Loop through each item (doctor) and cancel associated appointments
+        foreach ($items_id as $id) {
+            $item = self::where('id', $id)->withTrashed()->first();
+            if (!$item) {
+                $response['success'] = false;
+                $response['errors'][] = trans("vaahcms-general.record_does_not_exist");
+                continue; // Skip to the next ID if the record does not exist
+            }
+
+            // Cancel appointments associated with the doctor being deleted
+            $appointments = Appointment::where('doctor_id', $id)
+                ->where('patient_id', '!=', null)
+                ->get();
+
+            foreach ($appointments as $appointment) {
+                $appointment->status = 0; // Assuming 0 means cancelled
+                $appointment->reason = 'Doctor has been deleted';
+                $appointment->save();
+
+                // Optionally send notification email to patient
+                $subject = 'Appointment Cancelled - Doctor Deleted';
+                self::sendCancellationMail($appointment, $subject);
+            }
+
+            // Delete the doctor record
+            $item->forceDelete();
+        }
 
         $response['success'] = true;
         $response['data'] = true;
@@ -434,6 +464,7 @@ class Doctor extends VaahModel
 
         return $response;
     }
+
     //-------------------------------------------------
      public static function listAction($request, $type): array
     {
@@ -532,6 +563,7 @@ class Doctor extends VaahModel
             return $validation;
         }
 
+
         // Check if name already exists
         $item = self::where('id', '!=', $id)
             ->withTrashed()
@@ -596,13 +628,15 @@ class Doctor extends VaahModel
         $slot_start_time = self::formatTime($inputs['slot_start_time'], $timezone);
         $slot_end_time = self::formatTime($inputs['slot_end_time'], $timezone);
         $appointmentUrl = "http://127.0.0.1:8000/backend/appointments#/appointments";
+
         $message_patient = sprintf(
-            'Hello, %s,<br><br>Your doctor has changed their timings. Please update your booking accordingly with Dr. %s on %s from %s to %s.<br><br>
-        <a href="%s" style="text-decoration:none;">
-            <button style="background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
-                Reschedule Here
-            </button>
-        </a><br><br>Thank you.',
+            'Hello, %s,<br><br>Your appointment with Dr. %s on %s from %s to %s has been cancelled because the doctor is no longer available.<br><br>
+    We apologize for the inconvenience.<br><br>
+    <a href="%s" style="text-decoration:none;">
+        <button style="background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
+            Book with Another Doctor
+        </button>
+    </a><br><br>Thank you.',
             $patient->name,
             $doctor->name,
             $date,
@@ -611,13 +645,14 @@ class Doctor extends VaahModel
             $appointmentUrl
         );
 
-        // Send the email with HTML content
+// Send the email with HTML content
         VaahMail::dispatchGenericMail($subject, $message_patient, $patient->email);
     }
 
-
+//------------------------------------------------------------
     public static function deleteItem($request, $id): array
     {
+        dd('hello');
         $item = self::where('id', $id)->withTrashed()->first();
         if (!$item) {
             $response['success'] = false;
@@ -631,6 +666,38 @@ class Doctor extends VaahModel
         $response['messages'][] = trans("vaahcms-general.record_has_been_deleted");
 
         return $response;
+    }
+
+
+    //-------------------------------------------------
+
+    public static function sendCancellationMail($inputs, $subject)
+    {
+        $doctor = Doctor::find($inputs['doctor_id']);
+        $patient = Patient::find($inputs['patient_id']);
+        $timezone = Session::get('user_timezone');
+        $date = Carbon::parse($inputs['date'])->toDateString();
+        $slot_start_time = self::formatTime($inputs['slot_start_time'], $timezone);
+        $slot_end_time = self::formatTime($inputs['slot_end_time'], $timezone);
+        $appointmentUrl = "http://127.0.0.1:8000/backend/appointments#/appointments";
+        $message_patient = sprintf(
+            'Hello, %s,<br><br>Your appointment with Dr. %s on %s has been cancelled because the doctor is no longer available.<br><br>
+    We apologize for the inconvenience.<br><br>
+    <a href="%s" style="text-decoration:none;">
+        <button style="background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
+            Book with Another Doctor
+        </button>
+    </a><br><br>Thank you.',
+            $patient->name,
+            $doctor->name,
+            $date,
+            $slot_start_time,
+            $slot_end_time,
+            $appointmentUrl
+        );
+
+        // Send the email with HTML content
+        VaahMail::dispatchGenericMail($subject, $message_patient, $patient->email);
     }
     //-------------------------------------------------
     public static function itemAction($request, $id, $type): array

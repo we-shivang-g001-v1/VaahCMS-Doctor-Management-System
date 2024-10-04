@@ -161,42 +161,20 @@ class Doctor extends VaahModel
         if (!$validation['success']) {
             return $validation;
         }
-
-
-
         // check if name exist
         $item = self::where('name', $inputs['name'])->withTrashed()->first();
-
-
         if ($item) {
             $error_message = "This name is already exist".($item->deleted_at?' in trash.':'.');
             $response['success'] = false;
             $response['messages'][] = $error_message;
             return $response;
         }
-
-        // check if slug exist
-//        $item = self::where('slug', $inputs['slug'])->withTrashed()->first();
-//
-//        if ($item) {
-//            $error_message = "This slug is already exist".($item->deleted_at?' in trash.':'.');
-//            $response['success'] = false;
-//            $response['messages'][] = $error_message;
-//            return $response;
-//        }
-
         $item = new self();
         $item->fill($inputs);
-
         $item->save();
-
         $response = self::getItem($item->id);
-
-
         $response['messages'][] = trans("vaahcms-general.saved_successfully");
-
         return $response;
-
     }
 
     //-------------------------------------------------
@@ -548,8 +526,8 @@ class Doctor extends VaahModel
     {
         $inputs = $request->all();
 
-        // Validate the inputs
-        $validation = self::validation($inputs);
+        // Validate the inputs, passing the ID to ignore it in the uniqueness check
+        $validation = self::validation($inputs, $id);
         if (!$validation['success']) {
             return $validation;
         }
@@ -568,32 +546,37 @@ class Doctor extends VaahModel
             ];
         }
 
-
+        // Retrieve the item to update
         $item = self::where('id', $id)
             ->withTrashed()
             ->first();
 
+        if (!$item) {
+            return [
+                'success' => false,
+                'errors' => ['Record not found with ID: ' . $id]
+            ];
+        }
+
+        // Check for changes in working hours
         $working_hours_changed = ($item->shift_start_time != $inputs['shift_start_time']) ||
             ($item->shift_end_time != $inputs['shift_end_time']);
 
         $item->fill($inputs);
         $item->save();
 
+        // Handle appointment rescheduling if working hours changed
         if ($working_hours_changed) {
-
             $appointments = Appointment::where('doctor_id', $id)
                 ->where('patient_id', '!=', null)
                 ->get();
-
 
             foreach ($appointments as $appointment) {
                 $subject = 'Appointment Rescheduled - Doctor Working Hours Changed';
                 self::sendRescheduleMail($appointment, $subject);
 
-
-
-                $appointment->status = 0;
-                $appointment->reason = 'Doctor Change Their Timimgs';
+                $appointment->status = 0; // Assuming 0 means cancelled
+                $appointment->reason = 'Doctor changed their timings';
                 $appointment->save();
             }
         }
@@ -601,8 +584,8 @@ class Doctor extends VaahModel
         $response = self::getItem($item->id);
         $response['messages'][] = trans("vaahcms-general.saved_successfully");
         return $response;
-
     }
+
 
     public static function sendRescheduleMail($inputs, $subject)
     {
@@ -679,17 +662,15 @@ class Doctor extends VaahModel
     }
     //-------------------------------------------------
 
-    public static function validation($inputs)
+    public static function validation($inputs, $id = null)
     {
-
         $rules = array(
             'name' => 'required|max:150',
             'specialization' => 'required|max:20',
-            'email' => 'required|email|max:150|unique:doctor,email',
+            'email' => 'required|email|max:150|unique:doctor,email' . ($id ? ",$id" : ''),
             'phone' => 'required|max:11',
             'shift_start_time' => 'required|max:150',
             'shift_end_time' => 'required|max:150',
-
         );
 
         $validator = \Validator::make($inputs, $rules);
@@ -699,11 +680,10 @@ class Doctor extends VaahModel
             $response['errors'] = $messages->all();
             return $response;
         }
-
         $response['success'] = true;
         return $response;
-
     }
+
 
     //-------------------------------------------------
     public static function getActiveItems()

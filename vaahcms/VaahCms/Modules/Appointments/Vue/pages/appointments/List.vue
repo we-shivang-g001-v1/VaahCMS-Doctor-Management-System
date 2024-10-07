@@ -87,7 +87,7 @@ const toggleCreateMenu = (event) => {
 
                     <div class="p-inputgroup">
                         <Button
-                        v-if="store.assets.permission[1] !== 'appointments-has-access-of-doctor-section'"
+                            v-if="store.hasPermission(store.assets.permission, 'appointments-has-access-of-button')"
                         data-testid="appointments-list-create"
                         class="p-button-sm"
                         @click="store.toForm()"

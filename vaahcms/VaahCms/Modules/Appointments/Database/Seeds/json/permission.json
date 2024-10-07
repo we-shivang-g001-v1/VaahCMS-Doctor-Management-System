@@ -11,5 +11,11 @@
         "module": "appointments",
         "section": "doctor",
         "details": "This will allow user to see the link of doctor section."
+    },
+    {
+        "name": "Has Access of Button",
+        "module": "appointments",
+        "section": "admin",
+        "details": "This will allow user to see the link of admin section."
     }
 ]

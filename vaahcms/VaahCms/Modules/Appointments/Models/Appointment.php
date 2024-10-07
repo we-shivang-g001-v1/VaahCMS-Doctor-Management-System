@@ -268,11 +268,23 @@ class Appointment extends VaahModel
 
     //-------------------------------------------------
 
-    public static function formatTime($time, $timezone, $format = 'H:i')
+    public static function formatTime($time, $timezone, $format = 'H:i A')
     {
         return Carbon::parse($time)
             ->setTimezone($timezone)
             ->format($format);
+    }
+    //-------------------------------------------------
+    public static function convertUtcToIst($timeString)
+    {
+        // Create a DateTime object from the UTC time string
+        $utcDateTime = new DateTime($timeString, new DateTimeZone('UTC'));
+
+        // Set the timezone to IST
+        $utcDateTime->setTimezone(new DateTimeZone('Asia/Kolkata'));
+
+        // Format the time into 12-hour format with AM/PM
+        return $utcDateTime->format('h:i A'); // Example: 04:22 PM
     }
     //-------------------------------------------------
 
@@ -660,6 +672,14 @@ class Appointment extends VaahModel
             return $response;
         }
 
+        // Check if slot_start_time is less than slot_end_time
+        if (strtotime($inputs['slot_start_time']) >= strtotime($inputs['slot_end_time'])) {
+            return [
+                'success' => false,
+                'errors' => ['The start time must be earlier than the end time.']
+            ];
+        }
+
         // Find and update the appointment
         $item = self::where('id', $id)->withTrashed()->first();
         if (!$item) {
@@ -667,16 +687,21 @@ class Appointment extends VaahModel
             $response['errors'][] = "Appointment not found.";
             return $response;
         }
+
+        // Fill and save the updated appointment data
         $item->fill($inputs);
         $item->status = 1;
         $item->reason = "Time Updated by Patient";
         $item->save();
-        $subject = 'Appointment Update - Mail';
 
+        // Send an appointment update email
+        $subject = 'Appointment Update - Mail';
         self::appointmentMail($inputs, $subject);
 
+        // Prepare and return the response
         $response = self::getItem($item->id);
         $response['messages'][] = trans("appointment Updated successfully");
+
         return $response;
     }
 
@@ -715,14 +740,23 @@ class Appointment extends VaahModel
 
         $start_time = $item['slot_start_time'];
         $end_time = $item['slot_end_time'];
+        $appointmentUrl = vh_get_assets_base_url() . '/backend/appointments#/appointments';
+
+        // Updated message with link
         $message = sprintf(
-            'Hello %s, Your appointment with Dr. %s on %s from %s to %s is cancelled by doctor',
+            'Hello %s,<br>Your appointment with Dr. %s on %s from %s to %s has been cancelled by the doctor.<br><br>
+        You can <a href="%s" style="text-decoration:none;">
+        <button style="background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
+            Book Another Appointment
+        </button></a>',
             $patient->name,
             $doctor->name,
             $date,
             $start_time,
-            $end_time
+            $end_time,
+            $appointmentUrl
         );
+
         VaahMail::dispatchGenericMail($subject, $message, $patient->email);
 
         // Prepare the response

@@ -6,27 +6,6 @@ const store = useDoctorStore();
 const useVaah = vaah();
 
 
-// function convertUTCtoIST(utcTimeString) {
-//     if (!utcTimeString) return ''; // Return empty if no time is provided
-//
-//     // Split the time string into hours, minutes, and seconds
-//     const [utcHours, utcMinutes, utcSeconds] = utcTimeString.split(':').map(Number);
-//
-//     // Create a new Date object set to midnight (00:00:00 UTC)
-//     const utcDate = new Date(Date.UTC(1970, 0, 1, utcHours, utcMinutes, utcSeconds));
-//
-//     // Add IST offset (5 hours 30 minutes) in milliseconds
-//     const istOffset = 5.5 * 60 * 60 * 1000;
-//     const istDate = new Date(utcDate.getTime() + istOffset);
-//
-//     // Return the IST time in HH:mm:ss format
-//     return istDate.toLocaleTimeString('en-IN', {
-//         hour: '2-digit',
-//         minute: '2-digit',
-//         hour12: false, // 24-hour format
-//     });
-// }
-
 function convertUtcToIst(utcTimeString) {
     // Split the time string into hours, minutes, and seconds
     let [hours, minutes, seconds] = utcTimeString.split(':').map(Number);

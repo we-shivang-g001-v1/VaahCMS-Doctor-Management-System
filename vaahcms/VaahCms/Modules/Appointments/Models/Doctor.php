@@ -152,30 +152,50 @@ class Doctor extends VaahModel
     }
 
     //-------------------------------------------------
+
+    //-------------------------------------------------
     public static function createItem($request)
     {
-
         $inputs = $request->all();
 
+        // Basic validation
         $validation = self::validation($inputs);
         if (!$validation['success']) {
             return $validation;
         }
-        // check if name exist
+
+        // Check if name exists
         $item = self::where('name', $inputs['name'])->withTrashed()->first();
         if ($item) {
-            $error_message = "This name is already exist".($item->deleted_at?' in trash.':'.');
+            $error_message = "This name already exists" . ($item->deleted_at ? ' in trash.' : '.');
             $response['success'] = false;
             $response['messages'][] = $error_message;
             return $response;
         }
+
+        // Ensure shift_start_time is less than shift_end_time
+        if (isset($inputs['shift_start_time']) && isset($inputs['shift_end_time'])) {
+            $start_time = strtotime($inputs['shift_start_time']);
+            $end_time = strtotime($inputs['shift_end_time']);
+
+            if ($start_time >= $end_time) {
+                $response['success'] = false;
+                $response['errors'][] = "Shift start time must be earlier than shift end time.";
+                return $response;
+            }
+        }
+
+        // Create new item
         $item = new self();
         $item->fill($inputs);
         $item->save();
+
         $response = self::getItem($item->id);
         $response['messages'][] = trans("vaahcms-general.saved_successfully");
+
         return $response;
     }
+
 
     //-------------------------------------------------
     protected function shiftStartTime(): Attribute
@@ -590,6 +610,18 @@ class Doctor extends VaahModel
             ];
         }
 
+        if (isset($inputs['shift_start_time']) && isset($inputs['shift_end_time'])) {
+            $start_time = strtotime($inputs['shift_start_time']);
+            $end_time = strtotime($inputs['shift_end_time']);
+
+            if ($start_time >= $end_time) {
+                return [
+                    'success' => false,
+                    'errors' => ["Shift start time must be earlier than shift end time."]
+                ];
+            }
+        }
+
         // Check for changes in working hours
         $working_hours_changed = ($item->shift_start_time != $inputs['shift_start_time']) ||
             ($item->shift_end_time != $inputs['shift_end_time']);
@@ -632,7 +664,7 @@ class Doctor extends VaahModel
         $message_patient = sprintf(
             'Hello, %s,<br><br>Your appointment with Dr. %s on %s from %s to %s has been cancelled because the doctor is no longer available.<br><br>
     We apologize for the inconvenience.<br><br>
-    <a href="%s" style="text-decoration:none;">
+    <a href="http://127.0.0.1:8000/backend/appointments#/appointments" style="text-decoration:none;">
         <button style="background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
             Book with Another Doctor
         </button>
@@ -670,6 +702,18 @@ class Doctor extends VaahModel
 
 
     //-------------------------------------------------
+    private static function convertUtcToIst($timeString)
+    {
+        // Create a DateTime object from the UTC time string
+        $utcDateTime = new DateTime($timeString, new DateTimeZone('UTC'));
+
+        // Set the timezone to IST
+        $utcDateTime->setTimezone(new DateTimeZone('Asia/Kolkata'));
+
+        // Format the time into 12-hour format with AM/PM
+        return $utcDateTime->format('h:i A'); // Example: 04:22 PM
+    }
+    //-------------------------------------------------
 
     public static function sendCancellationMail($inputs, $subject)
     {
@@ -679,20 +723,19 @@ class Doctor extends VaahModel
         $date = Carbon::parse($inputs['date'])->toDateString();
         $slot_start_time = self::formatTime($inputs['slot_start_time'], $timezone);
         $slot_end_time = self::formatTime($inputs['slot_end_time'], $timezone);
-        $appointmentUrl = "http://127.0.0.1:8000/backend/appointments#/appointments";
+        $appointmentUrl = vh_get_assets_base_url().'/backend/appointments#/appointments';
+
         $message_patient = sprintf(
             'Hello, %s,<br><br>Your appointment with Dr. %s on %s has been cancelled because the doctor is no longer available.<br><br>
-    We apologize for the inconvenience.<br><br>
-    <a href="%s" style="text-decoration:none;">
-        <button style="background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
-            Book with Another Doctor
-        </button>
-    </a><br><br>Thank you.',
+        We apologize for the inconvenience.<br><br>
+        <a href="%s" style="text-decoration:none;">
+            <button style="background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
+                Book with Another Doctor
+            </button>
+        </a><br><br>Thank you.',
             $patient->name,
             $doctor->name,
             $date,
-            $slot_start_time,
-            $slot_end_time,
             $appointmentUrl
         );
 

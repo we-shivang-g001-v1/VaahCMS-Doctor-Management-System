@@ -70,8 +70,6 @@ function convertUtcToIst(utcTimeString) {
 
     return `${hoursStr}:${minutesStr}:${secondsStr}`;
 }
-
-
 function formatTimeWithAmPm(time) {
     if (!time) return '';
 
@@ -84,8 +82,10 @@ function formatTimeWithAmPm(time) {
     let hour = date.getHours() % 12;
     if (hour === 0) hour = 12;
 
+    // Corrected template literal
     return `${hour}:${minutes} ${amPm}`;
 }
+
 
 </script>
 <template>
@@ -213,75 +213,64 @@ function formatTimeWithAmPm(time) {
                         name="items-doctor"
                         data-testid="items-doctor"
                         placeholder="Select Doctor"
-                        :options="store.assets.doctor"
+                        :options="store.assets.doctor && store.assets.doctor.length ? store.assets.doctor : []"
                         v-model="store.item.doctor_id"
                         option-label="name"
                         option-value="id"
                         class="w-full"
                         showClear
                     />
-
                 </VhField>
 
-                <VhField label="Doctor's Information"  v-if="store.item.doctor_id" >
-
-                    <b>
-                        Email-
-                    </b> {{selectedDoctor.email}}<br>
-                    <b>Phone</b>
-                    - {{selectedDoctor.phone}}<br>
-                    <b>Specialization
-                    </b>- {{selectedDoctor.specialization}}<br>
-                    <b>
-                        Shift Time-</b>
-
+                <VhField label="Doctor's Information" v-if="store.item.doctor_id && selectedDoctor && Object.keys(selectedDoctor).length">
+                    <b>Email:</b> {{ selectedDoctor.email }}<br>
+                    <b>Phone:</b> {{ selectedDoctor.phone }}<br>
+                    <b>Specialization:</b> {{ selectedDoctor.specialization }}<br>
+                    <b>Shift Time:</b>
                     {{ formatTimeWithAmPm(convertUtcToIst(selectedDoctor.shift_start_time)) }} -
-                    {{ formatTimeWithAmPm(convertUtcToIst(selectedDoctor.shift_end_time)) }}
-                    <br>
+                    {{ formatTimeWithAmPm(convertUtcToIst(selectedDoctor.shift_end_time)) }}<br>
                     (Please Select the time in the given time slot).
-
                 </VhField>
+
                 <VhField label="Date and Time" required>
                     <div class="p-inputgroup">
                         <Calendar
                             name="items-date"
-                            :dateFormat="'yy-mm-dd'"
+                            date-format="yy-mm-dd"
                             :showIcon="true"
                             :minDate="today_date"
                             data-testid="items-date"
-                            @date-select="handleDateChange($event, 'date')"
-                            v-model="store.item.date"
+                            @date-select="handleDateChange($event,'date')"
+                            v-model="store.item.date "
                             :pt="{
-                  monthPicker:{class:'w-15rem'},
-                  yearPicker:{class:'w-15rem'}
-              }"
+                                  monthPicker:{class:'w-15rem'},
+                                  yearPicker:{class:'w-15rem'}
+                              }"
                             placeholder="Select Appointment Date"
                         />
                         <Calendar
                             v-model="store.item.slot_start_time"
-                            showTime
-                            hourFormat="12"
+                            showTime hourFormat="12"
                             :pt="{
-                  monthPicker:{class:'w-15rem'},
-                  yearPicker:{class:'w-15rem'}
-              }"
+                                  monthPicker:{class:'w-15rem'},
+                                  yearPicker:{class:'w-15rem'}
+                              }"
                             time-only
                             placeholder="Appointment Start Time"
                         />
                         <Calendar
                             v-model="store.item.slot_end_time"
-                            showTime
-                            hourFormat="12"
+                            showTime hourFormat="12"
+                            store.item.slot_start_time
                             :pt="{
-                  monthPicker:{class:'w-15rem'},
-                  yearPicker:{class:'w-15rem'}
-              }"
+                                  monthPicker:{class:'w-15rem'},
+                                  yearPicker:{class:'w-15rem'}
+                              }"
                             time-only
                             placeholder="Appointment End Time"
                         />
                     </div>
                 </VhField>
-
 
 
 

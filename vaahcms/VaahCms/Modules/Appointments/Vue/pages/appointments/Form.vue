@@ -44,26 +44,34 @@ onMounted(async () => {
     await store.getFormMenu();
 });
 
-function convertUTCtoIST(utcTimeString) {
-    if (!utcTimeString) return ''; // Return empty if no time is provided
-
+function convertUtcToIst(utcTimeString) {
     // Split the time string into hours, minutes, and seconds
-    const [utcHours, utcMinutes, utcSeconds] = utcTimeString.split(':').map(Number);
+    let [hours, minutes, seconds] = utcTimeString.split(':').map(Number);
 
-    // Create a new Date object set to midnight (00:00:00 UTC)
-    const utcDate = new Date(Date.UTC(1970, 0, 1, utcHours, utcMinutes, utcSeconds));
+    // Add 5 hours and 30 minutes to convert UTC to IST
+    hours += 5;
+    minutes += 30;
 
-    // Add IST offset (5 hours 30 minutes) in milliseconds
-    const istOffset = 5.5 * 60 * 60 * 1000;
-    const istDate = new Date(utcDate.getTime() + istOffset);
+    // Handle overflow for minutes
+    if (minutes >= 60) {
+        minutes -= 60;
+        hours += 1;
+    }
 
-    // Return the IST time in HH:mm:ss format
-    return istDate.toLocaleTimeString('en-IN', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false, // 24-hour format
-    });
+    // Handle overflow for hours (24-hour format)
+    if (hours >= 24) {
+        hours -= 24;
+    }
+
+    // Format hours, minutes, and seconds with leading zeros if needed
+    const hoursStr = hours.toString().padStart(2, '0');
+    const minutesStr = minutes.toString().padStart(2, '0');
+    const secondsStr = seconds.toString().padStart(2, '0');
+
+    return `${hoursStr}:${minutesStr}:${secondsStr}`;
 }
+
+
 function formatTimeWithAmPm(time) {
     if (!time) return '';
 
@@ -76,10 +84,8 @@ function formatTimeWithAmPm(time) {
     let hour = date.getHours() % 12;
     if (hour === 0) hour = 12;
 
-    // Corrected template literal
     return `${hour}:${minutes} ${amPm}`;
 }
-
 
 </script>
 <template>
@@ -229,8 +235,8 @@ function formatTimeWithAmPm(time) {
                     <b>
                         Shift Time-</b>
 
-                    {{ formatTimeWithAmPm(convertUTCtoIST(selectedDoctor.shift_start_time)) }} -
-                    {{ formatTimeWithAmPm(convertUTCtoIST(selectedDoctor.shift_end_time)) }}
+                    {{ formatTimeWithAmPm(convertUtcToIst(selectedDoctor.shift_start_time)) }} -
+                    {{ formatTimeWithAmPm(convertUtcToIst(selectedDoctor.shift_end_time)) }}
                     <br>
                     (Please Select the time in the given time slot).
 
@@ -239,41 +245,43 @@ function formatTimeWithAmPm(time) {
                     <div class="p-inputgroup">
                         <Calendar
                             name="items-date"
-                            date-format="yy-mm-dd"
+                            :dateFormat="'yy-mm-dd'"
                             :showIcon="true"
                             :minDate="today_date"
                             data-testid="items-date"
-                            @date-select="handleDateChange($event,'date')"
-                            v-model="store.item.date "
+                            @date-select="handleDateChange($event, 'date')"
+                            v-model="store.item.date"
                             :pt="{
-                                  monthPicker:{class:'w-15rem'},
-                                  yearPicker:{class:'w-15rem'}
-                              }"
+                  monthPicker:{class:'w-15rem'},
+                  yearPicker:{class:'w-15rem'}
+              }"
                             placeholder="Select Appointment Date"
                         />
                         <Calendar
                             v-model="store.item.slot_start_time"
-                            showTime hourFormat="12"
+                            showTime
+                            hourFormat="12"
                             :pt="{
-                                  monthPicker:{class:'w-15rem'},
-                                  yearPicker:{class:'w-15rem'}
-                              }"
+                  monthPicker:{class:'w-15rem'},
+                  yearPicker:{class:'w-15rem'}
+              }"
                             time-only
                             placeholder="Appointment Start Time"
                         />
                         <Calendar
                             v-model="store.item.slot_end_time"
-                            showTime hourFormat="12"
-                            store.item.slot_start_time
+                            showTime
+                            hourFormat="12"
                             :pt="{
-                                  monthPicker:{class:'w-15rem'},
-                                  yearPicker:{class:'w-15rem'}
-                              }"
+                  monthPicker:{class:'w-15rem'},
+                  yearPicker:{class:'w-15rem'}
+              }"
                             time-only
                             placeholder="Appointment End Time"
                         />
                     </div>
                 </VhField>
+
 
 
 

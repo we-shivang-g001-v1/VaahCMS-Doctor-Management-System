@@ -6,26 +6,54 @@ const store = useDoctorStore();
 const useVaah = vaah();
 
 
-function convertUTCtoIST(utcTimeString) {
-    if (!utcTimeString) return ''; // Return empty if no time is provided
+// function convertUTCtoIST(utcTimeString) {
+//     if (!utcTimeString) return ''; // Return empty if no time is provided
+//
+//     // Split the time string into hours, minutes, and seconds
+//     const [utcHours, utcMinutes, utcSeconds] = utcTimeString.split(':').map(Number);
+//
+//     // Create a new Date object set to midnight (00:00:00 UTC)
+//     const utcDate = new Date(Date.UTC(1970, 0, 1, utcHours, utcMinutes, utcSeconds));
+//
+//     // Add IST offset (5 hours 30 minutes) in milliseconds
+//     const istOffset = 5.5 * 60 * 60 * 1000;
+//     const istDate = new Date(utcDate.getTime() + istOffset);
+//
+//     // Return the IST time in HH:mm:ss format
+//     return istDate.toLocaleTimeString('en-IN', {
+//         hour: '2-digit',
+//         minute: '2-digit',
+//         hour12: false, // 24-hour format
+//     });
+// }
 
+function convertUtcToIst(utcTimeString) {
     // Split the time string into hours, minutes, and seconds
-    const [utcHours, utcMinutes, utcSeconds] = utcTimeString.split(':').map(Number);
+    let [hours, minutes, seconds] = utcTimeString.split(':').map(Number);
 
-    // Create a new Date object set to midnight (00:00:00 UTC)
-    const utcDate = new Date(Date.UTC(1970, 0, 1, utcHours, utcMinutes, utcSeconds));
+    // Add 5 hours and 30 minutes to convert UTC to IST
+    hours += 5;
+    minutes += 30;
 
-    // Add IST offset (5 hours 30 minutes) in milliseconds
-    const istOffset = 5.5 * 60 * 60 * 1000;
-    const istDate = new Date(utcDate.getTime() + istOffset);
+    // Handle overflow for minutes
+    if (minutes >= 60) {
+        minutes -= 60;
+        hours += 1;
+    }
 
-    // Return the IST time in HH:mm:ss format
-    return istDate.toLocaleTimeString('en-IN', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false, // 24-hour format
-    });
+    // Handle overflow for hours (24-hour format)
+    if (hours >= 24) {
+        hours -= 24;
+    }
+
+    // Format hours, minutes, and seconds with leading zeros if needed
+    const hoursStr = hours.toString().padStart(2, '0');
+    const minutesStr = minutes.toString().padStart(2, '0');
+    const secondsStr = seconds.toString().padStart(2, '0');
+
+    return `${hoursStr}:${minutesStr}:${secondsStr}`;
 }
+
 
 function formatTimeWithAmPm(time) {
     if (!time) return '';
@@ -111,18 +139,19 @@ function formatTimeWithAmPm(time) {
                      :sortable="true">
 
                  <template #body="prop">
-                     {{ formatTimeWithAmPm(prop.data.shift_start_time) }}
+                     {{ formatTimeWithAmPm(convertUtcToIst(prop.data.shift_start_time)) }}
 <!--                     {{prop.data.shift_start_time}}-->
                  </template>
 
              </Column>
+
              <Column field="shift_end_time" header="End Time"
                      class="overflow-wrap-anywhere"
                      :sortable="true">
 
                  <template #body="prop">
 
-                     {{ formatTimeWithAmPm(prop.data.shift_end_time) }}
+                     {{ formatTimeWithAmPm(convertUtcToIst(prop.data.shift_end_time)) }}
 <!--                     {{prop.data.shift_end_time}}-->
 
                  </template>

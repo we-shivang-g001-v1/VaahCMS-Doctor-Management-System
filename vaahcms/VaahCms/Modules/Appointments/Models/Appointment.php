@@ -200,6 +200,31 @@ class Appointment extends VaahModel
             return $response;
         }
 
+        // Fetch doctor's working hours
+        $doctor = Doctor::find($inputs['doctor_id']); // Assuming there's a Doctor model
+        if (!$doctor) {
+            return [
+                'success' => false,
+                'errors' => ['Doctor not found.']
+            ];
+        }
+
+        // Extract doctor's shift start and end times
+        $shift_start_time = $doctor->shift_start_time; // e.g., '08:30:53'
+        $shift_end_time = $doctor->shift_end_time; // e.g., '17:00:00'
+
+        // Extract time from the input's slot_start_time
+        $input_slot_start_time = date('H:i:s', strtotime($inputs['slot_start_time']));
+        $input_slot_end_time = date('H:i:s', strtotime($inputs['slot_end_time']));
+
+        // Check if the requested time is within the doctor's available time range
+        if ($input_slot_start_time < $shift_start_time || $input_slot_end_time > $shift_end_time) {
+            return [
+                'success' => false,
+                'errors' => ['The selected time is outside of the doctor\'s available time range.']
+            ];
+        }
+
         // Check if the time slot is available for the doctor on the same date
         $existing_time_slot = self::where('doctor_id', $inputs['doctor_id'])
             ->whereDate('date', $input_date)
@@ -227,22 +252,20 @@ class Appointment extends VaahModel
         // Create a new appointment
         $item = new self();
         $item->fill($inputs);
-        $item-> status = 1;
-
+        $item->status = 1;
 
         $item->save();
 
         // Send appointment confirmation emails
         $subject = 'Appointment Booked - Mail';
-
         self::appointmentMail($inputs, $subject);
 
         $response = self::getItem($item->id);
         $response['messages'][] = trans("appointment booked successfully");
 
-
         return $response;
     }
+
     //-------------------------------------------------
 
     public static function formatTime($time, $timezone, $format = 'H:i')

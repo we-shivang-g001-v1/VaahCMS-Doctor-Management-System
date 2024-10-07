@@ -5,18 +5,33 @@ import { useAppointmentStore } from '../../../stores/store-appointments'
 const store = useAppointmentStore();
 const useVaah = vaah();
 
-function convertUTCtoIST(utcTimeString) {
-    if (!utcTimeString) return '';
-    const [utcHours, utcMinutes, utcSeconds] = utcTimeString.split(':').map(Number);
-    const utcDate = new Date(Date.UTC(1970, 0, 1, utcHours, utcMinutes, utcSeconds));
-    const istOffset = 5.5 * 60 * 60 * 1000;
-    const istDate = new Date(utcDate.getTime() + istOffset);
-    return istDate.toLocaleTimeString('en-IN', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false, // 24-hour format
-    });
+function convertUtcToIst(utcTimeString) {
+    // Split the time string into hours, minutes, and seconds
+    let [hours, minutes, seconds] = utcTimeString.split(':').map(Number);
+
+    // Add 5 hours and 30 minutes to convert UTC to IST
+    hours += 5;
+    minutes += 30;
+
+    // Handle overflow for minutes
+    if (minutes >= 60) {
+        minutes -= 60;
+        hours += 1;
+    }
+
+    // Handle overflow for hours (24-hour format)
+    if (hours >= 24) {
+        hours -= 24;
+    }
+
+    // Format hours, minutes, and seconds with leading zeros if needed
+    const hoursStr = hours.toString().padStart(2, '0');
+    const minutesStr = minutes.toString().padStart(2, '0');
+    const secondsStr = seconds.toString().padStart(2, '0');
+
+    return `${hoursStr}:${minutesStr}:${secondsStr}`;
 }
+
 
 function formatTimeWithAmPm(time) {
     if (!time) return '';
@@ -30,7 +45,6 @@ function formatTimeWithAmPm(time) {
     let hour = date.getHours() % 12;
     if (hour === 0) hour = 12;
 
-    // Corrected template literal
     return `${hour}:${minutes} ${amPm}`;
 }
 
@@ -104,7 +118,7 @@ function formatTimeWithAmPm(time) {
                      :sortable="true">
 
                  <template #body="prop">
-                     {{prop.data?.date}} at {{ formatTimeWithAmPm(prop.data.slot_start_time) }} - {{ formatTimeWithAmPm(prop.data.slot_end_time) }}
+                     {{prop.data?.date}} at {{ formatTimeWithAmPm(convertUtcToIst(prop.data.slot_start_time)) }} - {{ formatTimeWithAmPm(convertUtcToIst(prop.data.slot_end_time)) }}
                  </template>
 
              </Column>

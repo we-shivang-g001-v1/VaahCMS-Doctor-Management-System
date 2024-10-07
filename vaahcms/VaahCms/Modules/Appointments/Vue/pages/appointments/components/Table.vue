@@ -6,7 +6,6 @@ const store = useAppointmentStore();
 const useVaah = vaah();
 
 function convertUtcToIst(utcTimeString) {
-    // Split the time string into hours, minutes, and seconds
     let [hours, minutes, seconds] = utcTimeString.split(':').map(Number);
 
     // Add 5 hours and 30 minutes to convert UTC to IST

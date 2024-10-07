@@ -172,7 +172,9 @@ class Appointment extends VaahModel
         $query->whereBetween('updated_at', [$from, $to]);
     }
 
+
     //-------------------------------------------------
+
     public static function createItem($request)
     {
         $inputs = $request->all();
@@ -225,6 +227,13 @@ class Appointment extends VaahModel
             ];
         }
 
+        if ($input_slot_start_time >= $input_slot_end_time) {
+            return [
+                'success' => false,
+                'errors' => ['End time must be greater than start time.']
+            ];
+        }
+
         // Check if the time slot is available for the doctor on the same date
         $existing_time_slot = self::where('doctor_id', $inputs['doctor_id'])
             ->whereDate('date', $input_date)
@@ -242,14 +251,28 @@ class Appointment extends VaahModel
             })
             ->first();
 
+        // Check if the existing time slot is canceled
         if ($existing_time_slot) {
-            $error_message = "This time slot is already booked for this doctor. Please select a different time.";
-            $response['success'] = false;
-            $response['errors'][] = $error_message;
-            return $response;
+
+            if ($existing_time_slot->status === 0) { // Assuming 'canceled' is the status
+                // If the appointment is canceled, you can proceed to book it
+                // You can update the existing appointment if needed
+                $existing_time_slot->fill($inputs); // Update existing appointment details
+                $existing_time_slot->status = 1; // Set status to booked
+                $existing_time_slot->save();
+
+                $response = self::getItem($existing_time_slot->id);
+                $response['messages'][] = trans("appointment booked successfully");
+                return $response;
+            } else {
+                $error_message = "This time slot is already booked for this doctor. Please select a different time.";
+                $response['success'] = false;
+                $response['errors'][] = $error_message;
+                return $response;
+            }
         }
 
-        // Create a new appointment
+        // Create a new appointment if no existing time slot is found
         $item = new self();
         $item->fill($inputs);
         $item->status = 1;
@@ -274,18 +297,7 @@ class Appointment extends VaahModel
             ->setTimezone($timezone)
             ->format($format);
     }
-    //-------------------------------------------------
-    public static function convertUtcToIst($timeString)
-    {
-        // Create a DateTime object from the UTC time string
-        $utcDateTime = new DateTime($timeString, new DateTimeZone('UTC'));
 
-        // Set the timezone to IST
-        $utcDateTime->setTimezone(new DateTimeZone('Asia/Kolkata'));
-
-        // Format the time into 12-hour format with AM/PM
-        return $utcDateTime->format('h:i A'); // Example: 04:22 PM
-    }
     //-------------------------------------------------
 
     public static function appointmentMail($inputs, $subject)
@@ -740,7 +752,7 @@ class Appointment extends VaahModel
 
         $start_time = $item['slot_start_time'];
         $end_time = $item['slot_end_time'];
-        $appointmentUrl = vh_get_assets_base_url() . '/backend/appointments#/appointments';
+        $appointment_url = vh_get_assets_base_url() . '/backend/appointments#/appointments';
 
         // Updated message with link
         $message = sprintf(
@@ -754,7 +766,7 @@ class Appointment extends VaahModel
             $date,
             $start_time,
             $end_time,
-            $appointmentUrl
+            $appointmen_uUrl
         );
 
         VaahMail::dispatchGenericMail($subject, $message, $patient->email);

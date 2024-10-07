@@ -426,7 +426,6 @@ class Doctor extends VaahModel
     //-------------------------------------------------
     public static function deleteList($request): array
     {
-//        dd('hello deleteList');
         $inputs = $request->all();
 
         $rules = array(
@@ -659,12 +658,12 @@ class Doctor extends VaahModel
         $date = Carbon::parse($inputs['date'])->toDateString();
         $slot_start_time = self::formatTime($inputs['slot_start_time'], $timezone);
         $slot_end_time = self::formatTime($inputs['slot_end_time'], $timezone);
-        $appointmentUrl = "http://127.0.0.1:8000/backend/appointments#/appointments";
+        $appointment_url = vh_get_assets_base_url().'/backend/appointments#/appointments';
 
         $message_patient = sprintf(
             'Hello, %s,<br><br>Your appointment with Dr. %s on %s from %s to %s has been cancelled because the doctor is no longer available.<br><br>
     We apologize for the inconvenience.<br><br>
-    <a href="http://127.0.0.1:8000/backend/appointments#/appointments" style="text-decoration:none;">
+    <a href="%s" style="text-decoration:none;">
         <button style="background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
             Book with Another Doctor
         </button>
@@ -674,7 +673,7 @@ class Doctor extends VaahModel
             $date,
             $slot_start_time,
             $slot_end_time,
-            $appointmentUrl
+            $appointment_url
         );
 
 // Send the email with HTML content
@@ -723,7 +722,7 @@ class Doctor extends VaahModel
         $date = Carbon::parse($inputs['date'])->toDateString();
         $slot_start_time = self::formatTime($inputs['slot_start_time'], $timezone);
         $slot_end_time = self::formatTime($inputs['slot_end_time'], $timezone);
-        $appointmentUrl = vh_get_assets_base_url().'/backend/appointments#/appointments';
+        $appointment_url = vh_get_assets_base_url().'/backend/appointments#/appointmentsbackend/appointments#/appointments';
 
         $message_patient = sprintf(
             'Hello, %s,<br><br>Your appointment with Dr. %s on %s has been cancelled because the doctor is no longer available.<br><br>
@@ -736,7 +735,7 @@ class Doctor extends VaahModel
             $patient->name,
             $doctor->name,
             $date,
-            $appointmentUrl
+            $appointment_url
         );
 
         // Send the email with HTML content

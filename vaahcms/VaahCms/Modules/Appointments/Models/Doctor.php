@@ -831,6 +831,7 @@ class Doctor extends VaahModel
             'model_namespace' => self::class,
             'except' => self::getUnFillableColumns()
         ]);
+
         $fillable = VaahSeeder::fill($request);
         if(!$fillable['success']){
             return $fillable;
@@ -839,10 +840,20 @@ class Doctor extends VaahModel
 
         $faker = Factory::create();
 
-        /*
-         * You can override the filled variables below this line.
-         * You should also return relationship from here
-         */
+
+
+        $inputs['name'] = $faker->name;
+        $inputs['specialization'] = $faker->randomElement(['Cardiology', 'Dermatology', 'Pediatrics', 'Neurology', 'Orthopedics']);
+
+        // Override the 'phone' field to start with 9, 8, or 7
+        $inputs['phone'] = $faker->numerify($faker->randomElement(['9#########', '8#########', '7#########']));
+
+        // Override the 'shift_start_time' and 'shift_end_time' with valid times
+        $startHour = $faker->randomElement(['11:00 AM', '2:00 PM']);
+        $inputs['shift_start_time'] = $startHour;
+        $inputs['shift_end_time'] = date('h:i A', strtotime("+4 hours", strtotime($startHour))); // 4 hours later
+
+        $inputs['is_active'] = 1;
 
         if(!$is_response_return){
             return $inputs;

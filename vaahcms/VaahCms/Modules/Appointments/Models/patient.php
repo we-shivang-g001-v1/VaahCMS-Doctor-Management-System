@@ -633,11 +633,12 @@ class patient extends VaahModel
         $inputs = $fillable['data']['fill'];
 
         $faker = Factory::create();
+        $inputs['name'] = $faker->name;
+       // Override the 'phone' field to start with 9, 8, 7 or 6
+        $inputs['phone'] = $faker->numerify($faker->randomElement(['9#########', '8#########', '7#########', '6#########']));
 
-        /*
-         * You can override the filled variables below this line.
-         * You should also return relationship from here
-         */
+
+        $inputs['is_active'] = 1;
 
         if(!$is_response_return){
             return $inputs;

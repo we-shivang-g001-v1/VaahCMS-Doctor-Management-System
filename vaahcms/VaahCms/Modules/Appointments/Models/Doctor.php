@@ -34,6 +34,7 @@ class Doctor extends VaahModel
         'email',
         'specialization',
         'phone',
+        'price',
         'shift_start_time',
         'shift_end_time',
         'is_active',
@@ -48,8 +49,19 @@ class Doctor extends VaahModel
 
     //-------------------------------------------------
     protected $appends = [
+        'appointments_count'
     ];
 
+    //-------------------------------------------------
+
+    public function appointments()
+    {
+        return $this->hasMany(Appointment::class, 'doctor_id', 'id');
+    }
+    public function getAppointmentsCountAttribute(): int
+    {
+        return $this->appointments()->whereNotIn('status', [0, 2])->count();
+    }
     //-------------------------------------------------
     protected function serializeDate(DateTimeInterface $date)
     {
@@ -337,6 +349,7 @@ class Doctor extends VaahModel
             'shift_end_time',
             'phone',
             'name',
+            'price',
             'specialization',
             'updated_at',
 
@@ -852,6 +865,10 @@ class Doctor extends VaahModel
         $startHour = $faker->randomElement(['11:00 AM', '2:00 PM']);
         $inputs['shift_start_time'] = $startHour;
         $inputs['shift_end_time'] = date('h:i A', strtotime("+4 hours", strtotime($startHour))); // 4 hours later
+
+        $priceOptions = range(500, 1000, 100);
+        $inputs['price'] = $faker->randomElement($priceOptions);
+
 
         $inputs['is_active'] = 1;
 

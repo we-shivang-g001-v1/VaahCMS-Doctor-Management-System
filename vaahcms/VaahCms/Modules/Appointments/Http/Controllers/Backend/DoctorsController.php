@@ -37,6 +37,9 @@ class DoctorsController extends Controller
             $data['fillable']['except'] = Doctor::getUnFillableColumns();
             $data['empty_item'] = Doctor::getEmptyItem();
 
+            $data['count_appointment'] = (new \VaahCms\Modules\Appointments\Models\Doctor)->getAppointmentsCountAttribute();
+
+
             $data['actions'] = [];
 
             $response['success'] = true;

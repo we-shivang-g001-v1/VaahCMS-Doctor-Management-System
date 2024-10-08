@@ -197,6 +197,20 @@ const isValidTime = (date) => date instanceof Date && !isNaN (date.getTime());
                         <div class="required-field hidden"></div>
                     </div>
                 </VhField>
+                <VhField label="Price">
+                    <div class="p-inputgroup">
+                        <InputNumber class="w-full"
+                                     placeholder="Enter the Price"
+                                     name="doctors-price"
+                                     data-testid="doctors-price"
+                                     :use-grouping="false"
+                                     v-model="store.item.price" required
+
+                        />
+                        <div class="required-field hidden"></div>
+                    </div>
+                </VhField>
+
                 <VhField label="Time">
                     <div class="p-inputgroup">
 

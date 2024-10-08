@@ -83,9 +83,21 @@ function formatTimeWithAmPm(time) {
                            value="Trashed"
                            severity="danger"></Badge>
                     {{prop.data.name}}
+
                 </template>
 
             </Column>
+             <Column field="totalAppointment" header="Appointments"
+                     class="overflow-wrap-anywhere"
+                     :sortable="true">
+                 <template #body="prop">
+                     <div style="display:flex; justify-content:center; align-items:center;">
+                         <Badge :style="{ backgroundColor: '#4CAF50', color: 'white' }">
+                             {{ prop.data.appointments_count || 0 }}
+                         </Badge>
+                     </div>
+                 </template>
+             </Column>
              <Column field="email" header="Email"
                      class="overflow-wrap-anywhere"
                      :sortable="true">
@@ -111,6 +123,16 @@ function formatTimeWithAmPm(time) {
                  <template #body="prop">
                      {{prop.data.phone}}
                  </template>
+
+             </Column>
+             <Column field="price" header="Price per Appointment"
+                     class="overflow-wrap-anywhere text-center"
+                     :sortable="true">
+             <template #body="prop">
+                 <div class="text-center">  <!-- Added div for centering -->
+                     {{ prop.data.price }}
+                 </div>
+             </template>
 
              </Column>
              <Column field="shift_start_time" header="Start Time"

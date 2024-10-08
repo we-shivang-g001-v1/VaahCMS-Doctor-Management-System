@@ -255,8 +255,7 @@ class Appointment extends VaahModel
         if ($existing_time_slot) {
 
             if ($existing_time_slot->status === 0) { // Assuming 'canceled' is the status
-                // If the appointment is canceled, you can proceed to book it
-                // You can update the existing appointment if needed
+
                 $existing_time_slot->fill($inputs); // Update existing appointment details
                 $existing_time_slot->status = 1; // Set status to booked
                 $existing_time_slot->save();
@@ -691,6 +690,12 @@ class Appointment extends VaahModel
                 'errors' => ['The start time must be earlier than the end time.']
             ];
         }
+        if ($input_slot_start_time >= $input_slot_end_time) {
+            return [
+                'success' => false,
+                'errors' => ['End time must be greater than start time.']
+            ];
+        }
 
         // Find and update the appointment
         $item = self::where('id', $id)->withTrashed()->first();
@@ -766,7 +771,7 @@ class Appointment extends VaahModel
             $date,
             $start_time,
             $end_time,
-            $appointmen_uUrl
+            $appointment_url
         );
 
         VaahMail::dispatchGenericMail($subject, $message, $patient->email);

@@ -1,10 +1,26 @@
 <script setup>
 import { vaah } from '../../../vaahvue/pinia/vaah'
 import { useDoctorStore } from '../../../stores/store-doctors'
-
+import { ref } from 'vue';
 const store = useDoctorStore();
 const useVaah = vaah();
 
+const visibleRight = ref(false) // Control sidebar visibility
+const currentAppointmentCount = ref(0); // Store the current appointment count
+const appointmentDetails = ref([]);// Store the current appointment count
+const bookedAppointments = ref([]); // Store booked appointments
+const cancelledAppointments = ref([]); // Store cancelled appointments
+
+function openSidebar(appointmentsCount, appointmentsList) {
+    currentAppointmentCount.value = appointmentsCount; // Set the count to be displayed
+    appointmentDetails.value = appointmentsList;
+
+    // Filter based on status
+    bookedAppointments.value = appointmentsList.filter(appointment => appointment.status === 1);
+    cancelledAppointments.value = appointmentsList.filter(appointment => appointment.status === 0);
+
+    visibleRight.value = true; // Show the sidebar
+}
 
 function convertUtcToIst(utcTimeString) {
     // Split the time string into hours, minutes, and seconds
@@ -53,6 +69,18 @@ function formatTimeWithAmPm(time) {
 
 </script>
 
+<style>
+.custom-sidebar {
+    width: 1000px; /* Adjust the width as needed */
+}
+
+.custom-sidebar .p-sidebar-content {
+    padding: 20px; /* Add padding for better spacing */
+}
+
+/* Add your additional styles here */
+</style>
+
 <template>
 
     <div v-if="store.list">
@@ -92,9 +120,13 @@ function formatTimeWithAmPm(time) {
                      :sortable="true">
                  <template #body="prop">
                      <div style="display:flex; justify-content:center; align-items:center;">
-                         <Badge :style="{ backgroundColor: '#4CAF50', color: 'white' }">
-                             {{ prop.data.appointments_count || 0 }}
+                         <Badge v-if="prop.data.appointments_count > 0"
+                                :style="{ backgroundColor: '#4CAF50', color: 'white' }"
+                                @click="openSidebar(prop.data.appointments_count, prop.data.appointments_list)"
+                                style="cursor: pointer;"> <!-- Make it look clickable -->
+                             {{ prop.data.appointments_count }}
                          </Badge>
+                         <span v-else style="color: gray;">N/A</span>
                      </div>
                  </template>
              </Column>
@@ -237,6 +269,95 @@ function formatTimeWithAmPm(time) {
 
         </DataTable>
         <!--/table-->
+        <!-- Sidebar Component -->
+        <Sidebar v-model:visible="visibleRight" header="Appointments Details" position="right" class="custom-sidebar">
+            <p>Total Appointments: {{ currentAppointmentCount }}</p>
+
+            <TabView>
+                <!-- Booked Tab -->
+                <TabPanel header="Booked">
+                    <DataTable :value="bookedAppointments" dataKey="id" class="p-datatable-sm p-datatable-hoverable-rows" emptyMessage="No records available">
+                        <Column field="id" header="ID" :sortable="true" :style="{ width: '80px' }">
+                            <template #body="prop">
+                                {{ prop.data.id }}
+                            </template>
+                        </Column>
+
+                        <Column field="patient.name" header="Patient Name" :sortable="true" class="overflow-wrap-anywhere">
+                            <template #body="prop">
+                                {{ prop.data.patient.name }} <!-- Accessing nested patient name -->
+                            </template>
+                        </Column>
+
+                        <Column field="date" header="Appointment Date" :sortable="true" class="overflow-wrap-anywhere">
+                            <template #body="prop">
+                                {{ prop.data.date }} <!-- Displaying the appointment date -->
+                            </template>
+                        </Column>
+
+                        <Column field="slot_start_time" header="Start Time" :sortable="true" class="overflow-wrap-anywhere">
+                            <template #body="prop">
+                                {{ formatTimeWithAmPm(convertUtcToIst(prop.data.slot_start_time)) }}<!-- Displaying the start time -->
+                            </template>
+                        </Column>
+
+                        <Column field="slot_end_time" header="End Time" :sortable="true" class="overflow-wrap-anywhere">
+                            <template #body="prop">
+                                {{ formatTimeWithAmPm(convertUtcToIst(prop.data.slot_end_time)) }}<!-- Displaying the end time -->
+                            </template>
+                        </Column>
+
+                        <Column field="reason" header="Reason" :sortable="true" class="overflow-wrap-anywhere">
+                            <template #body="prop">
+                                {{ prop.data.reason || 'N/A' }} <!-- Displaying reason or 'N/A' if not present -->
+                            </template>
+                        </Column>
+                    </DataTable>
+                </TabPanel>
+
+                <!-- Cancelled Tab -->
+                <TabPanel header="Cancelled">
+                    <DataTable :value="cancelledAppointments" dataKey="id" class="p-datatable-sm p-datatable-hoverable-rows" emptyMessage="No records available">
+                        <Column field="id" header="ID" :sortable="true" :style="{ width: '80px' }">
+                            <template #body="prop">
+                                {{ prop.data.id }}
+                            </template>
+                        </Column>
+
+                        <Column field="patient.name" header="Patient Name" :sortable="true" class="overflow-wrap-anywhere">
+                            <template #body="prop">
+                                {{ prop.data.patient.name }} <!-- Accessing nested patient name -->
+                            </template>
+                        </Column>
+
+                        <Column field="date" header="Appointment Date" :sortable="true" class="overflow-wrap-anywhere">
+                            <template #body="prop">
+                                {{ prop.data.date }} <!-- Displaying the appointment date -->
+                            </template>
+                        </Column>
+
+                        <Column field="slot_start_time" header="Start Time" :sortable="true" class="overflow-wrap-anywhere">
+                            <template #body="prop">
+                                {{ formatTimeWithAmPm(convertUtcToIst(prop.data.slot_start_time)) }}<!-- Displaying the start time -->
+                            </template>
+                        </Column>
+
+                        <Column field="slot_end_time" header="End Time" :sortable="true" class="overflow-wrap-anywhere">
+                            <template #body="prop">
+                                {{ formatTimeWithAmPm(convertUtcToIst(prop.data.slot_end_time)) }}<!-- Displaying the end time -->
+                            </template>
+                        </Column>
+
+                        <Column field="reason" header="Reason" :sortable="true" class="overflow-wrap-anywhere">
+                            <template #body="prop">
+                                {{ prop.data.reason || 'N/A' }} <!-- Displaying reason or 'N/A' if not present -->
+                            </template>
+                        </Column>
+                    </DataTable>
+                </TabPanel>
+            </TabView>
+
+        </Sidebar>
 
         <!--paginator-->
         <Paginator v-if="store.query.rows"

@@ -24,7 +24,10 @@ import Tooltip from 'primevue/tooltip';
 import Badge from "primevue/badge";
 import Button from "primevue/button";
 import Panel from "primevue/panel";
+import Sidebar from 'primevue/sidebar';
+import TabView from 'primevue/tabview';
 import InputText from "primevue/inputtext";
+import TabPanel from 'primevue/tabpanel';
 import Column from "primevue/column";
 import InputSwitch from "primevue/inputswitch";
 import DataTable from "primevue/datatable";
@@ -92,6 +95,9 @@ app.component('Tag', Tag);
 app.component('Calendar', Calendar);
 app.component('InputNumber', InputNumber);
 app.component('Dropdown', Dropdown);
+app.component('Sidebar', Sidebar);
+app.component('TabView', TabView);
+app.component('TabPanel', TabPanel);
 
 //-------------/CRUD PrimeVue Use
 

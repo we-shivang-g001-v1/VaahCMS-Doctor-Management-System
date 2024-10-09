@@ -49,7 +49,8 @@ class Doctor extends VaahModel
 
     //-------------------------------------------------
     protected $appends = [
-        'appointments_count'
+        'appointments_count',
+        'appointments_list'
     ];
 
     //-------------------------------------------------
@@ -57,10 +58,16 @@ class Doctor extends VaahModel
     public function appointments()
     {
         return $this->hasMany(Appointment::class, 'doctor_id', 'id');
+
     }
     public function getAppointmentsCountAttribute(): int
     {
         return $this->appointments()->whereNotIn('status', [0, 2])->count();
+    }
+    public function getAppointmentsListAttribute(): array
+    {
+        // Eager load the patient details with the appointments
+        return $this->appointments()->with('patient')->get()->toArray();
     }
     //-------------------------------------------------
     protected function serializeDate(DateTimeInterface $date)
@@ -580,7 +587,9 @@ class Doctor extends VaahModel
         $response['success'] = true;
         $response['data'] = $item;
 
+
         return $response;
+        dd($response);
 
     }
     //-------------------------------------------------

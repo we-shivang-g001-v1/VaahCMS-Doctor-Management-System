@@ -8,12 +8,14 @@ import {useRootStore} from '../../stores/root'
 import Actions from "./components/Actions.vue";
 import Table from "./components/Table.vue";
 import Filters from './components/Filters.vue'
+import CustomFilter from './components/CustomFilter.vue'
 
 const store = useDoctorStore();
 const root = useRootStore();
 const route = useRoute();
 
 import { useConfirm } from "primevue/useconfirm";
+
 const confirm = useConfirm();
 
 
@@ -132,6 +134,7 @@ const toggleCreateMenu = (event) => {
         </div>
 
          <Filters/>
+        <CustomFilter/>
 
         <RouterView/>
 

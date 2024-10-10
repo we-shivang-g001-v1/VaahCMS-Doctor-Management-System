@@ -52,6 +52,7 @@ export const useDoctorStore = defineStore({
         route_prefix: 'doctors.',
         view: 'large',
         show_filters: false,
+        show_custom_filters: false,
         list_view_width: 12,
         form: {
             type: 'Create',
@@ -110,6 +111,7 @@ export const useDoctorStore = defineStore({
                     this.view = 'small';
                     this.list_view_width = 6;
                     this.show_filters = false;
+                    this.show_custom_filters = false;
                     break
             }
         },
@@ -586,6 +588,15 @@ export const useDoctorStore = defineStore({
         countFilters: function (query)
         {
             this.count_filters = 0;
+            if(query && query.filter)
+            {
+                let filter = vaah().cleanObject(query.filter);
+                this.count_filters = Object.keys(filter).length;
+            }
+        },//---------------------------------------------------------------------
+        countCustomFilters: function (query)
+        {
+            this.count_custom_filters = 0;
             if(query && query.filter)
             {
                 let filter = vaah().cleanObject(query.filter);

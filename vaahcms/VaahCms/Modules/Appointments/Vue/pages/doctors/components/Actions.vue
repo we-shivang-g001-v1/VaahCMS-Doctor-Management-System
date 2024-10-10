@@ -85,6 +85,15 @@ const toggleBulkMenuState = (event) => {
                                 Filters
                                 <Badge v-if="store.count_filters > 0" :value="store.count_filters"></Badge>
                             </Button>
+                            <Button
+                                type="button"
+                                class="p-button-sm"
+                                :disabled="Object.keys(route.params).length"
+                                data-testid="doctors-actions-show-filters"
+                                @click="store.show_custom_filters = !store.show_custom_filters">
+                               Custom Filters
+                                <Badge v-if="store.count_filters > 0" :value="store.count_filters"></Badge>
+                            </Button>
 
                             <Button
                                 type="button"

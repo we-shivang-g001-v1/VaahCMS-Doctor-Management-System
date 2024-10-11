@@ -338,6 +338,65 @@ class Doctor extends VaahModel
 
     }
     //-------------------------------------------------
+
+    public function scopeSpecializationFilter($query, $filter)
+    {
+        // Check if specialization exists in the filter
+        if (!isset($filter['specialization']) || empty($filter['specialization'])) {
+            return $query;
+        }
+
+        $specialization = $filter['specialization'];
+
+        // If specialization is an array (for multiple specializations)
+        if (is_array($specialization)) {
+            return $query->whereIn('specialization', $specialization);
+        }
+
+        // Single specialization filter
+        return $query->where('specialization', $specialization);
+    }
+
+    //-------------------------------------------------
+
+    public function scopePriceFilter($query, $filter)
+    {
+        // Check if price exists in the filter
+        if (!isset($filter['price']) || empty($filter['price'])) {
+            return $query;
+        }
+
+        $priceRange = $filter['price'];
+
+        // Split the price range into min and max values
+        list($minPrice, $maxPrice) = explode('-', $priceRange);
+
+        // Apply the query to filter by price range
+        return $query->whereBetween('price', [(int)$minPrice, (int)$maxPrice]);
+    }
+
+    //-------------------------------------------------
+    public function scopeTimingFilter($query, $filter)
+    {
+        if (isset($filter['shift_time']) && !empty($filter['shift_time'])) {
+            // Split the combined value into start and end times
+            list($start, $end) = explode('-', $filter['shift_time']);
+
+            // Trim whitespace and convert to appropriate format if necessary
+            $startTime = trim($start) . ':00'; // Add seconds if needed
+            $endTime = trim($end) . ':00'; // Add seconds if needed
+
+            // Apply the filter based on the parsed start and end times
+            $query->where('shift_start_time', '>=', $startTime)
+                ->where('shift_end_time', '<=', $endTime);
+        }
+
+        return $query;
+    }
+
+
+
+    //-------------------------------------------------
     public static function getList($request)
     {
         // Start by applying sorting to the list
@@ -346,6 +405,9 @@ class Doctor extends VaahModel
         $list->isActiveFilter($request->filter);
         $list->trashedFilter($request->filter);
         $list->searchFilter($request->filter);
+        $list->specializationFilter($request->filter);
+        $list->priceFilter($request->filter);
+        $list->timingFilter($request->filter);
 
         // Select only specific columns
         $list->select([

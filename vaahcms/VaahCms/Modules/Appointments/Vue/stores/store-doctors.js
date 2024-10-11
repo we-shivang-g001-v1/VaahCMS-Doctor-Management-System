@@ -16,6 +16,9 @@ let empty_states = {
         filter: {
             q: null,
             is_active: null,
+            specialization: null,
+            priceRange: null,
+            timingFilter: null,
             trashed: null,
             sort: null,
         },
@@ -109,7 +112,7 @@ export const useDoctorStore = defineStore({
                     break;
                 default:
                     this.view = 'small';
-                    this.list_view_width = 6;
+                    this.list_view_width = 12;
                     this.show_filters = false;
                     this.show_custom_filters = false;
                     break

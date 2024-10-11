@@ -41,6 +41,7 @@ import InputNumber from 'primevue/inputnumber';
 import Dropdown from 'primevue/dropdown';
 import Slider from 'primevue/slider';
 import Card from 'primevue/card';
+import Chart from 'primevue/chart';
 
 
 //-------------/CRUD PrimeVue Imports
@@ -103,6 +104,7 @@ app.component('TabView', TabView);
 app.component('TabPanel', TabPanel);
 app.component('Slider', Slider);
 app.component('Card', Card);
+app.component('Chart', Chart);
 
 //-------------/CRUD PrimeVue Use
 

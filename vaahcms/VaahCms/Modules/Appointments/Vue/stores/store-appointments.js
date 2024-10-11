@@ -228,6 +228,28 @@ export const useAppointmentStore = defineStore({
             }
         },
         //---------------------------------------------------------------------
+        async getAppointmentList() {
+            let options = {
+                query: vaah().clone(this.query)
+
+            };
+            await vaah().ajax(
+                this.ajax_url + '/getAppointmentList',
+                this.afterGetAppointmentList,
+                options
+            );
+        },
+        //---------------------------------------------------------------------
+        afterGetAppointmentList: function (data, res)
+        {
+            if(data)
+            {
+                console.log(data)
+                this.item = data;
+
+            }
+        },
+        //---------------------------------------------------------------------
 
         async getItem(id) {
             if(id){

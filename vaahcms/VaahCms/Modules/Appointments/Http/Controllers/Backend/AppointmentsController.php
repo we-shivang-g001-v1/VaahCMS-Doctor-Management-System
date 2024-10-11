@@ -92,6 +92,27 @@ class AppointmentsController extends Controller
     }
 
     //----------------------------------------------------------
+
+    public function getAppointmentList(Request $request)
+    {
+        try {
+            // Call the getAppointmentList method from the Appointment model
+            return Appointment::getAppointmentList($request);
+
+        } catch (\Exception $e) {
+            $response = [];
+            $response['success'] = false;
+            if (env('APP_DEBUG')) {
+                $response['errors'][] = $e->getMessage();
+                $response['hint'] = $e->getTrace();
+            } else {
+                $response['errors'][] = trans("vaahcms-general.something_went_wrong");
+            }
+            return $response;
+        }
+    }
+
+    //----------------------------------------------------------
     public function updateList(Request $request)
     {
         try{

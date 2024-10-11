@@ -40,6 +40,8 @@ import Calendar from 'primevue/calendar';
 import InputNumber from 'primevue/inputnumber';
 import Dropdown from 'primevue/dropdown';
 import Slider from 'primevue/slider';
+import Card from 'primevue/card';
+
 
 //-------------/CRUD PrimeVue Imports
 
@@ -100,6 +102,7 @@ app.component('Sidebar', Sidebar);
 app.component('TabView', TabView);
 app.component('TabPanel', TabPanel);
 app.component('Slider', Slider);
+app.component('Card', Card);
 
 //-------------/CRUD PrimeVue Use
 

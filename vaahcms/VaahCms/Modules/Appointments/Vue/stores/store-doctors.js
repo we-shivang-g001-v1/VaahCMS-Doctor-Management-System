@@ -64,6 +64,7 @@ export const useDoctorStore = defineStore({
         },
         is_list_loading: null,
         count_filters: 0,
+        count_custom_filters: 0,
         list_selected_menu: [],
         list_bulk_menu: [],
         list_create_menu: [],
@@ -112,7 +113,7 @@ export const useDoctorStore = defineStore({
                     break;
                 default:
                     this.view = 'small';
-                    this.list_view_width = 12;
+                    this.list_view_width = 6;
                     this.show_filters = false;
                     this.show_custom_filters = false;
                     break

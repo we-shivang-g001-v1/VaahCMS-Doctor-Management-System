@@ -476,48 +476,6 @@ class Appointment extends VaahModel
         return $response;
     }
 
-    //-------------------------------------------------
-//    public static function getAppointmentList($request)
-//    {
-//        $response = []; // Initialize the response variable
-//        try {
-//            // Get all appointments without any filters
-//            $list = self::query()->with(['patient', 'doctor'])->get(); // Load related patient and doctor information
-//
-//            // Get the total count of appointments
-//            $totalCount = $list->count();
-//
-//            // Get the counts for booked and cancelled appointments
-//            $bookedCount = $list->where('status', 1)->count(); // Count of booked appointments
-//            $cancelledCount = $list->where('status', 0)->count(); // Count of cancelled appointments
-//
-//            // Prepare the response with counts inside a data object
-//            $response['success'] = true;
-//            $response['data'] = [
-//                'appointments' => $list, // The list of all appointments
-//                'counts' => [ // Counts object
-//                    'total_count' => $totalCount, // Total count of all appointments
-//                    'booked_count' => $bookedCount, // Count of booked appointments
-//                    'cancelled_count' => $cancelledCount // Count of cancelled appointments
-//                ]
-//            ];
-//
-//        } catch (\Exception $e) {
-//            // Handle exceptions
-//            $response['success'] = false;
-//            if (env('APP_DEBUG')) {
-//                $response['errors'][] = $e->getMessage();
-//                $response['hint'] = $e->getTrace();
-//            } else {
-//                $response['errors'][] = trans("vaahcms-general.something_went_wrong");
-//            }
-//        }
-//
-////        dd($response); // For debugging, remove or comment out in production
-//        return $response; // Return the response
-//    }
-
-
     public static function getAppointmentList($request)
     {
         $response = []; // Initialize the response variable

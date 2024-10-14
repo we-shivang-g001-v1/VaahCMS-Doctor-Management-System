@@ -116,6 +116,7 @@ function formatTimeWithAmPm(time) {
 
             </Column>
              <Column field="totalAppointment" header="Appointments"
+                     v-if="store.isViewLarge()"
                      class="overflow-wrap-anywhere"
                      :sortable="true">
                  <template #body="prop">
@@ -149,6 +150,7 @@ function formatTimeWithAmPm(time) {
 
              </Column>
              <Column field="phone" header="Phone"
+                     v-if="store.isViewLarge()"
                      class="overflow-wrap-anywhere"
                      :sortable="true">
 

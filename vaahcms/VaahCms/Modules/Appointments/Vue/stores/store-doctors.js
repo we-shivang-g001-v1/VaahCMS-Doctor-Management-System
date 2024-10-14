@@ -734,7 +734,41 @@ export const useDoctorStore = defineStore({
                 },
             ]
 
+        },async exportDoctors(){
+            let file_data = null;
+            try {
+                await vaah().ajax(
+                    this.ajax_url.concat('/exportDoctors/list'),
+                    (data, res) => {
+                        file_data = res.data;
+                    }
+                );
+                const blob = new Blob([file_data]);
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', 'doctors.csv');
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                window.URL.revokeObjectURL(url);
+            } catch (error) {
+                console.error('Error downloading file:', error);
+            }
+        },async importDoctors(fileData){
+            await vaah().ajax(
+                this.ajax_url.concat('/bulkImport'),
+                (data, res) => {
+                    console.log(res.data)
+                },
+                {
+                    params: fileData,
+                    method: 'post',
+                    headers: document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            );
         },
+
         //---------------------------------------------------------------------
         getListBulkMenu()
         {

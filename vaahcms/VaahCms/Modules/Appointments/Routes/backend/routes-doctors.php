@@ -5,9 +5,9 @@ use VaahCms\Modules\Appointments\Http\Controllers\Backend\DoctorsController;
 Route::group(
     [
         'prefix' => 'backend/appointments/doctors',
-        
+
         'middleware' => ['web', 'has.backend.access'],
-        
+
 ],
 function () {
     /**
@@ -70,6 +70,9 @@ function () {
      */
     Route::any('/{id}/action/{action}', [DoctorsController::class, 'itemAction'])
         ->name('vh.backend.appointments.doctors.item.action');
+
+    Route::post('/bulkImport', [DoctorsController::class, 'bulkImport'])
+        ->name('vh.backend.appointments.doctors.bulk.import');
 
     //---------------------------------------------------------
 

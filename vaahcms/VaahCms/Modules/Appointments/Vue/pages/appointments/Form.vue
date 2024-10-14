@@ -251,6 +251,7 @@ function formatTimeWithAmPm(time) {
                         <Calendar
                             v-model="store.item.slot_start_time"
                             showTime hourFormat="12"
+                            stepMinute="30"
                             :pt="{
                                   monthPicker:{class:'w-15rem'},
                                   yearPicker:{class:'w-15rem'}
@@ -261,6 +262,7 @@ function formatTimeWithAmPm(time) {
                         <Calendar
                             v-model="store.item.slot_end_time"
                             showTime hourFormat="12"
+                            stepMinute="30"
                             store.item.slot_start_time
                             :pt="{
                                   monthPicker:{class:'w-15rem'},

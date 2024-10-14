@@ -26,6 +26,19 @@ const toggleBulkMenuState = (event) => {
 };
 //--------/bulk_menu_state
 </script>
+<style>
+.bulk-import-dialog .p-field {
+    margin-bottom: 1rem; /* Add space below the file upload field */
+}
+
+.bulk-import-dialog .p-button {
+    width: 48%; /* Ensure buttons take up equal width */
+}
+
+.bulk-import-dialog .p-button-secondary {
+    margin-left: 10px; /* Add space between buttons */
+}</style>
+
 
 <template>
     <div>

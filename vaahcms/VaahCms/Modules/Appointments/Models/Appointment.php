@@ -716,7 +716,6 @@ class Appointment extends VaahModel
         $input_date = date('Y-m-d', strtotime($inputs['date']));
 
         // Check if the same patient is trying to book an appointment with the same doctor on the same day
-        // Exclude the current item being updated
         $existing_appointment = self::where('patient_id', $inputs['patient_id'])
             ->where('doctor_id', $inputs['doctor_id'])
             ->whereDate('date', $input_date)
@@ -731,18 +730,73 @@ class Appointment extends VaahModel
             return $response;
         }
 
-        // Check if slot_start_time is less than slot_end_time
-        if (strtotime($inputs['slot_start_time']) >= strtotime($inputs['slot_end_time'])) {
+        // Fetch doctor's working hours
+        $doctor = Doctor::find($inputs['doctor_id']);
+        if (!$doctor) {
             return [
                 'success' => false,
-                'errors' => ['The start time must be earlier than the end time.']
+                'errors' => ['Doctor not found.']
             ];
         }
+
+        // Extract doctor's shift start and end times
+        $shift_start_time = $doctor->shift_start_time; // e.g., '08:30:53'
+        $shift_end_time = $doctor->shift_end_time; // e.g., '17:00:00'
+
+        // Extract time from the input's slot_start_time
+        $input_slot_start_time = date('H:i:s', strtotime($inputs['slot_start_time']));
+        $input_slot_end_time = date('H:i:s', strtotime($inputs['slot_end_time']));
+
+        // Check if the requested time is within the doctor's available time range
+        if ($input_slot_start_time < $shift_start_time || $input_slot_end_time > $shift_end_time) {
+            return [
+                'success' => false,
+                'errors' => ['The selected time is outside of the doctor\'s available time range.']
+            ];
+        }
+
+        // Check if slot_start_time is less than slot_end_time
         if ($input_slot_start_time >= $input_slot_end_time) {
             return [
                 'success' => false,
                 'errors' => ['End time must be greater than start time.']
             ];
+        }
+
+        // Check if the time slot is available for the doctor on the same date
+        $existing_time_slot = self::where('doctor_id', $inputs['doctor_id'])
+            ->whereDate('date', $input_date)
+            ->where(function($query) use ($inputs) {
+                $query->where(function ($q) use ($inputs) {
+                    $q->where('slot_start_time', '<=', $inputs['slot_start_time'])
+                        ->where('slot_end_time', '>=', $inputs['slot_start_time']);
+                })->orWhere(function ($q) use ($inputs) {
+                    $q->where('slot_start_time', '<=', $inputs['slot_end_time'])
+                        ->where('slot_end_time', '>=', $inputs['slot_end_time']);
+                })->orWhere(function ($q) use ($inputs) {
+                    $q->where('slot_start_time', '>=', $inputs['slot_start_time'])
+                        ->where('slot_end_time', '<=', $inputs['slot_end_time']);
+                });
+            })
+            ->first();
+
+        // Check if the existing time slot is canceled
+        if ($existing_time_slot) {
+            if ($existing_time_slot->status === 0) { // Assuming 'canceled' is the status
+                // Update existing appointment details
+                $existing_time_slot->fill($inputs);
+                $existing_time_slot->status = 1; // Set status to booked
+                $existing_time_slot->save();
+
+                $response = self::getItem($existing_time_slot->id);
+                $response['messages'][] = trans("appointment updated successfully");
+                return $response;
+            } else {
+                $error_message = "This time slot is already booked for this doctor. Please select a different time.";
+                $response['success'] = false;
+                $response['errors'][] = $error_message;
+                return $response;
+            }
         }
 
         // Find and update the appointment
@@ -765,7 +819,7 @@ class Appointment extends VaahModel
 
         // Prepare and return the response
         $response = self::getItem($item->id);
-        $response['messages'][] = trans("appointment Updated successfully");
+        $response['messages'][] = trans("appointment updated successfully");
 
         return $response;
     }

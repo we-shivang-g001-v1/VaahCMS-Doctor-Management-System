@@ -184,18 +184,22 @@ const setChartOptions = () => {
 .grid {
     display: flex;
     flex-wrap: wrap;
+    justify-content: space-between; /* Evenly space the cards */
 }
 .col-12 {
     flex: 0 0 100%;
 }
 .md\:col-3 {
-    flex: 0 0 25%;
+    flex: 0 0 24%; /* Adjust to fit four cards per row */
 }
 .card {
     transition: transform 0.3s;
     border-radius: 8px;
     padding: 16px;
-    color: white; /* Adjust text color for better contrast */
+    color: white;
+    white-space: nowrap; /* Prevent line breaks */
+    text-overflow: ellipsis; /* Add ellipsis for overflowing text */
+    overflow: hidden; /* Ensure text stays within card */
 }
 
 .card:hover {
@@ -219,17 +223,23 @@ const setChartOptions = () => {
     background-color: rgba(34, 197, 94, 0.8); /* Green */
 }
 
-/* Other existing styles remain unchanged */
-
-.loading-message {
+.loading-message,
+.error-message {
     font-size: 1.5rem;
     text-align: center;
     margin-top: 20px;
 }
-.error-message {
-    font-size: 1.2rem;
-    text-align: center;
-    margin-top: 20px;
-    color: red; /* Add any desired styling for the error message */
+
+@media (max-width: 768px) {
+    .md\:col-3 {
+        flex: 0 0 48%; /* Adjust for two cards per row on smaller screens */
+    }
+}
+
+@media (max-width: 576px) {
+    .md\:col-3 {
+        flex: 0 0 100%; /* Adjust for one card per row on mobile screens */
+    }
 }
 </style>
+

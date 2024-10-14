@@ -5,11 +5,11 @@ import VhFieldVertical from './../../../vaahvue/vue-three/primeflex/VhFieldVerti
 
 const store = useDoctorStore();
 const shiftTimings = [
-    { value: '05:00-09:00', label: '05:00 PM - 09:00 PM' },
-    { value: '09:00-13:00', label: '09:00 AM - 01:00 PM' },
-    { value: '13:00-17:00', label: '01:00 PM - 05:00 PM' },
-    { value: '17:00-21:00', label: '05:00 PM - 09:00 PM' },
-    { value: '21:00-23:00', label: '09:00 PM - 11:00 PM' },
+    { value: '05:00:00-09:00:00', label: '05:00 PM - 09:00 PM' },
+    { value: '09:00:00-13:00:00', label: '09:00 AM - 01:00 PM' },
+    { value: '13:00:00-17:00:00', label: '01:00 PM - 05:00 PM' },
+    { value: '17:00:00-21:00:00', label: '05:00 PM - 09:00 PM' },
+    { value: '21:00:00-23:00:00', label: '09:00 PM - 11:00 PM' },
 ];
 </script>
 

@@ -63,13 +63,16 @@ const toggleCreateMenu = (event) => {
 //--------/form_menu
 
 
+
+
 </script>
 <template>
 
     <div class="grid" v-if="store.assets">
 
-        <div :class="'col-'+(store.show_filters?9:store.list_view_width)">
-            <Panel class="is-small">
+        <div :class="'col-' + ((store.show_filters || store.show_custom_filters) ? 9 : store.list_view_width)">
+
+        <Panel class="is-small">
 
                 <template class="p-1" #header>
 

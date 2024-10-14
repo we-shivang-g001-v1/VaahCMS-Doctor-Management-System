@@ -25,6 +25,23 @@ const toggleBulkMenuState = (event) => {
     bulk_menu_state.value.toggle(event);
 };
 //--------/bulk_menu_state
+
+// Toggle between Filters and Custom Filters
+const toggleFilters = (filterType) => {
+    if (filterType === 'filters') {
+        // Toggle Filters, but close Custom Filters if open
+        store.show_filters = !store.show_filters;
+        if (store.show_filters) {
+            store.show_custom_filters = false;
+        }
+    } else if (filterType === 'customFilters') {
+        // Toggle Custom Filters, but close Filters if open
+        store.show_custom_filters = !store.show_custom_filters;
+        if (store.show_custom_filters) {
+            store.show_filters = false;
+        }
+    }
+};
 </script>
 
 <template>
@@ -81,7 +98,7 @@ const toggleBulkMenuState = (event) => {
                                 class="p-button-sm"
                                 :disabled="Object.keys(route.params).length"
                                 data-testid="doctors-actions-show-filters"
-                                @click="store.show_filters = !store.show_filters">
+                                @click="toggleFilters('filters')">
                                 Filters
                                 <Badge v-if="store.count_filters > 0" :value="store.count_filters"></Badge>
                             </Button>
@@ -90,12 +107,11 @@ const toggleBulkMenuState = (event) => {
                                 type="button"
                                 class="p-button-sm"
                                 :disabled="Object.keys(route.params).length"
-                                data-testid="doctors-actions-show-filters"
-                                @click="store.show_custom_filters = !store.show_custom_filters">
-                               Custom Filters
+                                data-testid="doctors-actions-show-custom-filters"
+                                @click="toggleFilters('customFilters')">
+                                Custom Filters
                                 <Badge v-if="store.count_custom_filters > 0" :value="store.count_custom_filters"></Badge>
                             </Button>
-
                             <Button
                                 type="button"
                                 icon="pi pi-filter-slash"

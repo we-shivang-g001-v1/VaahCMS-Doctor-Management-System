@@ -754,6 +754,39 @@ export const useAppointmentStore = defineStore({
                 },
             ]
 
+        },async exportAppointments(){
+            let file_data = null;
+            try {
+                await vaah().ajax(
+                    this.ajax_url.concat('/bulkAppointmentExport/appointmentList'),
+                    (data, res) => {
+                        file_data = res.data;
+                    }
+                );
+                const blob = new Blob([file_data]);
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', 'AppointmentList.csv');
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                window.URL.revokeObjectURL(url);
+            } catch (error) {
+                console.error('Error downloading file:', error);
+            }
+        },async importAppointments(fileData){
+            await vaah().ajax(
+                this.ajax_url.concat('/bulkAppointmentImport'),
+                (data, res) => {
+                    this.getList()
+                },
+                {
+                    params: fileData,
+                    method: 'post',
+                    headers: document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            );
         },
         //---------------------------------------------------------------------
         getListBulkMenu()

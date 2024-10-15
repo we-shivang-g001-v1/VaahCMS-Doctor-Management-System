@@ -15,6 +15,8 @@ use WebReinvent\VaahCms\Models\VaahModel;
 use WebReinvent\VaahCms\Traits\CrudWithUuidObservantTrait;
 use WebReinvent\VaahCms\Models\User;
 use WebReinvent\VaahCms\Libraries\VaahSeeder;
+use Maatwebsite\Excel\Facades\Excel;
+use App\ExportData\AppointmentExport;
 
 class Appointment extends VaahModel
 {
@@ -1002,7 +1004,35 @@ class Appointment extends VaahModel
     }
 
     //-------------------------------------------------
+    public static function bulkAppointmentImport(Request $request)
+    {
+        $fileContents = $request->json()->all();
+        if(!$fileContents){
+            return ;
+        }
+        foreach ($fileContents as $content) {
+            //dd($content);
+            self::updateOrCreate(
+                ['email' => $content['email']],
+                [
+                    'name' => $content['name'],
+                    'email' => $content['email'],
+                    'price' => $content['price'],
+                    'phone' => $content['phone'],
+                    'specialization' => $content['specialization'],
+                    'shift_start_time' => Carbon::parse($content['shift_start_time'])->format('Y-m-d H:i:s'),
+                    'shift_end_time' => Carbon::parse($content['shift_end_time'])->format('Y-m-d H:i:s'),
+                    'is_active' => 1,
+                ]
+            );
+        }
+        return response()->json(['message' => 'Appointment updated/created successfully!']);
+    }
     //-------------------------------------------------
+    public static function bulkAppointmentExport()
+    {
+        return Excel::download(new AppointmentExport,'AppointmentsList.csv');
+    }
     //-------------------------------------------------
 
 

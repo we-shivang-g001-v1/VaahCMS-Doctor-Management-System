@@ -76,5 +76,12 @@ function () {
         ->name('vh.backend.appointments.appointments.item.action');
 
     //---------------------------------------------------------
+    Route::post('/bulkAppointmentImport', [AppointmentsController::class, 'bulkAppointmentImport'])
+        ->name('vh.backend.appointments.appointments.bulk.import');
+
+    Route::get('/bulkAppointmentExport/appointmentList', [AppointmentsController::class, 'bulkAppointmentExport'])
+        ->name('vh.backend.appointment.appointments.bulk.export');
+
+    //---------------------------------------------------------
 
 });

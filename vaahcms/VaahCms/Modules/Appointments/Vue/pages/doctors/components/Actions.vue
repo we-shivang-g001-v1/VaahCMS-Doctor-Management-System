@@ -6,23 +6,6 @@ import { useDoctorStore } from '../../../stores/store-doctors';
 const store = useDoctorStore();
 const route = useRoute();
 
-// Dialog visibility state
-const bulkImportDialogVisible = ref(false);
-const selectedFile = ref(null);
-const fileError = ref('');
-
-// Open the bulk import dialog
-const openBulkImportDialog = () => {
-    bulkImportDialogVisible.value = true;
-    selectedFile.value = null; // Reset the selected file
-    fileError.value = ''; // Reset any error messages
-};
-
-// Close the bulk import dialog
-const closeBulkImportDialog = () => {
-    bulkImportDialogVisible.value = false;
-};
-
 // Handle file selection
 const handleFileChange = (event) => {
     const file = event.target.files[0];
@@ -35,29 +18,7 @@ const handleFileChange = (event) => {
     }
 };
 
-// Handle bulk import
-const handleBulkImport = async () => {
-    if (!selectedFile.value) {
-        fileError.value = 'No file selected. Please choose a file.';
-        return;
-    }
 
-    const formData = new FormData();
-    formData.append('file', selectedFile.value); // Append the file to FormData
-
-    try {
-        // Replace with your actual API endpoint for file upload
-        const response = await store.uploadBulkFile(formData);
-        console.log('Upload successful:', response);
-
-        // Optionally handle the response, e.g., show success message
-        // Reset the dialog and any errors
-        closeBulkImportDialog(); // Close the dialog after processing
-    } catch (error) {
-        console.error('Error uploading file:', error);
-        fileError.value = 'Error uploading file. Please try again.';
-    }
-};
 
 // Toggle between Filters and Custom Filters
 const toggleFilters = (filterType) => {
@@ -95,11 +56,6 @@ const toggleBulkMenuState = (event) => {
 
 </script>
 
-<style scoped>
-.bulk-import-dialog {
-    width: 400px; /* Set your desired width */
-}
-</style>
 
 <template>
     <div>
@@ -161,13 +117,7 @@ const toggleBulkMenuState = (event) => {
                                 @click="store.resetQuery()" />
 
                             <!-- Bulk Import Button -->
-                            <Button
-                                type="button"
-                                @click="openBulkImportDialog"
-                                class="p-button-sm ml-1"
-                                data-testid="doctors-actions-bulk-import-button">
-                                Bulk Import
-                            </Button>
+
 
                             <!-- Bulk Menu -->
                             <Button

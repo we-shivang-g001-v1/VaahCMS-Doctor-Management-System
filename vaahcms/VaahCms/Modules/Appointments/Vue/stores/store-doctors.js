@@ -759,7 +759,7 @@ export const useDoctorStore = defineStore({
             await vaah().ajax(
                 this.ajax_url.concat('/bulkImport'),
                 (data, res) => {
-                    console.log(res.data)
+                    this.getList()
                 },
                 {
                     params: fileData,

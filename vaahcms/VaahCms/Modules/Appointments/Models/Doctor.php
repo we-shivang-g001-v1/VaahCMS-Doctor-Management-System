@@ -12,6 +12,8 @@ use WebReinvent\VaahCms\Models\User;
 use WebReinvent\VaahCms\Libraries\VaahSeeder;
 use WebReinvent\VaahCms\Libraries\VaahMail;
 use Illuminate\Support\Facades\Session;
+use Maatwebsite\Excel\Facades\Excel;
+use App\ExportData\DoctorExport;
 
 class Doctor extends VaahModel
 {
@@ -929,15 +931,10 @@ class Doctor extends VaahModel
 
         $inputs['name'] = $faker->name;
         $inputs['specialization'] = $faker->randomElement(['Cardiology', 'Dermatology', 'Pediatrics', 'Neurology', 'Orthopedics']);
-
-        // Override the 'phone' field to start with 9, 8, or 7
         $inputs['phone'] = $faker->numerify($faker->randomElement(['9#########', '8#########', '7#########']));
-
-        // Override the 'shift_start_time' and 'shift_end_time' with valid times
         $startHour = $faker->randomElement(['11:00 AM', '2:00 PM']);
         $inputs['shift_start_time'] = $startHour;
         $inputs['shift_end_time'] = date('h:i A', strtotime("+4 hours", strtotime($startHour))); // 4 hours later
-
         $priceOptions = range(500, 1000, 100);
         $inputs['price'] = $faker->randomElement($priceOptions);
 
@@ -955,7 +952,7 @@ class Doctor extends VaahModel
 
     //-------------------------------------------------
 
-    public static function bulkImport(Request $request)
+    public static function bulkDoctorImport(Request $request)
     {
         $fileContents = $request->json()->all();
         if(!$fileContents){
@@ -980,6 +977,11 @@ class Doctor extends VaahModel
         return response()->json(['message' => 'Doctors updated/created successfully!']);
     }
     //-------------------------------------------------
+    public static function bulkDoctorExport()
+    {
+        return Excel::download(new DoctorExport,'doctorsList.csv');
+    }
+
     //-------------------------------------------------
 
 

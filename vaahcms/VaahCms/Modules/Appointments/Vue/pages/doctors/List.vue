@@ -21,6 +21,12 @@ const confirm = useConfirm();
 //--------modal control
 const isModalVisible = ref(false);
 
+//--------form_menu
+const create_menu = ref();
+const toggleCreateMenu = (event) => {
+    create_menu.value.toggle(event);
+};
+
 //---------File Input reference and CSV handling
 const fileInput = ref(null);
 const openFileDialog = () => {
@@ -71,6 +77,7 @@ onMounted(async () => {
 });
 
 const exportDoctors = () => {
+    console.log("doctor")
     store.exportDoctors();
 };
 
@@ -99,6 +106,18 @@ const exportDoctors = () => {
                         <Button data-testid="doctors-list-reload" class="p-button-sm" @click="store.getList()">
                             <i class="pi pi-refresh mr-1"></i>
                         </Button>
+                        <Button v-if="root.assets && root.assets.module
+                                                && root.assets.module.is_dev"
+                                type="button"
+                                @click="toggleCreateMenu"
+                                class="p-button-sm"
+                                data-testid="doctors-create-menu"
+                                icon="pi pi-angle-down"
+                                aria-haspopup="true"/>
+
+                        <Menu ref="create_menu"
+                              :model="store.list_create_menu"
+                              :popup="true" />
                     </div>
                 </template>
 

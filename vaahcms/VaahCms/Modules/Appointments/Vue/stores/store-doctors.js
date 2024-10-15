@@ -738,7 +738,7 @@ export const useDoctorStore = defineStore({
             let file_data = null;
             try {
                 await vaah().ajax(
-                    this.ajax_url.concat('/exportDoctors/list'),
+                    this.ajax_url.concat('/bulkDoctorExport/doctorList'),
                     (data, res) => {
                         file_data = res.data;
                     }
@@ -747,7 +747,7 @@ export const useDoctorStore = defineStore({
                 const url = window.URL.createObjectURL(blob);
                 const link = document.createElement('a');
                 link.href = url;
-                link.setAttribute('download', 'doctors.csv');
+                link.setAttribute('download', 'doctorsList.csv');
                 document.body.appendChild(link);
                 link.click();
                 link.remove();
@@ -757,7 +757,7 @@ export const useDoctorStore = defineStore({
             }
         },async importDoctors(fileData){
             await vaah().ajax(
-                this.ajax_url.concat('/bulkImport'),
+                this.ajax_url.concat('/bulkDoctorImport'),
                 (data, res) => {
                     this.getList()
                 },

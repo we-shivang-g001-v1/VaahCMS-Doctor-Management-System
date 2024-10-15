@@ -71,8 +71,13 @@ function () {
     Route::any('/{id}/action/{action}', [DoctorsController::class, 'itemAction'])
         ->name('vh.backend.appointments.doctors.item.action');
 
-    Route::post('/bulkImport', [DoctorsController::class, 'bulkImport'])
+    Route::post('/bulkDoctorImport', [DoctorsController::class, 'bulkDoctorImport'])
         ->name('vh.backend.appointments.doctors.bulk.import');
+
+    Route::get('/bulkDoctorExport/doctorList', [DoctorsController::class, 'bulkDoctorExport'])
+        ->name('vh.backend.appointment.doctors.bulk.export');
+
+
 
     //---------------------------------------------------------
 

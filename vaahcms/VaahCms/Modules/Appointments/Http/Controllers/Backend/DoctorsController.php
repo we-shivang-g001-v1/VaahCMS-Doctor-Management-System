@@ -241,10 +241,10 @@ class DoctorsController extends Controller
     }
     //----------------------------------------------------------
 
-    public function bulkImport(Request $request)
+    public function bulkDoctorImport(Request $request)
     {
         try {
-            return Doctor::bulkImport($request);
+            return Doctor::bulkDoctorImport($request);
         } catch (\Exception $e) {
             $response = [];
             $response['success'] = false;
@@ -258,6 +258,20 @@ class DoctorsController extends Controller
         }
     }
     //----------------------------------------------------------
-
+    public function bulkDoctorExport(Request $request)
+    {
+        try {
+            return Doctor::bulkDoctorExport($request);
+        } catch (\Exception $e) {
+            $response = [];
+            $response['success'] = false;
+            if (env('APP_DEBUG')) {
+                $response['errors'][] = $e->getMessage();
+                $response['hint'] = $e->getTrace();
+            } else {
+                $response['errors'][] = trans("vaahcms-general.something_went_wrong");
+            }
+        }
+    }
 
 }

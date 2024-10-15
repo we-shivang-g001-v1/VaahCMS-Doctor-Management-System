@@ -1,6 +1,7 @@
 <script setup>
 import { useAppointmentStore } from "../../stores/store-appointments";
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted } from "vue";
+import Chart from 'primevue/chart'; // Import Chart component
 
 document.title = 'Appointments';
 const store = useAppointmentStore();
@@ -10,9 +11,12 @@ const loading = ref(true);
 const error = ref(null);
 const chartData = ref({});
 const chartOptions = ref({});
+const pieChartData = ref({}); // New state for pie chart data
+const pieChartOptions = ref({}); // New state for pie chart options
 
 onMounted(async () => {
     chartOptions.value = setChartOptions();
+    pieChartOptions.value = setPieChartOptions(); // Set pie chart options
 
     try {
         // Fetch appointment data
@@ -20,6 +24,7 @@ onMounted(async () => {
 
         // Set the chart data based on the fetched appointment counts
         chartData.value = setChartData(store.item.counts);
+        pieChartData.value = setPieChartData(store.item.counts); // Set pie chart data
 
     } catch (err) {
         error.value = 'Failed to load appointment data. Please try again later.';
@@ -47,30 +52,20 @@ const setChartData = (counts) => {
                     counts.cancelled_count,
                     counts.booked_doctor_count,
                     counts.booked_patient_count
-                ], // Set the counts here
+                ],
                 backgroundColor: [
-                    'rgba(249, 115, 22, 0.6)', // More vibrant orange
-                    'rgba(6, 182, 212, 0.6)', // Brighter teal
-                    'rgba(139, 92, 246, 0.6)', // More vivid purple
-                    'rgba(34, 197, 94, 0.6)', // Livelier green
-                    'rgba(234, 88, 12, 0.6)', // Brighter red
-                    'rgba(255, 193, 7, 0.6)', // Bright yellow
-                    'rgba(66, 133, 244, 0.6)', // Vivid blue
-                    'rgba(251, 191, 36, 0.6)', // Bright gold
-                    'rgba(220, 38, 38, 0.6)', // Bright red
-                    'rgba(244, 114, 182, 0.6)' // Pink
+                    'rgba(169, 169, 169, 0.6)', // Dark gray
+                    'rgba(211, 211, 211, 0.6)', // Light gray
+                    'rgba(128, 128, 128, 0.6)', // Gray
+                    'rgba(192, 192, 192, 0.6)', // Silver
+                    'rgba(105, 105, 105, 0.6)', // Dim gray
                 ],
                 borderColor: [
-                    'rgb(249, 115, 22)',
-                    'rgb(6, 182, 212)',
-                    'rgb(139, 92, 246)',
-                    'rgb(34, 197, 94)',
-                    'rgb(234, 88, 12)',
-                    'rgb(255, 193, 7)',
-                    'rgb(66, 133, 244)',
-                    'rgb(251, 191, 36)',
-                    'rgb(220, 38, 38)',
-                    'rgb(244, 114, 182)'
+                    'rgb(169, 169, 169)', // Dark gray
+                    'rgb(211, 211, 211)', // Light gray
+                    'rgb(128, 128, 128)', // Gray
+                    'rgb(192, 192, 192)', // Silver
+                    'rgb(105, 105, 105)', // Dim gray
                 ],
                 borderWidth: 1
             }
@@ -78,6 +73,20 @@ const setChartData = (counts) => {
     };
 };
 
+const setPieChartData = (counts) => {
+    return {
+        labels: ['Booked', 'Cancelled'],
+        datasets: [
+            {
+                data: [counts.booked_count, counts.cancelled_count],
+                backgroundColor: [
+                    'rgba(192, 192, 192, 0.6)', // Silver for booked
+                    'rgba(128, 128, 128, 0.6)'  // Gray for cancelled
+                ]
+            }
+        ]
+    };
+};
 
 const setChartOptions = () => {
     const documentStyle = getComputedStyle(document.documentElement);
@@ -114,6 +123,22 @@ const setChartOptions = () => {
         }
     };
 };
+
+const setPieChartOptions = () => {
+    const documentStyle = getComputedStyle(document.documentElement);
+    const textColor = documentStyle.getPropertyValue('--p-text-color');
+    const textColorSecondary = documentStyle.getPropertyValue('--p-text-muted-color');
+
+    return {
+        plugins: {
+            legend: {
+                labels: {
+                    color: textColor
+                }
+            }
+        }
+    };
+};
 </script>
 
 <template>
@@ -133,94 +158,82 @@ const setChartOptions = () => {
         <!-- Render content only if data is loaded and no errors -->
         <div v-if="!loading && !error" class="grid mt-4">
             <div class="col-12 md:col-3">
-                <Card :class="'card card-total'">
+                <Card :class="'card'">
                     <template #title>Total Appointments</template>
                     <template #content>
                         <h2 class="text-3xl font-semibold">{{ store.item.counts.total_count }}</h2><br>
-                        <p class="m-0 font-bold text-lg text-gray-700">Total appointments scheduled.</p>
-
+                        <p class="m-0 font-bold text-lg text-gray-700">Total appointments scheduled</p>
                     </template>
                 </Card>
             </div>
             <div class="col-12 md:col-3">
-                <Card :class="'card card-booked'">
+                <Card :class="'card'">
                     <template #title>Booked Appointments</template>
                     <template #content>
                         <h2 class="text-3xl font-semibold">{{ store.item.counts.booked_count }}</h2><br>
-                        <p class="m-0 font-bold text-lg text-gray-700">Appointments successfully Booked.</p>
+                        <p class="m-0 font-bold text-lg text-gray-700">Appointments successfully booked</p>
                     </template>
                 </Card>
             </div>
             <div class="col-12 md:col-3">
-                <Card :class="'card card-cancelled'">
+                <Card :class="'card'">
                     <template #title>Cancelled Appointments</template>
                     <template #content>
                         <h2 class="text-3xl font-semibold">{{ store.item.counts.cancelled_count }}</h2><br>
-                        <p class="m-0 font-bold text-lg text-gray-700">Appointments that were cancelled.</p>
+                        <p class="m-0 font-bold text-lg text-gray-700">Appointments that were cancelled</p>
                     </template>
                 </Card>
             </div>
             <div class="col-12 md:col-3">
-                <Card :class="'card card-doctors'">
+                <Card :class="'card'">
                     <template #title>Booked Doctors</template>
                     <template #content>
                         <h2 class="text-3xl font-semibold">{{ store.item.counts.booked_doctor_count }}</h2><br>
-                        <p class="m-0 font-bold text-lg text-gray-700">doctors with booked appointments.</p>
+                        <p class="m-0 font-bold text-lg text-gray-700">Doctors with booked appointments</p>
                     </template>
                 </Card>
             </div>
 
-            <!-- Chart -->
-            <div class="card col-10 md:col-10">
-                <Chart type="bar" :data="chartData" :options="chartOptions" />
+            <div class="chart-container">
+                <!-- Bar Chart -->
+                <div class="chart-wrapper bar-chart">
+                    <Chart type="bar" :data="chartData" :options="chartOptions" class="chart" />
+                </div>
+                <!-- Pie Chart -->
+                <div class="chart-wrapper pie-chart">
+                    <Chart type="pie" :data="pieChartData" :options="pieChartOptions" class="chart" />
+                </div>
             </div>
         </div>
     </div>
 </template>
 
-
-
 <style scoped>
 .grid {
     display: flex;
     flex-wrap: wrap;
-    justify-content: space-between; /* Evenly space the cards */
+    justify-content: space-between;
 }
 .col-12 {
     flex: 0 0 100%;
 }
 .md\:col-3 {
-    flex: 0 0 24%; /* Adjust to fit four cards per row */
+    flex: 0 0 24%;
 }
 .card {
+    background-color: #f7fafc; /* Light gray background */
+    color: black; /* Set text color to black */
     transition: transform 0.3s;
     border-radius: 8px;
     padding: 16px;
-    color: white;
-    white-space: nowrap; /* Prevent line breaks */
-    text-overflow: ellipsis; /* Add ellipsis for overflowing text */
-    overflow: hidden; /* Ensure text stays within card */
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    border: 1px solid #e2e8f0; /* Light border */
 }
 
 .card:hover {
     transform: scale(1.05);
-}
-
-/* Card Background Colors */
-.card-total {
-    background-color: rgba(249, 115, 22, 0.8); /* Orange */
-}
-
-.card-booked {
-    background-color: rgba(6, 182, 212, 0.8); /* Teal */
-}
-
-.card-cancelled {
-    background-color: rgba(139, 92, 246, 0.8); /* Purple */
-}
-
-.card-doctors {
-    background-color: rgba(34, 197, 94, 0.8); /* Green */
 }
 
 .loading-message,
@@ -230,16 +243,41 @@ const setChartOptions = () => {
     margin-top: 20px;
 }
 
+/* Chart container styles */
+.chart-container {
+    display: flex; /* Align charts side by side */
+    justify-content: space-around; /* Adjust to space-around for more space between charts */
+    width: 100%; /* Full width of the container */
+}
+
+.chart-wrapper.bar-chart {
+    width: 60%; /* Bar chart takes 60% of the width */
+    margin: 20px; /* Maintain the same margin */
+}
+
+.chart-wrapper.pie-chart {
+    width: 40%; /* Pie chart takes 40% of the width */
+    margin: 20px; /* Maintain the same margin */
+}
+
+.chart {
+    height: 400px; /* Set the same height for both charts */
+    width: 100%; /* Full width of the container */
+}
+
 @media (max-width: 768px) {
     .md\:col-3 {
-        flex: 0 0 48%; /* Adjust for two cards per row on smaller screens */
+        flex: 0 0 48%;
+    }
+
+    .chart-wrapper {
+        width: 100%; /* Full width on smaller screens */
     }
 }
 
 @media (max-width: 576px) {
     .md\:col-3 {
-        flex: 0 0 100%; /* Adjust for one card per row on mobile screens */
+        flex: 0 0 100%; /* Full width for small screens */
     }
 }
 </style>
-

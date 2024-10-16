@@ -227,6 +227,33 @@ function formatTimeWithAmPm(time) {
         </DataTable>
         <!--/table-->
 
+        <Dialog
+            v-model:visible="store.is_visible_errors"
+            maximizable
+            modal
+            header="Error Messages"
+            :style="{ width: '50rem' }"
+            :breakpoints="{ '1199px': '75vw', '575px': '90vw' }"
+        >
+
+            <div
+                class="error-column"
+                v-if="store.dataResAppointment && store.dataResAppointment.length > 0"
+                :class="{ 'full-width': !store.dataResPhone || store.dataResPhone.length === 0 && !store.dataResEmail || store.dataResEmail.length === 0 }">
+                <table class="styled-table">
+                    <thead>
+                    <tr>
+                        <th>Appointment Error Messages</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="(appointmentError, index) in store.dataResAppointment" :key="'appointment-'+index">
+                        <td>{{ appointmentError }}</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </Dialog>
         <!--paginator-->
         <Paginator v-if="store.query.rows"
                    v-model:rows="store.query.rows"

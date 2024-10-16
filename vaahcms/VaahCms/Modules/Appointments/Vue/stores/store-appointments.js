@@ -52,6 +52,8 @@ export const useAppointmentStore = defineStore({
         route_prefix: 'appointments.',
         view: 'large',
         show_filters: false,
+        is_visible_errors: false,
+        dataResAppointment:null,
         list_view_width: 12,
         form: {
             type: 'Create',
@@ -779,6 +781,9 @@ export const useAppointmentStore = defineStore({
             await vaah().ajax(
                 this.ajax_url.concat('/bulkAppointmentImport'),
                 (data, res) => {
+                    console.log(res.data.errors)
+                    this.dataResAppointment = res.data.errors.appointment_errors;
+                    this.is_visible_errors=true;
                     this.getList()
                 },
                 {

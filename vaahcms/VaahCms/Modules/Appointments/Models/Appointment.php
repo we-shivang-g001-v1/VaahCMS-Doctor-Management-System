@@ -1007,27 +1007,93 @@ class Appointment extends VaahModel
     public static function bulkAppointmentImport(Request $request)
     {
         $fileContents = $request->json()->all();
-        if(!$fileContents){
-            return ;
+
+        if (!$fileContents) {
+            return response()->json(['success' => false, 'message' => 'No data found.'], 400);
         }
+
+        $errors = [
+            'appointment_errors' => [],
+        ];
+        $successMessages = []; // For successful imports
+
         foreach ($fileContents as $content) {
-            //dd($content);
-            self::updateOrCreate(
-                ['email' => $content['email']],
-                [
-                    'name' => $content['name'],
-                    'email' => $content['email'],
-                    'price' => $content['price'],
-                    'phone' => $content['phone'],
-                    'specialization' => $content['specialization'],
-                    'shift_start_time' => Carbon::parse($content['shift_start_time'])->format('Y-m-d H:i:s'),
-                    'shift_end_time' => Carbon::parse($content['shift_end_time'])->format('Y-m-d H:i:s'),
+            // Convert the input date to a standard format (e.g., YYYY-MM-DD)
+            $input_date = date('Y-m-d', strtotime($content['date']));
+
+            // Validate required fields
+            if (empty($content['doctor_id'])) {
+                $errors['appointment_errors'][] = "Doctor ID is required for the appointment.";
+                continue; // Skip this record
+            }
+
+            if (empty($content['patient_id'])) {
+                $errors['appointment_errors'][] = "Patient ID is required for the appointment.";
+                continue; // Skip this record
+            }
+
+            if (empty($content['slot_start_time']) || empty($content['slot_end_time'])) {
+                $errors['appointment_errors'][] = "Both slot start time and end time are required for the appointment.";
+                continue; // Skip this record
+            }
+
+            // Validate if a similar appointment already exists for the same doctor, patient, and date
+            $existing_appointment = self::where('doctor_id', $content['doctor_id'])
+                ->where('patient_id', $content['patient_id'])
+                ->whereDate('date', $input_date)
+                ->where('slot_start_time', $content['slot_start_time'])
+                ->withTrashed()
+                ->first();
+
+            // If appointment already exists, decide whether to update or create a new one
+            if ($existing_appointment) {
+                if ($existing_appointment->status == 0) {
+                    // If status is canceled, update and restore the appointment
+                    $existing_appointment->fill([
+                        'slot_start_time' => $content['slot_start_time'],
+                        'slot_end_time' => $content['slot_end_time'],
+                        'status' => 1,
+                        'is_active' => 1,
+                        'reason' => $content['reason'] ?? null, // Allow for an optional reason
+                    ]);
+                    $existing_appointment->restore();
+                    $successMessages[] = "Restored appointment for Doctor ID {$content['doctor_id']} and Patient ID {$content['patient_id']} for date {$input_date}.";
+                } else {
+                    // Return an error message if the appointment already exists and is active
+                    $errors['appointment_errors'][] = "An active appointment already exists for Doctor ID {$content['doctor_id']} and Patient ID {$content['patient_id']} for time slot {$content['slot_start_time']}.";
+                }
+            } else {
+                // Create a new appointment if none exists
+                self::create([
+                    'doctor_id' => $content['doctor_id'],
+                    'patient_id' => $content['patient_id'],
+                    'date' => $input_date,
+                    'slot_start_time' => $content['slot_start_time'],
+                    'slot_end_time' => $content['slot_end_time'],
+                    'status' => 1,
                     'is_active' => 1,
-                ]
-            );
+                    'reason' => $content['reason'] ?? null, // Allow for an optional reason
+                ]);
+                $successMessages[] = "Created appointment for Doctor ID {$content['doctor_id']} and Patient ID {$content['patient_id']} for date {$input_date}.";
+            }
         }
-        return response()->json(['message' => 'Appointment updated/created successfully!']);
+
+        // Create a response structure similar to updateItem
+        $response = [];
+
+        if (!empty($errors['appointment_errors'])) {
+            $response['success'] = true;
+            $response['errors'] = $errors;
+        } else {
+            $response['success'] = true;
+            $response['messages'] = $successMessages;
+            $response['message'] = 'Appointments imported successfully!';
+        }
+
+        return response()->json($response, 200);
     }
+
+
     //-------------------------------------------------
     public static function bulkAppointmentExport()
     {

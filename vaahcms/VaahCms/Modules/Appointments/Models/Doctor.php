@@ -960,7 +960,7 @@ class Doctor extends VaahModel
             return response()->json(['success' => false, 'message' => 'No data provided.'], 400);
         }
 
-        // Define the allowed fields to be taken from the CSV
+        // Define the allowed fields to be taken from the JSON
         $allowedFields = ['name', 'email', 'price', 'phone', 'specialization', 'shift_start_time', 'shift_end_time'];
 
         $errors = [
@@ -968,6 +968,9 @@ class Doctor extends VaahModel
             'phone_errors' => [],
         ];
         $successMessages = []; // For successful imports
+
+        // Array to hold unique doctor data
+        $uniqueDoctors = [];
 
         foreach ($fileContents as $content) {
             // Strip double quotes and handle "NA" values
@@ -1016,12 +1019,20 @@ class Doctor extends VaahModel
                 continue;
             }
 
+            // Add to uniqueDoctors array only if email or phone is not already present
+            $uniqueKey = $content['email'] . '|' . $content['phone'];
+            if (isset($uniqueDoctors[$uniqueKey])) {
+                continue; // Skip this record if already added
+            }
+            $uniqueDoctors[$uniqueKey] = $content; // Add unique entry
+
             // Check if the email already exists
             $existingDoctorByEmail = self::where('email', $content['email'])->withTrashed()->first();
             if ($existingDoctorByEmail) {
                 $error_message = "The email {$content['email']} is already stored for another doctor" .
                     ($existingDoctorByEmail->deleted_at ? ' in trash.' : '.');
                 $errors['email_errors'][] = $error_message;
+                continue; // Skip this record
             }
 
             // Check if the phone number already exists
@@ -1030,28 +1041,27 @@ class Doctor extends VaahModel
                 $error_message = "The phone number {$content['phone']} is already stored for another doctor" .
                     ($existingDoctorByPhone->deleted_at ? ' in trash.' : '.');
                 $errors['phone_errors'][] = $error_message;
+                continue; // Skip this record
             }
 
             // If validation passes (no errors regarding email or phone), update or create doctor record
-            if (empty($errors['email_errors']) && empty($errors['phone_errors'])) {
-                self::updateOrCreate(
-                    [
-                        'email' => $content['email'],
-                        'phone' => $content['phone'],  // Phone and email are unique identifiers
-                    ],
-                    [
-                        'name' => $content['name'],
-                        'price' => $content['price'],
-                        'specialization' => $content['specialization'],
-                        'shift_start_time' => date('Y-m-d H:i:s', strtotime($content['shift_start_time'])),
-                        'shift_end_time' => date('Y-m-d H:i:s', strtotime($content['shift_end_time'])),
-                        'is_active' => 1,
-                    ]
-                );
+            self::updateOrCreate(
+                [
+                    'email' => $content['email'],
+                    'phone' => $content['phone'],  // Phone and email are unique identifiers
+                ],
+                [
+                    'name' => $content['name'],
+                    'price' => $content['price'],
+                    'specialization' => $content['specialization'],
+                    'shift_start_time' => date('Y-m-d H:i:s', strtotime($content['shift_start_time'])),
+                    'shift_end_time' => date('Y-m-d H:i:s', strtotime($content['shift_end_time'])),
+                    'is_active' => 1,
+                ]
+            );
 
-                // Add success message for the imported doctor
-                $successMessages[] = "Doctor {$content['name']} imported successfully.";
-            }
+            // Add success message for the imported doctor
+            $successMessages[] = "Doctor {$content['name']} imported successfully.";
         }
 
         // Create a response structure similar to updateItem
@@ -1068,6 +1078,7 @@ class Doctor extends VaahModel
 
         return response()->json($response, 200);
     }
+
 
 
 

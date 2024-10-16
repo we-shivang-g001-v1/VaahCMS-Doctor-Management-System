@@ -1,4 +1,3 @@
-<script src="../../stores/store-appointments.js"></script>
 <script setup>
 import {onMounted, reactive, ref} from "vue";
 import {useRoute} from 'vue-router';

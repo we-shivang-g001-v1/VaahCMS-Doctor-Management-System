@@ -78,6 +78,48 @@ function formatTimeWithAmPm(time) {
     padding: 20px; /* Add padding for better spacing */
 }
 
+
+.styled-table {
+    border-collapse: collapse;
+    width: 100%; /* Table takes full width of its container */
+}
+
+.styled-table th,
+.styled-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.error-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px; /* Add gap between the columns */
+}
+
+.error-column {
+    width: 48%; /* Default width for each column when both are present */
+}
+
+.full-width {
+    width: 100%; /* If only one column is present, take full width */
+}
+
+.styled-table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+@media screen and (max-width: 575px) {
+    .error-container {
+        flex-direction: column; /* Stack columns vertically on small screens */
+    }
+
+    .error-column {
+        width: 100%; /* Full width for each column on small screens */
+    }
+}
+
 /* Add your additional styles here */
 </style>
 
@@ -360,6 +402,65 @@ function formatTimeWithAmPm(time) {
             </TabView>
 
         </Sidebar>
+
+        <template>
+            <Dialog
+                v-model:visible="store.is_visible_errors"
+                maximizable
+                modal
+                header="Error Messages"
+                :style="{ width: '50rem' }"
+                :breakpoints="{ '1199px': '75vw', '575px': '90vw' }"
+            >
+                <div class="error-container">
+                    <!-- Phone Errors Section -->
+                    <div
+                        class="error-column"
+                        v-if="store.dataResPhone && store.dataResPhone.length > 0"
+                        :class="{ 'full-width': !store.dataResEmail || store.dataResEmail.length === 0 }">
+                        <table class="styled-table">
+                            <thead>
+                            <tr>
+                                <th>Phone Error Messages</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr v-for="(phoneError, index) in store.dataResPhone" :key="'phone-'+index">
+                                <td>{{ phoneError }}</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Email Errors Section -->
+                    <div
+                        class="error-column"
+                        v-if="store.dataResEmail && store.dataResEmail.length > 0"
+                        :class="{ 'full-width': !store.dataResPhone || store.dataResPhone.length === 0 }">
+                        <table class="styled-table">
+                            <thead>
+                            <tr>
+                                <th>Email Error Messages</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr v-for="(emailError, index) in store.dataResEmail" :key="'email-'+index">
+                                <td>{{ emailError }}</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </Dialog>
+
+
+
+
+
+        </template>
+
+
+
 
         <!--paginator-->
         <Paginator v-if="store.query.rows"

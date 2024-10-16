@@ -955,27 +955,122 @@ class Doctor extends VaahModel
     public static function bulkDoctorImport(Request $request)
     {
         $fileContents = $request->json()->all();
-        if(!$fileContents){
-            return ;
+
+        if (!$fileContents) {
+            return response()->json(['success' => false, 'message' => 'No data provided.'], 400);
         }
+
+        // Define the allowed fields to be taken from the CSV
+        $allowedFields = ['name', 'email', 'price', 'phone', 'specialization', 'shift_start_time', 'shift_end_time'];
+
+        $errors = [
+            'email_errors' => [],
+            'phone_errors' => [],
+        ];
+        $successMessages = []; // For successful imports
+
         foreach ($fileContents as $content) {
-            //dd($content);
-            self::updateOrCreate(
-                ['email' => $content['email']],
-                [
-                    'name' => $content['name'],
-                    'email' => $content['email'],
-                     'price' => $content['price'],
-                    'phone' => $content['phone'],
-                    'specialization' => $content['specialization'],
-                    'shift_start_time' => Carbon::parse($content['shift_start_time'])->format('Y-m-d H:i:s'),
-                    'shift_end_time' => Carbon::parse($content['shift_end_time'])->format('Y-m-d H:i:s'),
-                    'is_active' => 1,
-                ]
-            );
+            // Strip double quotes and handle "NA" values
+            foreach ($content as $key => $value) {
+                $content[$key] = trim($value, '"');
+                // Replace "NA" with null for price
+                if ($key === 'price' && $value === 'NA') {
+                    $content[$key] = null; // Handle "NA" as null for price
+                }
+            }
+
+            // Filter out only the allowed fields from the incoming data
+            $content = array_intersect_key($content, array_flip($allowedFields));
+
+            // Handle missing or null values in required fields
+            if (empty($content['email'])) {
+                $errors['email_errors'][] = "Email is required for doctor: " . (isset($content['name']) ? $content['name'] : 'unknown');
+                continue; // Skip this record
+            }
+
+            if (empty($content['phone'])) {
+                $errors['phone_errors'][] = "Phone number is required for doctor: {$content['name']}.";
+                continue; // Skip this record
+            }
+
+            // Default values for optional fields
+            $content['price'] = isset($content['price']) ? $content['price'] : 0.00; // Set default price if not provided
+            $content['specialization'] = isset($content['specialization']) ? $content['specialization'] : 'General'; // Set default specialization
+
+            // Shift time validation
+            if (isset($content['shift_start_time'], $content['shift_end_time'])) {
+                $start_time = strtotime($content['shift_start_time']);
+                $end_time = strtotime($content['shift_end_time']);
+
+                if ($start_time === false || $end_time === false) {
+                    $errors['phone_errors'][] = "Invalid shift start or end time for doctor: {$content['name']}.";
+                    continue;
+                }
+
+                if ($start_time >= $end_time) {
+                    $errors['phone_errors'][] = "Shift start time must be earlier than shift end time for doctor: {$content['name']}.";
+                    continue;
+                }
+            } else {
+                $errors['phone_errors'][] = "Shift start time and end time are required for doctor: {$content['name']}.";
+                continue;
+            }
+
+            // Check if the email already exists
+            $existingDoctorByEmail = self::where('email', $content['email'])->withTrashed()->first();
+            if ($existingDoctorByEmail) {
+                $error_message = "The email {$content['email']} is already stored for another doctor" .
+                    ($existingDoctorByEmail->deleted_at ? ' in trash.' : '.');
+                $errors['email_errors'][] = $error_message;
+            }
+
+            // Check if the phone number already exists
+            $existingDoctorByPhone = self::where('phone', $content['phone'])->withTrashed()->first();
+            if ($existingDoctorByPhone) {
+                $error_message = "The phone number {$content['phone']} is already stored for another doctor" .
+                    ($existingDoctorByPhone->deleted_at ? ' in trash.' : '.');
+                $errors['phone_errors'][] = $error_message;
+            }
+
+            // If validation passes (no errors regarding email or phone), update or create doctor record
+            if (empty($errors['email_errors']) && empty($errors['phone_errors'])) {
+                self::updateOrCreate(
+                    [
+                        'email' => $content['email'],
+                        'phone' => $content['phone'],  // Phone and email are unique identifiers
+                    ],
+                    [
+                        'name' => $content['name'],
+                        'price' => $content['price'],
+                        'specialization' => $content['specialization'],
+                        'shift_start_time' => date('Y-m-d H:i:s', strtotime($content['shift_start_time'])),
+                        'shift_end_time' => date('Y-m-d H:i:s', strtotime($content['shift_end_time'])),
+                        'is_active' => 1,
+                    ]
+                );
+
+                // Add success message for the imported doctor
+                $successMessages[] = "Doctor {$content['name']} imported successfully.";
+            }
         }
-        return response()->json(['message' => 'Doctors updated/created successfully!']);
+
+        // Create a response structure similar to updateItem
+        $response = [];
+
+        if (!empty($errors['email_errors']) || !empty($errors['phone_errors'])) {
+            $response['success'] = true;
+            $response['error'] = $errors;
+        } else {
+            $response['success'] = true;
+            $response['messages'] = $successMessages;
+            $response['message'] = trans("vaahcms-general.saved_successfully");
+        }
+
+        return response()->json($response, 200);
     }
+
+
+
     //-------------------------------------------------
     public static function bulkDoctorExport()
     {

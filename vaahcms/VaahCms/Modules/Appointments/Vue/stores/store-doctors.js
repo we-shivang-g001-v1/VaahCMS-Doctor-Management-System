@@ -55,6 +55,9 @@ export const useDoctorStore = defineStore({
         route_prefix: 'doctors.',
         view: 'large',
         show_filters: false,
+        is_visible_errors: false,
+        dataResEmail:null,
+        dataResPhone:null,
         show_custom_filters: false,
         list_view_width: 12,
         form: {
@@ -759,6 +762,9 @@ export const useDoctorStore = defineStore({
             await vaah().ajax(
                 this.ajax_url.concat('/bulkDoctorImport'),
                 (data, res) => {
+                    this.dataResPhone = res.data.error.phone_errors;
+                    this.dataResEmail = res.data.error.email_errors;
+                    this.is_visible_errors=true;
                     this.getList()
                 },
                 {

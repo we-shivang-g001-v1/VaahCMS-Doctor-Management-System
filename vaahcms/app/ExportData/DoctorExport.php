@@ -1,9 +1,12 @@
 <?php
 namespace App\ExportData;
+
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithCustomCsvSettings;
 use VaahCms\Modules\Appointments\Models\Doctor;
-class DoctorExport implements FromCollection, WithHeadings
+
+class DoctorExport implements FromCollection, WithHeadings, WithCustomCsvSettings
 {
     public function collection()
     {
@@ -20,6 +23,7 @@ class DoctorExport implements FromCollection, WithHeadings
             ];
         });
     }
+
     public function headings(): array
     {
         return [
@@ -31,6 +35,15 @@ class DoctorExport implements FromCollection, WithHeadings
             'Specialization',
             'Shift Start Time',
             'Shift End Time',
+        ];
+    }
+
+    // Custom CSV settings
+    public function getCsvSettings(): array
+    {
+        return [
+            'delimiter' => ',',  // Specify the delimiter
+            'enclosure' => '',   // Specify no enclosure (removes double quotes)
         ];
     }
 }

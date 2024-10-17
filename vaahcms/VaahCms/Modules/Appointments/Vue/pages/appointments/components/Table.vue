@@ -238,8 +238,8 @@ function formatTimeWithAmPm(time) {
 
             <div
                 class="error-column"
-                v-if="store.dataResAppointment && store.dataResAppointment.length > 0"
-                :class="{ 'full-width': !store.dataResPhone || store.dataResPhone.length === 0 && !store.dataResEmail || store.dataResEmail.length === 0 }">
+                v-if="store.data_res_appointment && store.data_res_appointment.length > 0"
+                :class="'full-width'">
                 <table class="styled-table">
                     <thead>
                     <tr>
@@ -247,7 +247,7 @@ function formatTimeWithAmPm(time) {
                     </tr>
                     </thead>
                     <tbody>
-                    <tr v-for="(appointmentError, index) in store.dataResAppointment" :key="'appointment-'+index">
+                    <tr v-for="(appointmentError, index) in store.data_res_appointment" :key="'appointment-'+index">
                         <td>{{ appointmentError }}</td>
                     </tr>
                     </tbody>

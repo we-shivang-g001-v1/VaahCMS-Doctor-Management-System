@@ -53,7 +53,7 @@ export const useAppointmentStore = defineStore({
         view: 'large',
         show_filters: false,
         is_visible_errors: false,
-        dataResAppointment:null,
+        data_res_appointment:null,
         list_view_width: 12,
         form: {
             type: 'Create',
@@ -777,22 +777,40 @@ export const useAppointmentStore = defineStore({
             } catch (error) {
                 console.error('Error downloading file:', error);
             }
-        },async importAppointments(fileData){
-            await vaah().ajax(
-                this.ajax_url.concat('/bulkAppointmentImport'),
-                (data, res) => {
-                    console.log(res.data.errors)
-                    this.dataResAppointment = res.data.errors.appointment_errors;
-                    this.is_visible_errors=true;
-                    this.getList()
+        },async importAppointments(fileData) {
+            if (!fileData) {
+                return false;
+            }
+            let options = {
+                params: fileData,
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                 },
-                {
-                    params: fileData,
-                    method: 'post',
-                    headers: document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                }
+            };
+
+            let ajax_url = this.ajax_url.concat('/bulkAppointmentImport');
+            await vaah().ajax(
+                ajax_url,
+                this.importAppointmentsAfter,
+                options
             );
         },
+
+        importAppointmentsAfter(data, res) {
+            // Set appointment errors
+            this.data_res_appointment = res.data.errors?.appointment_errors;
+
+            // Check if there are appointment errors
+            if (this.data_res_appointment) {
+                this.is_visible_errors = true; // Show errors if any
+            } else {
+                this.is_visible_errors = false; // Hide errors if none
+            }
+
+            this.getList(); // Refresh the appointment list or data
+        },
+
         //---------------------------------------------------------------------
         getListBulkMenu()
         {

@@ -56,8 +56,8 @@ export const useDoctorStore = defineStore({
         view: 'large',
         show_filters: false,
         is_visible_errors: false,
-        dataResEmail:null,
-        dataResPhone:null,
+        data_res_phone:null,
+        data_res_email:null,
         show_custom_filters: false,
         list_view_width: 12,
         form: {
@@ -758,22 +758,48 @@ export const useDoctorStore = defineStore({
             } catch (error) {
                 console.error('Error downloading file:', error);
             }
-        },async importDoctors(fileData){
-            await vaah().ajax(
-                this.ajax_url.concat('/bulkDoctorImport'),
-                (data, res) => {
-                    this.dataResPhone = res.data.error.phone_errors;
-                    this.dataResEmail = res.data.error.email_errors;
-                    this.is_visible_errors=true;
-                    this.getList()
+        },async importDoctors(fileData) {
+            // Check if fileData exists
+            if (!fileData) {
+                return false; // Exit if no file data is provided
+            }
+
+            // Prepare AJAX options
+            let options = {
+                params: fileData,
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                 },
-                {
-                    params: fileData,
-                    method: 'post',
-                    headers: document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                }
+            };
+            let ajax_url = this.ajax_url.concat('/bulkDoctorImport');
+            await vaah().ajax(
+                ajax_url,
+                this.importDoctorsAfter, // Call the new method for handling the response
+                options
             );
         },
+
+
+
+
+        importDoctorsAfter(data, res) {
+            // Set phone and email errors
+            this.data_res_phone = res.data.error?.phone_errors;
+            this.data_res_phone = res.data.error?.email_errors;
+
+            // Check if there are errors
+            if (this.data_res_phone || this.data_res_phone) {
+                this.is_visible_errors = true; // Show errors if any
+            } else {
+                this.is_visible_errors = false; // Hide errors if none
+            }
+
+            this.getList(); // Refresh the doctor list or data
+        },
+
+
+
 
         //---------------------------------------------------------------------
         getListBulkMenu()

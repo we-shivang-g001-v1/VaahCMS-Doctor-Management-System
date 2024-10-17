@@ -376,25 +376,25 @@ function formatTimeWithAmPm(time) {
 
                         <Column field="date" header="Appointment Date" :sortable="true" class="overflow-wrap-anywhere">
                             <template #body="prop">
-                                {{ prop.data.date }} <!-- Displaying the appointment date -->
+                                {{ prop.data.date }}
                             </template>
                         </Column>
 
                         <Column field="slot_start_time" header="Start Time" :sortable="true" class="overflow-wrap-anywhere">
                             <template #body="prop">
-                                {{ formatTimeWithAmPm(convertUtcToIst(prop.data.slot_start_time)) }}<!-- Displaying the start time -->
+                                {{ formatTimeWithAmPm(convertUtcToIst(prop.data.slot_start_time)) }}
                             </template>
                         </Column>
 
                         <Column field="slot_end_time" header="End Time" :sortable="true" class="overflow-wrap-anywhere">
                             <template #body="prop">
-                                {{ formatTimeWithAmPm(convertUtcToIst(prop.data.slot_end_time)) }}<!-- Displaying the end time -->
+                                {{ formatTimeWithAmPm(convertUtcToIst(prop.data.slot_end_time)) }}
                             </template>
                         </Column>
 
                         <Column field="reason" header="Reason" :sortable="true" class="overflow-wrap-anywhere">
                             <template #body="prop">
-                                {{ prop.data.reason || 'N/A' }} <!-- Displaying reason or 'N/A' if not present -->
+                                {{ prop.data.reason || 'N/A' }}
                             </template>
                         </Column>
                     </DataTable>
@@ -416,8 +416,8 @@ function formatTimeWithAmPm(time) {
                     <!-- Phone Errors Section -->
                     <div
                         class="error-column"
-                        v-if="store.dataResPhone && store.dataResPhone.length > 0"
-                        :class="{ 'full-width': !store.dataResEmail || store.dataResEmail.length === 0 }">
+                        v-if="store.data_res_phone && store.data_res_phone.length > 0"
+                        :class="{ 'full-width': !store.data_res_email || store.data_res_email.length === 0 }">
                         <table class="styled-table">
                             <thead>
                             <tr>
@@ -425,7 +425,7 @@ function formatTimeWithAmPm(time) {
                             </tr>
                             </thead>
                             <tbody>
-                            <tr v-for="(phoneError, index) in store.dataResPhone" :key="'phone-'+index">
+                            <tr v-for="(phoneError, index) in store.data_res_phone" :key="'phone-'+index">
                                 <td>{{ phoneError }}</td>
                             </tr>
                             </tbody>
@@ -435,8 +435,8 @@ function formatTimeWithAmPm(time) {
                     <!-- Email Errors Section -->
                     <div
                         class="error-column"
-                        v-if="store.dataResEmail && store.dataResEmail.length > 0"
-                        :class="{ 'full-width': !store.dataResPhone || store.dataResPhone.length === 0 }">
+                        v-if="store.data_res_email && store.data_res_email.length > 0"
+                        :class="{ 'full-width': !store.data_res_phone || store.data_res_phone.length === 0 }">
                         <table class="styled-table">
                             <thead>
                             <tr>
@@ -444,7 +444,7 @@ function formatTimeWithAmPm(time) {
                             </tr>
                             </thead>
                             <tbody>
-                            <tr v-for="(emailError, index) in store.dataResEmail" :key="'email-'+index">
+                            <tr v-for="(emailError, index) in store.data_res_email" :key="'email-'+index">
                                 <td>{{ emailError }}</td>
                             </tr>
                             </tbody>
@@ -452,11 +452,6 @@ function formatTimeWithAmPm(time) {
                     </div>
                 </div>
             </Dialog>
-
-
-
-
-
         </template>
 
 

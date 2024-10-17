@@ -960,8 +960,16 @@ class Doctor extends VaahModel
             return response()->json(['success' => false, 'message' => 'No data provided.'], 400);
         }
 
-        // Define the allowed fields to be taken from the JSON
-        $allowedFields = ['name', 'email', 'price', 'phone', 'specialization', 'shift_start_time', 'shift_end_time'];
+        // Define the allowed fields and map camelCase, uppercase, and variations to consistent keys
+        $fieldMappings = [
+            'name' => ['name', 'Name'],
+            'email' => ['email', 'Email'],
+            'price' => ['price', 'Price'],
+            'phone' => ['phone', 'Phone'],
+            'specialization' => ['specialization', 'Specialization'],
+            'shift_start_time' => ['shift_start_time', 'Shift Start Time', 'shift_start_time', 'ShiftStartTime'],
+            'shift_end_time' => ['shift_end_time', 'Shift End Time', 'shift_end_time', 'ShiftEndTime']
+        ];
 
         $errors = [
             'email_errors' => [],
@@ -973,95 +981,111 @@ class Doctor extends VaahModel
         $uniqueDoctors = [];
 
         foreach ($fileContents as $content) {
-            // Strip double quotes and handle "NA" values
+            // Normalize the incoming data by converting the keys to the standard format
+            $normalizedContent = [];
             foreach ($content as $key => $value) {
-                $content[$key] = trim($value, '"');
-                // Replace "NA" with null for price
-                if ($key === 'price' && $value === 'NA') {
-                    $content[$key] = null; // Handle "NA" as null for price
+                $normalizedKey = null;
+
+                // Find the corresponding standard key in the field mappings
+                foreach ($fieldMappings as $standardKey => $possibleKeys) {
+                    if (in_array($key, $possibleKeys)) {
+                        $normalizedKey = $standardKey;
+                        break;
+                    }
                 }
+
+                // If the key is not mapped, skip this field
+                if (!$normalizedKey) {
+                    continue;
+                }
+
+                // Strip double quotes and handle "NA" values
+                $value = trim($value, '"');
+                if ($normalizedKey === 'price' && $value === 'NA') {
+                    $value = null; // Handle "NA" as null for price
+                }
+
+                // Assign the normalized key and value to the new array
+                $normalizedContent[$normalizedKey] = $value;
             }
 
-            // Filter out only the allowed fields from the incoming data
-            $content = array_intersect_key($content, array_flip($allowedFields));
-
             // Handle missing or null values in required fields
-            if (empty($content['email'])) {
-                $errors['email_errors'][] = "Email is required for doctor: " . (isset($content['name']) ? $content['name'] : 'unknown');
+            if (empty($normalizedContent['email'])) {
+                $errors['email_errors'][] = "Email is required for doctor: " . (isset($normalizedContent['name']) ? $normalizedContent['name'] : 'unknown');
                 continue; // Skip this record
             }
 
-            if (empty($content['phone'])) {
-                $errors['phone_errors'][] = "Phone number is required for doctor: {$content['name']}.";
+            if (empty($normalizedContent['phone'])) {
+                $errors['phone_errors'][] = "Phone number is required for doctor: {$normalizedContent['name']}.";
                 continue; // Skip this record
             }
 
             // Default values for optional fields
-            $content['price'] = isset($content['price']) ? $content['price'] : 0.00; // Set default price if not provided
-            $content['specialization'] = isset($content['specialization']) ? $content['specialization'] : 'General'; // Set default specialization
+            $normalizedContent['price'] = isset($normalizedContent['price']) ? $normalizedContent['price'] : 0.00; // Set default price if not provided
+            $normalizedContent['specialization'] = isset($normalizedContent['specialization']) ? $normalizedContent['specialization'] : 'General'; // Set default specialization
 
             // Shift time validation
-            if (isset($content['shift_start_time'], $content['shift_end_time'])) {
-                $start_time = strtotime($content['shift_start_time']);
-                $end_time = strtotime($content['shift_end_time']);
+            if (isset($normalizedContent['shift_start_time'], $normalizedContent['shift_end_time'])) {
+                $start_time = strtotime($normalizedContent['shift_start_time']);
+                $end_time = strtotime($normalizedContent['shift_end_time']);
 
                 if ($start_time === false || $end_time === false) {
-                    $errors['phone_errors'][] = "Invalid shift start or end time for doctor: {$content['name']}.";
+                    $errors['phone_errors'][] = "Invalid shift start or end time for doctor: {$normalizedContent['name']}.";
                     continue;
                 }
 
                 if ($start_time >= $end_time) {
-                    $errors['phone_errors'][] = "Shift start time must be earlier than shift end time for doctor: {$content['name']}.";
+                    $errors['phone_errors'][] = "Shift start time must be earlier than shift end time for doctor: {$normalizedContent['name']}.";
                     continue;
                 }
             } else {
-                $errors['phone_errors'][] = "Shift start time and end time are required for doctor: {$content['name']}.";
+                $errors['phone_errors'][] = "Shift start time and end time are required for doctor: {$normalizedContent['name']}.";
                 continue;
             }
 
             // Add to uniqueDoctors array only if email or phone is not already present
-            $uniqueKey = $content['email'] . '|' . $content['phone'];
+            $uniqueKey = $normalizedContent['email'] . '|' . $normalizedContent['phone'];
             if (isset($uniqueDoctors[$uniqueKey])) {
                 continue; // Skip this record if already added
             }
-            $uniqueDoctors[$uniqueKey] = $content; // Add unique entry
+            $uniqueDoctors[$uniqueKey] = $normalizedContent; // Add unique entry
 
             // Check if the email already exists
-            $existingDoctorByEmail = self::where('email', $content['email'])->withTrashed()->first();
+            $existingDoctorByEmail = self::where('email', $normalizedContent['email'])->withTrashed()->first();
             if ($existingDoctorByEmail) {
-                $error_message = "The email {$content['email']} is already stored for another doctor" .
+                $error_message = "The email {$normalizedContent['email']} is already stored for another doctor" .
                     ($existingDoctorByEmail->deleted_at ? ' in trash.' : '.');
                 $errors['email_errors'][] = $error_message;
                 continue; // Skip this record
             }
 
             // Check if the phone number already exists
-            $existingDoctorByPhone = self::where('phone', $content['phone'])->withTrashed()->first();
+            $existingDoctorByPhone = self::where('phone', $normalizedContent['phone'])->withTrashed()->first();
             if ($existingDoctorByPhone) {
-                $error_message = "The phone number {$content['phone']} is already stored for another doctor" .
+                $error_message = "The phone number {$normalizedContent['phone']} is already stored for another doctor" .
                     ($existingDoctorByPhone->deleted_at ? ' in trash.' : '.');
                 $errors['phone_errors'][] = $error_message;
                 continue; // Skip this record
             }
 
-            // If validation passes (no errors regarding email or phone), update or create doctor record
+            // If validation passes, update or create doctor record
             self::updateOrCreate(
                 [
-                    'email' => $content['email'],
-                    'phone' => $content['phone'],  // Phone and email are unique identifiers
+                    'email' => $normalizedContent['email'],
+                    'phone' => $normalizedContent['phone'],  // Phone and email are unique identifiers
                 ],
                 [
-                    'name' => $content['name'],
-                    'price' => $content['price'],
-                    'specialization' => $content['specialization'],
-                    'shift_start_time' => date('Y-m-d H:i:s', strtotime($content['shift_start_time'])),
-                    'shift_end_time' => date('Y-m-d H:i:s', strtotime($content['shift_end_time'])),
+                    'name' => $normalizedContent['name'],
+                    'price' => $normalizedContent['price'],
+                    'specialization' => $normalizedContent['specialization'],
+                    'shift_start_time' => date('Y-m-d H:i:s', strtotime($normalizedContent['shift_start_time'])),
+                    'shift_end_time' => date('Y-m-d H:i:s', strtotime($normalizedContent['shift_end_time'])),
                     'is_active' => 1,
                 ]
             );
 
             // Add success message for the imported doctor
-            $successMessages[] = "Doctor {$content['name']} imported successfully.";
+            $successMessages[] = "Doctor {$normalizedContent['name']} imported successfully.";
         }
 
         // Create a response structure similar to updateItem

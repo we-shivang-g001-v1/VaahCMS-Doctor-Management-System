@@ -16,7 +16,7 @@ let empty_states = {
         filter: {
             q: null,
             is_active: null,
-            specialization: null,
+            specialization: [],
             priceRange: null,
             timingFilter: null,
             trashed: null,

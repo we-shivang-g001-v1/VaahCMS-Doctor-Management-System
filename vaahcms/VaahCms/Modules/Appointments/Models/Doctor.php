@@ -385,17 +385,22 @@ class Doctor extends VaahModel
             // Split the combined value into start and end times
             list($start, $end) = explode('-', $filter['shift_time']);
 
-            // Trim whitespace and convert to appropriate format if necessary
-            $startTime = trim($start) . ':00'; // Add seconds if needed
-            $endTime = trim($end) . ':00'; // Add seconds if needed
+            // Trim whitespace
+            $startTime = trim($start);
+            $endTime = trim($end);
+
+            // Convert 12-hour format to 24-hour format
+            $startTime24 = date('H:i:s', strtotime($startTime)); // Converts to HH:MM:SS
+            $endTime24 = date('H:i:s', strtotime($endTime));     // Converts to HH:MM:SS
 
             // Apply the filter based on the parsed start and end times
-            $query->where('shift_start_time', '>=', $startTime)
-                ->where('shift_end_time', '<=', $endTime);
+            $query->where('shift_start_time', '>=', $startTime24)
+                ->where('shift_end_time', '<=', $endTime24);
         }
 
         return $query;
     }
+
 
 
 

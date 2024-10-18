@@ -44,6 +44,8 @@ import Card from 'primevue/card';
 import Chart from 'primevue/chart';
 import Dialog from 'primevue/dialog';
 import Checkbox from 'primevue/checkbox';
+import Steps from 'primevue/steps';
+
 
 
 
@@ -110,6 +112,7 @@ app.component('Card', Card);
 app.component('Chart', Chart);
 app.component('Dialog', Dialog);
 app.component('Checkbox', Checkbox);
+app.component('Steps', Steps);
 
 
 //-------------/CRUD PrimeVue Use

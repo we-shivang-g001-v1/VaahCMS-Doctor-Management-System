@@ -246,7 +246,7 @@ export const useAppointmentStore = defineStore({
         {
             if(data)
             {
-                console.log(data)
+
                 this.item = data;
 
             }

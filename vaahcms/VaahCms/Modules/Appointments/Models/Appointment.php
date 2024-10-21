@@ -1014,70 +1014,33 @@ class Appointment extends VaahModel
 
     public static function bulkAppointmentImport(Request $request)
     {
-        // Retrieve JSON data from the request
-        $fileContents = $request->json()->all();
-
+        $file_contents = $request->all();
         // Check for empty data
-        if (empty($fileContents)) {
+        if (empty($file_contents)) {
             return response()->json(['success' => false, 'message' => 'No data found.'], 400);
         }
 
-        // Define allowed fields and map variations to consistent keys
-        $field_mappings = [
-            'date' => ['date', 'Date'],
-            'doctor_email' => ['doctor_email', 'Doctor Email'],
-            'patient_email' => ['patient_email', 'Patient Email'],
-            'slot_start_time' => ['slot_start_time', 'Slot Start Time'],
-            'slot_end_time' => ['slot_end_time', 'Slot End Time'],
-            'reason' => ['reason', 'Reason'],
-        ];
+
 
         $errors = [];
         $successMessages = [];
         $uniqueAppointments = [];
 
         // Counters
-        $totalRecords = count($fileContents);
+        $totalRecords = count($file_contents);
         $successCount = 0;
         $failureCount = 0;
 
-        // Function to normalize keys based on field mappings
-        $normalizeContent = function ($content) use ($field_mappings) {
-            $normalized = [];
-            foreach ($content as $key => $value) {
-                foreach ($field_mappings as $standardKey => $possibleKeys) {
-                    if (in_array($key, $possibleKeys)) {
-                        $normalized[$standardKey] = trim($value, '"');
-                        break;
-                    }
-                }
-            }
-            return $normalized;
-        };
 
-        foreach ($fileContents as $content) {
-            $normalizedContent = $normalizeContent($content);
-
-            // Validate required fields
-            $missingFields = [];
-            if (empty($normalizedContent['doctor_email'])) $missingFields[] = 'Doctor email';
-            if (empty($normalizedContent['patient_email'])) $missingFields[] = 'Patient email';
-            if (empty($normalizedContent['slot_start_time']) || empty($normalizedContent['slot_end_time'])) {
-                $missingFields[] = 'Slot start time and end time';
-            }
-
-            if (!empty($missingFields)) {
-                $errors[] = implode(", ", $missingFields) . " are required for the appointment.";
-                $failureCount++;
-                continue;
-            }
+        foreach ($file_contents as $content) {
+            $normalizedContent =$content;
 
             // Convert the input date to a standard format (e.g., YYYY-MM-DD)
             $inputDate = date('Y-m-d', strtotime($normalizedContent['date']));
 
             // Retrieve doctor and patient
-            $doctor = Doctor::where('email', $normalizedContent['doctor_email'])->first();
-            $patient = Patient::where('email', $normalizedContent['patient_email'])->first();
+            $doctor = Doctor::where('email', $content['doctor_id'])->first();
+            $patient = Patient::where('email', $content['patient_id'])->first();
 
             if (!$doctor) {
                 $errors[] = "No doctor found with email: " . $normalizedContent['doctor_email'];
@@ -1090,18 +1053,9 @@ class Appointment extends VaahModel
                 continue;
             }
 
-            // Create a unique key for the appointment
-            $uniqueKey = "{$doctor->id}|{$patient->id}|{$inputDate}|{$normalizedContent['slot_start_time']}";
-
-            // Check if the appointment already exists
-            if (isset($uniqueAppointments[$uniqueKey])) {
-                $errors[] = "An appointment already processed for Doctor (Email: {$normalizedContent['doctor_email']}) and Patient (Email: {$normalizedContent['patient_email']}) for time slot {$normalizedContent['slot_start_time']}.";
-                $failureCount++;
-                continue;
-            }
 
             // Validate if a similar appointment already exists
-            $existingAppointment = self::where('doctor_id', $doctor->id)
+            $existingAppointment = self::where('doctor_id', $doctor)
                 ->where('patient_id', $patient->id)
                 ->whereDate('date', $inputDate)
                 ->where('slot_start_time', $normalizedContent['slot_start_time'])
@@ -1125,36 +1079,33 @@ class Appointment extends VaahModel
                     $failureCount++;
                 }
             } else {
-                // Create a new appointment
-                self::create([
-                    'doctor_id' => $doctor->id,
-                    'patient_id' => $patient->id,
-                    'date' => $inputDate,
-                    'slot_start_time' => $normalizedContent['slot_start_time'],
-                    'slot_end_time' => $normalizedContent['slot_end_time'],
-                    'status' => 1,
-                    'is_active' => 1,
-                    'reason' => $normalizedContent['reason'] ?? null,
-                ]);
-                $successMessages[] = "Created appointment for Doctor (Email: {$normalizedContent['doctor_email']}) and Patient (Email: {$normalizedContent['patient_email']}) for date {$inputDate}.";
+                try{
+
+                    self::create([
+                        'doctor_id' => $doctor->id,
+                        'patient_id' => $patient->id,
+                        'date' => $inputDate,
+                        'slot_start_time' => $normalizedContent['slot_start_time'],
+                        'slot_end_time' => $normalizedContent['slot_end_time'],
+                        'status' => 1,
+                        'is_active' => 1,
+                        'reason' => $normalizedContent['reason'] ?? null,
+                    ]);
+                }
+
+                catch(\Exception $e)
+                {
+                    dd($e);
+                }
             }
 
-            // Mark the appointment as processed
-            $uniqueAppointments[$uniqueKey] = true;
         }
 
-        // Create a response structure
-        $response = [
-            'total_records' => $totalRecords,
-            'success_count' => $successCount,
-            'failure_count' => $failureCount,
-            'success' => empty($errors),
-            'errors' => $errors,
-            'messages' => $successMessages,
-        ];
 
-        return response()->json($response, 200);
+
+//        return response()->json($response, 200);
     }
+
 
 
 

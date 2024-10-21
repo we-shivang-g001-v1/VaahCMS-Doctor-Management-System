@@ -274,7 +274,7 @@ class AppointmentsController extends Controller
 
     public function bulkAppointmentImport(Request $request)
     {
-        try {
+         try {
             return Appointment::bulkAppointmentImport($request);
         } catch (\Exception $e) {
             $response = [];

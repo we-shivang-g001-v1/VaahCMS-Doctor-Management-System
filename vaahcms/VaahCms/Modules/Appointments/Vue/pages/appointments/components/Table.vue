@@ -244,6 +244,7 @@ function formatTimeWithAmPm(time) {
                     <thead>
                     <tr>
                         <th>Appointment Error Messages</th>
+
                     </tr>
                     </thead>
                     <tbody>
@@ -251,6 +252,7 @@ function formatTimeWithAmPm(time) {
                         <td>{{ appointmentError }}</td>
                     </tr>
                     </tbody>
+
                 </table>
             </div>
         </Dialog>

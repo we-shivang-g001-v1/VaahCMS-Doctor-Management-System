@@ -33,7 +33,7 @@ class Appointment extends VaahModel
     ];
     //-------------------------------------------------
     protected $fillable = [
-        'uuid',
+
         'patient_id',
         'slot_start_time',
         'date',
@@ -41,14 +41,15 @@ class Appointment extends VaahModel
         'doctor_id',
         'status',
         'reason',
+        ];
+
+    //-------------------------------------------------
+    protected $fill_except = [
+        'uuid',
         'is_active',
         'created_by',
         'updated_by',
         'deleted_by',
-    ];
-    //-------------------------------------------------
-    protected $fill_except = [
-
     ];
 
     //-------------------------------------------------
@@ -71,6 +72,14 @@ class Appointment extends VaahModel
             'updated_by',
             'deleted_by',
         ];
+    }
+    //-------------------------------------------------
+    public static function getFieldsColumn()
+    {
+        $model = new self();
+        $fillable_columns = $model->fillable;
+        $filtered_columns = array_diff($fillable_columns, $model->fill_except);
+        return $filtered_columns;
     }
     //-------------------------------------------------
     public static function getFillableColumns()
@@ -1005,9 +1014,11 @@ class Appointment extends VaahModel
 
     public static function bulkAppointmentImport(Request $request)
     {
+        // Retrieve JSON data from the request
         $fileContents = $request->json()->all();
 
-        if (!$fileContents) {
+        // Check for empty data
+        if (empty($fileContents)) {
             return response()->json(['success' => false, 'message' => 'No data found.'], 400);
         }
 
@@ -1021,140 +1032,131 @@ class Appointment extends VaahModel
             'reason' => ['reason', 'Reason'],
         ];
 
-        $errors = [
-            'appointment_errors' => [],
-        ];
+        $errors = [];
+        $successMessages = [];
+        $uniqueAppointments = [];
 
-        $success_messages = []; // For successful imports
+        // Counters
+        $totalRecords = count($fileContents);
+        $successCount = 0;
+        $failureCount = 0;
 
-        // Array to hold unique appointment data
-        $unique_appointments = [];
-
-        foreach ($fileContents as $content) {
-            // Normalize the incoming data by converting the keys to the standard format
-            $normalized_content = [];
+        // Function to normalize keys based on field mappings
+        $normalizeContent = function ($content) use ($field_mappings) {
+            $normalized = [];
             foreach ($content as $key => $value) {
-                $normalized_key = null;
-
-                // Find the corresponding standard key in the field mappings
-                foreach ($field_mappings as $standard_key => $possible_keys) {
-                    if (in_array($key, $possible_keys)) {
-                        $normalized_key = $standard_key;
+                foreach ($field_mappings as $standardKey => $possibleKeys) {
+                    if (in_array($key, $possibleKeys)) {
+                        $normalized[$standardKey] = trim($value, '"');
                         break;
                     }
                 }
-
-                // If the key is not mapped, skip this field
-                if (!$normalized_key) {
-                    continue;
-                }
-
-                // Assign the normalized key and value to the new array
-                $normalized_content[$normalized_key] = trim($value, '"');
             }
+            return $normalized;
+        };
+
+        foreach ($fileContents as $content) {
+            $normalizedContent = $normalizeContent($content);
 
             // Validate required fields
-            if (empty($normalized_content['doctor_email'])) {
-                $errors['appointment_errors'][] = "Doctor email is required for the appointment.";
-                continue; // Skip this record
+            $missingFields = [];
+            if (empty($normalizedContent['doctor_email'])) $missingFields[] = 'Doctor email';
+            if (empty($normalizedContent['patient_email'])) $missingFields[] = 'Patient email';
+            if (empty($normalizedContent['slot_start_time']) || empty($normalizedContent['slot_end_time'])) {
+                $missingFields[] = 'Slot start time and end time';
             }
 
-            if (empty($normalized_content['patient_email'])) {
-                $errors['appointment_errors'][] = "Patient email is required for the appointment.";
-                continue; // Skip this record
-            }
-
-            if (empty($normalized_content['slot_start_time']) || empty($normalized_content['slot_end_time'])) {
-                $errors['appointment_errors'][] = "Both slot start time and end time are required for the appointment.";
-                continue; // Skip this record
+            if (!empty($missingFields)) {
+                $errors[] = implode(", ", $missingFields) . " are required for the appointment.";
+                $failureCount++;
+                continue;
             }
 
             // Convert the input date to a standard format (e.g., YYYY-MM-DD)
-            $input_date = date('Y-m-d', strtotime($normalized_content['date']));
+            $inputDate = date('Y-m-d', strtotime($normalizedContent['date']));
 
-            // Find the doctor by email
-            $doctor = Doctor::where('email', $normalized_content['doctor_email'])->first();
+            // Retrieve doctor and patient
+            $doctor = Doctor::where('email', $normalizedContent['doctor_email'])->first();
+            $patient = Patient::where('email', $normalizedContent['patient_email'])->first();
 
             if (!$doctor) {
-                $errors['appointment_errors'][] = "No doctor found with email: " . $normalized_content['doctor_email'];
-                continue; // Skip this record
+                $errors[] = "No doctor found with email: " . $normalizedContent['doctor_email'];
+                $failureCount++;
+                continue;
             }
-
-            // Find the patient by email
-            $patient = Patient::where('email', $normalized_content['patient_email'])->first();
-
             if (!$patient) {
-                $errors['appointment_errors'][] = "No patient found with email: " . $normalized_content['patient_email'];
-                continue; // Skip this record
+                $errors[] = "No patient found with email: " . $normalizedContent['patient_email'];
+                $failureCount++;
+                continue;
             }
 
             // Create a unique key for the appointment
-            $unique_key = $doctor->id . '|' . $patient->id . '|' . $input_date . '|' . $normalized_content['slot_start_time'];
+            $uniqueKey = "{$doctor->id}|{$patient->id}|{$inputDate}|{$normalizedContent['slot_start_time']}";
 
             // Check if the appointment already exists
-            if (isset($unique_appointments[$unique_key])) {
-                $errors['appointment_errors'][] = "An appointment already processed for Doctor (Email: {$normalized_content['doctor_email']}) and Patient (Email: {$normalized_content['patient_email']}) for time slot {$normalized_content['slot_start_time']}.";
-                continue; // Skip this record
+            if (isset($uniqueAppointments[$uniqueKey])) {
+                $errors[] = "An appointment already processed for Doctor (Email: {$normalizedContent['doctor_email']}) and Patient (Email: {$normalizedContent['patient_email']}) for time slot {$normalizedContent['slot_start_time']}.";
+                $failureCount++;
+                continue;
             }
 
-            // Validate if a similar appointment already exists for the same doctor, patient, and date
-            $existing_appointment = self::where('doctor_id', $doctor->id) // Use the doctor ID for querying appointments
-            ->where('patient_id', $patient->id) // Use the patient ID for querying appointments
-            ->whereDate('date', $input_date)
-                ->where('slot_start_time', $normalized_content['slot_start_time'])
+            // Validate if a similar appointment already exists
+            $existingAppointment = self::where('doctor_id', $doctor->id)
+                ->where('patient_id', $patient->id)
+                ->whereDate('date', $inputDate)
+                ->where('slot_start_time', $normalizedContent['slot_start_time'])
                 ->withTrashed()
                 ->first();
 
-            // If appointment already exists, decide whether to update or create a new one
-            if ($existing_appointment) {
-                if ($existing_appointment->status == 0) {
-                    // If status is canceled, update and restore the appointment
-                    $existing_appointment->fill([
-                        'slot_start_time' => $normalized_content['slot_start_time'],
-                        'slot_end_time' => $normalized_content['slot_end_time'],
+            if ($existingAppointment) {
+                if ($existingAppointment->status == 0) {
+                    // Update and restore the canceled appointment
+                    $existingAppointment->update([
+                        'slot_start_time' => $normalizedContent['slot_start_time'],
+                        'slot_end_time' => $normalizedContent['slot_end_time'],
                         'status' => 1,
                         'is_active' => 1,
-                        'reason' => $normalized_content['reason'] ?? null, // Allow for an optional reason
+                        'reason' => $normalizedContent['reason'] ?? null,
                     ]);
-                    $existing_appointment->restore();
-                    $success_messages[] = "Restored appointment for Doctor (Email: {$normalized_content['doctor_email']}) and Patient (Email: {$normalized_content['patient_email']}) for date {$input_date}.";
+                    $existingAppointment->restore();
+                    $successMessages[] = "Restored appointment for Doctor (Email: {$normalizedContent['doctor_email']}) and Patient (Email: {$normalizedContent['patient_email']}) for date {$inputDate}.";
                 } else {
-                    // Return an error message if the appointment already exists and is active
-                    $errors['appointment_errors'][] = "An active appointment already exists for Doctor (Email: {$normalized_content['doctor_email']}) and Patient (Email: {$normalized_content['patient_email']}) for time slot {$normalized_content['slot_start_time']}.";
+                    $errors[] = "An active appointment already exists for Doctor (Email: {$normalizedContent['doctor_email']}) and Patient (Email: {$normalizedContent['patient_email']}) for time slot {$normalizedContent['slot_start_time']}.";
+                    $failureCount++;
                 }
             } else {
-                // Create a new appointment if none exists
+                // Create a new appointment
                 self::create([
-                    'doctor_id' => $doctor->id, // Use the doctor's ID for saving the appointment
-                    'patient_id' => $patient->id, // Use the patient's ID for saving the appointment
-                    'date' => $input_date,
-                    'slot_start_time' => $normalized_content['slot_start_time'],
-                    'slot_end_time' => $normalized_content['slot_end_time'],
+                    'doctor_id' => $doctor->id,
+                    'patient_id' => $patient->id,
+                    'date' => $inputDate,
+                    'slot_start_time' => $normalizedContent['slot_start_time'],
+                    'slot_end_time' => $normalizedContent['slot_end_time'],
                     'status' => 1,
                     'is_active' => 1,
-                    'reason' => $normalized_content['reason'] ?? null, // Allow for an optional reason
+                    'reason' => $normalizedContent['reason'] ?? null,
                 ]);
-                $success_messages[] = "Created appointment for Doctor (Email: {$normalized_content['doctor_email']}) and Patient (Email: {$normalized_content['patient_email']}) for date {$input_date}.";
+                $successMessages[] = "Created appointment for Doctor (Email: {$normalizedContent['doctor_email']}) and Patient (Email: {$normalizedContent['patient_email']}) for date {$inputDate}.";
             }
 
             // Mark the appointment as processed
-            $unique_appointments[$unique_key] = true;
+            $uniqueAppointments[$uniqueKey] = true;
         }
 
-        // Create a response structure similar to updateItem
-        $response = [];
-
-        if (!empty($errors['appointment_errors'])) {
-            $response['success'] = true;
-            $response['errors'] = $errors;
-        } else {
-            $response['success'] = true;
-            $response['messages'] = $success_messages;
-            $response['message'] = 'Appointments imported successfully!';
-        }
+        // Create a response structure
+        $response = [
+            'total_records' => $totalRecords,
+            'success_count' => $successCount,
+            'failure_count' => $failureCount,
+            'success' => empty($errors),
+            'errors' => $errors,
+            'messages' => $successMessages,
+        ];
 
         return response()->json($response, 200);
     }
+
+
 
     //-------------------------------------------------
     public static function bulkAppointmentExport()

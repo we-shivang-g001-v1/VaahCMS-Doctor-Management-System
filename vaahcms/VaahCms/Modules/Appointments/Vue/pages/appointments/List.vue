@@ -1,18 +1,14 @@
 <script setup>
-import {onMounted, reactive, ref} from "vue";
-import {useRoute} from 'vue-router';
-
-import {useAppointmentStore} from '../../stores/store-appointments'
-import {useRootStore} from '../../stores/root'
-
+import { onMounted, reactive, ref } from "vue";
+import { useRoute } from 'vue-router';
+import { useAppointmentStore } from '../../stores/store-appointments';
+import { useRootStore } from '../../stores/root';
 import Actions from "./components/Actions.vue";
 import Table from "./components/Table.vue";
-import Filters from './components/Filters.vue'
-
+import Filters from './components/Filters.vue';
 const store = useAppointmentStore();
 const root = useRootStore();
 const route = useRoute();
-
 import { useConfirm } from "primevue/useconfirm";
 const confirm = useConfirm();
 
@@ -29,10 +25,12 @@ const steps = ref([
     { label: "Preview Data" },
     { label: "Confirm & Upload" },
 ]);
+
 // Open file dialog
 const openFileDialog = () => {
     fileInput.value.click();
 };
+
 // Handle file upload and extract CSV data
 const handleFileUpload = (event) => {
     const file = event.target.files[0];
@@ -47,6 +45,7 @@ const handleFileUpload = (event) => {
         reader.readAsText(file);
     }
 };
+
 // CSV to JSON conversion
 const csvToJson = (csv) => {
     const lines = csv.split("\n");
@@ -62,15 +61,16 @@ const csvToJson = (csv) => {
     }
     return result;
 };
+
 // Extract CSV headers for mapping
 const extractHeaders = () => {
     if (csvData.value && csvData.value.length > 0) {
         csvHeaders.value = Object.keys(csvData.value[0]);
         console.log("Extracted CSV Headers:", csvHeaders.value); // Log extracted headers
-        // Initialize fieldMappings based on the number of headers
-        fieldMappings.value = new Array(csvHeaders.value.length).fill("");
+        fieldMappings.value = new Array(store.assets.fields.length).fill(""); // Link to store.fields
     }
 };
+
 // Proceed to preview data after field mapping
 const mapFieldsAndPreview = () => {
     if (fieldMappings.value.length > 0) {
@@ -81,16 +81,25 @@ const mapFieldsAndPreview = () => {
 
 // Import mapped appointments
 const importAppointments = () => {
-    if (csvData.value) {
-        store.importAppointments(csvData.value);
-        isModalVisible.value = false; // Close modal
-        activeStep.value = 0; // Reset steps
-        csvData.value = [];
-        fieldMappings.value = [];
-        csvHeaders.value = [];
-    }
-};
+    const mappedData = csvData.value.map(row => {
+        const mappedRow = {};
+        fieldMappings.value.forEach((csvHeader, index) => {
+            if (csvHeader) {
+                const field = store.assets.fields[index];
+                mappedRow[field] = row[csvHeader];
+            }
+        });
+        return mappedRow;
+    });
 
+    console.log("Mapped Appointment Data for Upload:", mappedData);
+    store.importAppointments(mappedData);
+    isModalVisible.value = false; // Close modal
+    activeStep.value = 0; // Reset steps
+    csvData.value = [];
+    fieldMappings.value = [];
+    csvHeaders.value = [];
+};
 
 // Export appointments
 const exportAppointments = () => {
@@ -100,124 +109,70 @@ const exportAppointments = () => {
 onMounted(async () => {
     document.title = 'Appointments - Appointments';
     store.item = null;
-    /**
-     * call onLoad action when List view loads
-     */
     await store.onLoad(route);
-
-    /**
-     * watch routes to update view, column width
-     * and get new item when routes get changed
-     */
     await store.watchRoutes(route);
-
-    /**
-     * watch states like `query.filter` to
-     * call specific actions if a state gets
-     * changed
-     */
     await store.watchStates();
-
-    /**
-     * fetch assets required for the crud
-     * operation
-     */
     await store.getAssets();
-
-    /**
-     * fetch list of records
-     */
     await store.getList();
-
     await store.getListCreateMenu();
-
 });
 
-//--------form_menu
 const create_menu = ref();
 const toggleCreateMenu = (event) => {
     create_menu.value.toggle(event);
 };
-//--------/form_menu
-
 </script>
-<template>
 
+<template>
     <div class="grid" v-if="store.assets">
 
         <div :class="'col-'+(store.show_filters?9:store.list_view_width)">
             <Panel class="is-small">
-
                 <template class="p-1" #header>
-
                     <div class="flex flex-row">
-                        <div >
+                        <div>
                             <b class="mr-1">Appointments</b>
-                            <Badge v-if="store.list && store.list.total > 0"
-                                   :value="store.list.total">
-                            </Badge>
+                            {{store.assets.fields}}
+                            <Badge v-if="store.list && store.list.total > 0" :value="store.list.total"></Badge>
                         </div>
-
                     </div>
-
                 </template>
 
                 <template #icons>
-
                     <div class="p-inputgroup">
-
                         <Button @click="isModalVisible = true">Upload Appointment CSV</Button>
                         <Button label="Export Appointments" @click="exportAppointments" style="margin-left: 2px;" />
                         <Button
-                            v-if="store.hasPermission(store.assets.permission, 'appointments-has-access-of-button')"
-                        data-testid="appointments-list-create"
-                        class="p-button-sm"
-                        @click="store.toForm()"
-                    >
-                        <i class="pi pi-plus mr-1"></i>
-                        Create
-                    </Button>
-
-                    <Button data-testid="appointments-list-reload"
+                            v-if="store.assets.permission[1] !== 'appointments-has-access-of-doctor-section'"
+                            data-testid="appointments-list-create"
                             class="p-button-sm"
-                            @click="store.getList()">
-                        <i class="pi pi-refresh mr-1"></i>
-                    </Button>
+                            @click="store.toForm()"
+                        >
+                            <i class="pi pi-plus mr-1"></i>
+                            Create
+                        </Button>
 
-                    <!--form_menu-->
+                        <Button data-testid="appointments-list-reload" class="p-button-sm" @click="store.getList()">
+                            <i class="pi pi-refresh mr-1"></i>
+                        </Button>
 
-                    <Button v-if="root.assets && root.assets.module
-                                                && root.assets.module.is_dev"
-                        type="button"
-                        @click="toggleCreateMenu"
-                        class="p-button-sm"
-                        data-testid="appointments-create-menu"
-                        icon="pi pi-angle-down"
-                        aria-haspopup="true"/>
+                        <Button v-if="root.assets && root.assets.module && root.assets.module.is_dev" type="button" @click="toggleCreateMenu" class="p-button-sm" data-testid="appointments-create-menu" icon="pi pi-angle-down" aria-haspopup="true"/>
 
-                    <Menu ref="create_menu"
-                          :model="store.list_create_menu"
-                          :popup="true" />
-
-                    <!--/form_menu-->
-
+                        <Menu ref="create_menu" :model="store.list_create_menu" :popup="true" />
                     </div>
-
                 </template>
 
-                <Actions/>
-
-                <Table/>
-
+                <Actions />
+                <Table />
             </Panel>
         </div>
 
-         <Filters/>
+        <Filters />
 
-        <!-- File Upload Modal -->
+        <RouterView />
+
         <!-- CSV Upload Modal with steps -->
         <Dialog v-model:visible="isModalVisible" header="Import Appointments" :modal="true" :closable="true" class="custom-file-upload-modal">
-            <!-- Stepper UI -->
             <Steps :model="steps" :activeIndex="activeStep" class="custom-steps"></Steps>
 
             <!-- Step 1: Upload CSV File -->
@@ -228,18 +183,23 @@ const toggleCreateMenu = (event) => {
                 <Button label="Choose File" @click="openFileDialog" class="p-button-rounded p-button-outlined" />
             </div>
 
-
             <!-- Step 2: Map Fields -->
             <div v-if="activeStep === 1" class="step-content">
                 <i class="pi pi-sitemap icon-large"></i>
                 <p>Map the CSV headers to the corresponding fields.</p>
-                <div v-for="(header, index) in csvHeaders" :key="index" class="mapping-field">
-                    <label>{{ header }}</label>
-                    <Dropdown v-model="fieldMappings[index]" :options="csvHeaders" option-label="header" placeholder="-- Select Field --" class="field-dropdown" />
+                <div class="mapping-fields-container">
+                    <div v-for="(field, index) in store.assets.fields" :key="index" class="mapping-field">
+                        <label>{{ field }}</label>
+                        <select v-model="fieldMappings[index]" class="field-dropdown">
+                            <option disabled value="">-- Select Field --</option>
+                            <option v-for="(csvHeader, csvIndex) in csvHeaders" :key="csvIndex" :value="csvHeader">
+                                {{ csvHeader }}
+                            </option>
+                        </select>
+                    </div>
                 </div>
                 <Button label="Preview Data" @click="mapFieldsAndPreview" class="p-button-rounded p-button-outlined" />
             </div>
-
 
             <!-- Step 3: Preview Data -->
             <div v-if="activeStep === 2" class="step-content">
@@ -248,12 +208,12 @@ const toggleCreateMenu = (event) => {
                 <table class="preview-table">
                     <thead>
                     <tr>
-                        <th v-for="(header, index) in csvHeaders" :key="index">{{ header }}</th>
+                        <th v-for="(field, index) in store.assets.fields" :key="index">{{ field }}</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr v-for="(row, rowIndex) in csvData" :key="rowIndex">
-                        <td v-for="(header, index) in csvHeaders" :key="index">{{ row[header] }}</td>
+                        <td v-for="(mapping, index) in fieldMappings" :key="index">{{ row[mapping] }}</td>
                     </tr>
                     </tbody>
                 </table>
@@ -262,46 +222,64 @@ const toggleCreateMenu = (event) => {
 
             <!-- Step 4: Confirm & Upload -->
             <div v-if="activeStep === 3" class="step-content">
-                <i class="pi pi-check icon-large"></i>
-                <p>Confirm the upload of appointment data.</p>
-                <Button label="Upload" class="p-button-success p-button-rounded" @click="importAppointments" />
-                <Button label="Back" class="p-button-secondary p-button-rounded" @click="activeStep = 2" />
+                <i class="pi pi-check-circle icon-large"></i>
+                <p>Confirm the appointment data upload.</p>
+                <Button label="Upload Appointments" @click="importAppointments" class="p-button-rounded p-button-outlined" />
             </div>
         </Dialog>
-
-
-        <RouterView/>
-
     </div>
-
-
 </template>
 
-<style>
-.custom-file-upload-modal {
-    max-width: 400px;
-    width: 100%;
-    text-align: center;
-}
 
-.file-upload-modal-content {
+
+<style>
+
+.mapping-fields-container {
     display: flex;
     flex-direction: column;
+    gap: 1rem; /* Space between mapping fields */
+    width: 100%; /* Ensures full width */
+}
+
+.mapping-field {
+    display: flex;
     align-items: center;
-    justify-content: center;
-    padding: 2rem;
+    justify-content: space-between; /* Space between label and dropdown */
+    padding: 0.5rem; /* Adds padding for better spacing */
+    border: 1px solid #ccc; /* Adds a border around each mapping field */
+    border-radius: 4px; /* Rounded corners */
+    background-color: #f9f9f9; /* Light background */
 }
 
-.icon-large {
-    font-size: 4rem;
-    color: #4CAF50; /* Light green for a modern look */
+.mapping-field label {
+    flex: 1; /* Label takes up available space */
+    margin-right: 1rem; /* Space between label and dropdown */
+    font-weight: bold; /* Make label bold */
 }
 
-
-.hidden-file-input {
-    display: none;
+.field-dropdown {
+    flex: 2; /* Dropdown takes up more space */
+    padding: 0.5rem; /* Padding inside the dropdown */
+    border: 1px solid #ccc; /* Border around dropdown */
+    border-radius: 4px; /* Rounded corners */
+    background-color: #fff; /* White background for dropdown */
+    transition: border-color 0.3s; /* Smooth transition for focus */
 }
 
+.field-dropdown:focus {
+    border-color: #4CAF50; /* Change border color on focus */
+    outline: none; /* Remove default outline */
+}
+
+.field-dropdown option {
+    padding: 0.5rem; /* Padding inside dropdown options */
+}
+
+/* Optional: Style for the button */
+.p-button-rounded {
+    border-radius: 25px;
+    margin-top: 1rem; /* Space above the button */
+}
 
 .custom-file-upload-modal {
     max-width: 1500px;
@@ -385,19 +363,4 @@ const toggleCreateMenu = (event) => {
     background-color: white;
 }
 
-.field-dropdown {
-    width: 40%; /* Set width of dropdown to be less */
-    border-radius: 0; /* Remove rounded corners */
-    border: 1px solid #ccc; /* Add a subtle border */
-    padding: 0.5rem; /* Add some padding for a better look */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Optional: add a slight shadow for depth */
-    transition: border-color 0.3s ease; /* Smooth border color transition */
-}
-
-.field-dropdown:focus {
-    border-color: #4CAF50; /* Change border color on focus */
-    outline: none; /* Remove default outline */
-}
-
 </style>
-

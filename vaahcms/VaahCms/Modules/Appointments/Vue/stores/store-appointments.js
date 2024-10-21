@@ -799,7 +799,7 @@ export const useAppointmentStore = defineStore({
 
         importAppointmentsAfter(data, res) {
             // Set appointment errors
-            this.data_res_appointment = res.data.errors?.appointment_errors;
+            this.data_res_appointment = res.data.errors.appointment_errors;
 
             // Check if there are appointment errors
             if (this.data_res_appointment) {

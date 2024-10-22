@@ -14,6 +14,7 @@ use WebReinvent\VaahCms\Libraries\VaahMail;
 use Illuminate\Support\Facades\Session;
 use Maatwebsite\Excel\Facades\Excel;
 use App\ExportData\DoctorExport;
+use App\Jobs\BulkRecordDoctor;
 
 class Doctor extends VaahModel
 {
@@ -899,19 +900,7 @@ class Doctor extends VaahModel
     public static function seedSampleItems($records=100)
     {
 
-        $i = 0;
-
-        while($i < $records)
-        {
-            $inputs = self::fillItem(false);
-
-            $item =  new self();
-            $item->fill($inputs);
-            $item->save();
-
-            $i++;
-
-        }
+        BulkRecordDoctor::dispatch($records);
 
     }
 

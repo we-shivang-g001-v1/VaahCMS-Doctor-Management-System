@@ -77,8 +77,17 @@ class Appointment extends VaahModel
     public static function getFieldsColumn()
     {
         $model = new self();
-        $fillable_columns = $model->fillable;
+        $fillable_columns = $model->getFillable();;
         $filtered_columns = array_diff($fillable_columns, $model->fill_except);
+        $mapping_columns = [
+            'doctor_id' => 'Doctor',
+            'patient_id' => 'Patient',
+            'slot_start_time' => 'slot_start_time',
+            'date' => 'Date',
+        ];
+        $filtered_columns= array_map(function($column)use($mapping_columns){
+            return $mapping_columns[$column] ?? $column;
+        },$fillable_columns);
         return $filtered_columns;
     }
     //-------------------------------------------------
@@ -90,6 +99,7 @@ class Appointment extends VaahModel
         $fillable_columns = array_diff(
             $fillable_columns, $except
         );
+
         return $fillable_columns;
     }
 
@@ -1011,16 +1021,16 @@ class Appointment extends VaahModel
         return $response;
     }
 
-
+//------------------------------------------------------------------------------------------------------
     public static function bulkAppointmentImport(Request $request)
     {
-        $file_contents = $request->all();
+        // Retrieve the contents of the file (assuming JSON input)
+        $file_contents = $request->json()->all(); // Adjust this based on actual input format
+
         // Check for empty data
         if (empty($file_contents)) {
             return response()->json(['success' => false, 'message' => 'No data found.'], 400);
         }
-
-
 
         $errors = [];
         $successMessages = [];
@@ -1031,31 +1041,31 @@ class Appointment extends VaahModel
         $successCount = 0;
         $failureCount = 0;
 
-
         foreach ($file_contents as $content) {
-            $normalizedContent =$content;
+            // Normalize and validate input
+            $normalizedContent = $content;
 
             // Convert the input date to a standard format (e.g., YYYY-MM-DD)
-            $inputDate = date('Y-m-d', strtotime($normalizedContent['date']));
+            $inputDate = date('Y-m-d', strtotime($normalizedContent['Date']));
 
-            // Retrieve doctor and patient
-            $doctor = Doctor::where('email', $content['doctor_id'])->first();
-            $patient = Patient::where('email', $content['patient_id'])->first();
+            // Retrieve doctor and patient by email
+            $doctor = Doctor::where('email', $normalizedContent['Doctor'])->first();
+            $patient = Patient::where('email', $normalizedContent['Patient'])->first();
 
+            // Check if doctor and patient exist
             if (!$doctor) {
-                $errors[] = "No doctor found with email: " . $normalizedContent['doctor_email'];
+                $errors[] = "Doctor with email {$normalizedContent['Doctor']} not found.";
                 $failureCount++;
                 continue;
             }
             if (!$patient) {
-                $errors[] = "No patient found with email: " . $normalizedContent['patient_email'];
+                $errors[] = "Patient with email {$normalizedContent['Patient']} not found.";
                 $failureCount++;
                 continue;
             }
 
-
             // Validate if a similar appointment already exists
-            $existingAppointment = self::where('doctor_id', $doctor)
+            $existingAppointment = self::where('doctor_id', $doctor->id)
                 ->where('patient_id', $patient->id)
                 ->whereDate('date', $inputDate)
                 ->where('slot_start_time', $normalizedContent['slot_start_time'])
@@ -1063,8 +1073,8 @@ class Appointment extends VaahModel
                 ->first();
 
             if ($existingAppointment) {
-                if ($existingAppointment->status == 0) {
-                    // Update and restore the canceled appointment
+                if ($existingAppointment->status === 0) {
+                    // Update and restore canceled appointment
                     $existingAppointment->update([
                         'slot_start_time' => $normalizedContent['slot_start_time'],
                         'slot_end_time' => $normalizedContent['slot_end_time'],
@@ -1073,40 +1083,107 @@ class Appointment extends VaahModel
                         'reason' => $normalizedContent['reason'] ?? null,
                     ]);
                     $existingAppointment->restore();
-                    $successMessages[] = "Restored appointment for Doctor (Email: {$normalizedContent['doctor_email']}) and Patient (Email: {$normalizedContent['patient_email']}) for date {$inputDate}.";
+                    $successMessages[] = "Restored appointment for Doctor (Email: {$normalizedContent['Doctor']}) and Patient (Email: {$normalizedContent['Patient']}) for date {$inputDate}.";
+                    $successCount++;
                 } else {
-                    $errors[] = "An active appointment already exists for Doctor (Email: {$normalizedContent['doctor_email']}) and Patient (Email: {$normalizedContent['patient_email']}) for time slot {$normalizedContent['slot_start_time']}.";
+                    $errors[] = "An active appointment already exists for Doctor (Email: {$normalizedContent['Doctor']}) and Patient (Email: {$normalizedContent['Patient']}) for time slot {$normalizedContent['slot_start_time']}.";
                     $failureCount++;
                 }
-            } else {
-                try{
+                continue;
+            }
 
-                    self::create([
-                        'doctor_id' => $doctor->id,
-                        'patient_id' => $patient->id,
-                        'date' => $inputDate,
+            // Fetch doctor's working hours
+            $shiftStartTime = $doctor->shift_start_time;
+            $shiftEndTime = $doctor->shift_end_time;
+
+            // Check if the appointment falls within the doctor's working hours
+            $inputSlotStartTime = date('H:i:s', strtotime($normalizedContent['slot_start_time']));
+            $inputSlotEndTime = date('H:i:s', strtotime($normalizedContent['slot_end_time']));
+
+            if ($inputSlotStartTime < $shiftStartTime || $inputSlotEndTime > $shiftEndTime) {
+                $errors[] = "Appointment time is outside the doctor's working hours for Doctor (Email: {$normalizedContent['Doctor']}).";
+                $failureCount++;
+                continue;
+            }
+
+            if ($inputSlotStartTime >= $inputSlotEndTime) {
+                $errors[] = "End time must be greater than start time for Doctor (Email: {$normalizedContent['Doctor']}) and Patient (Email: {$normalizedContent['Patient']}).";
+                $failureCount++;
+                continue;
+            }
+
+            // Check if the time slot is available (no overlap)
+            $existingTimeSlot = self::where('doctor_id', $doctor->id)
+                ->whereDate('date', $inputDate)
+                ->where(function ($query) use ($normalizedContent) {
+                    $query->where(function ($q) use ($normalizedContent) {
+                        $q->where('slot_start_time', '<=', $normalizedContent['slot_start_time'])
+                            ->where('slot_end_time', '>=', $normalizedContent['slot_start_time']);
+                    })->orWhere(function ($q) use ($normalizedContent) {
+                        $q->where('slot_start_time', '<=', $normalizedContent['slot_end_time'])
+                            ->where('slot_end_time', '>=', $normalizedContent['slot_end_time']);
+                    })->orWhere(function ($q) use ($normalizedContent) {
+                        $q->where('slot_start_time', '>=', $normalizedContent['slot_start_time'])
+                            ->where('slot_end_time', '<=', $normalizedContent['slot_end_time']);
+                    });
+                })
+                ->first();
+
+            if ($existingTimeSlot) {
+                if ($existingTimeSlot->status === 0) {
+                    // Restore canceled appointment
+                    $existingTimeSlot->update([
                         'slot_start_time' => $normalizedContent['slot_start_time'],
                         'slot_end_time' => $normalizedContent['slot_end_time'],
                         'status' => 1,
                         'is_active' => 1,
                         'reason' => $normalizedContent['reason'] ?? null,
                     ]);
+                    $existingTimeSlot->restore();
+                    $successMessages[] = "Restored appointment for Doctor (Email: {$normalizedContent['Doctor']}) and Patient (Email: {$normalizedContent['Patient']}) for date {$inputDate}.";
+                    $successCount++;
+                } else {
+                    $errors[] = "This time slot is already booked for Doctor (Email: {$normalizedContent['Doctor']}). Please select a different time.";
+                    $failureCount++;
                 }
-
-                catch(\Exception $e)
-                {
-                    dd($e);
-                }
+                continue;
             }
 
+            // Create a new appointment
+            try {
+                self::create([
+                    'doctor_id' => $doctor->id,
+                    'patient_id' => $patient->id,
+                    'date' => $inputDate,
+                    'slot_start_time' => $normalizedContent['slot_start_time'],
+                    'slot_end_time' => $normalizedContent['slot_end_time'],
+                    'status' => 1,
+                    'is_active' => 1,
+                    'reason' => $normalizedContent['reason'] ?? null,
+                ]);
+                $successMessages[] = "Appointment created for Doctor (Email: {$normalizedContent['Doctor']}) and Patient (Email: {$normalizedContent['Patient']}) for date {$inputDate}.";
+                $successCount++;
+            } catch (\Exception $e) {
+                $errors[] = "Error creating appointment for Doctor (Email: {$normalizedContent['Doctor']}) and Patient (Email: {$normalizedContent['Patient']}): " . $e->getMessage();
+                $failureCount++;
+            }
         }
 
+        // Final response
+        $response = [];
 
 
-//        return response()->json($response, 200);
+        if (!empty($errors)) {
+            $response['success'] = true;
+            $response['res_data'] = $errors;
+        } else {
+            $response['success'] = true;
+            $response['messages'] = $successMessages;
+            $response['message'] = trans("vaahcms-general.saved_successfully");
+        }
+
+        return response()->json($response, 200);
     }
-
-
 
 
     //-------------------------------------------------

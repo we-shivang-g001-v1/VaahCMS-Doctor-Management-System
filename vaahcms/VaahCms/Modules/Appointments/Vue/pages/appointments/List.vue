@@ -79,6 +79,7 @@ const mapFieldsAndPreview = () => {
     }
 };
 
+
 // Import mapped appointments
 const importAppointments = () => {
     const mappedData = csvData.value.map(row => {

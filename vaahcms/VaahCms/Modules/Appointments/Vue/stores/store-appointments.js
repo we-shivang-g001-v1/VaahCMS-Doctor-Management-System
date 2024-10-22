@@ -39,6 +39,7 @@ export const useAppointmentStore = defineStore({
         list: null,
         item: null,
         fillable:null,
+        import_errors:null,
         empty_query:empty_states.query,
         empty_action:empty_states.action,
         query: vaah().clone(empty_states.query),
@@ -798,11 +799,10 @@ export const useAppointmentStore = defineStore({
         },
 
         importAppointmentsAfter(data, res) {
-            // Set appointment errors
-            this.data_res_appointment = res.data.errors.appointment_errors;
 
-            // Check if there are appointment errors
-            if (this.data_res_appointment) {
+            this.import_errors=res.data.res_data;
+
+            if (res.data.success) {
                 this.is_visible_errors = true; // Show errors if any
             } else {
                 this.is_visible_errors = false; // Hide errors if none

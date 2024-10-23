@@ -20,7 +20,6 @@ const maxPrice = 1000; // Define maximum price
 watch(priceRange, (newValue) => {
     // Validate the new price range
     if (newValue[0] < minPrice || newValue[0] >= newValue[1] || newValue[1] > maxPrice) {
-        console.warn('Invalid price range:', newValue);
         return; // Exit if the range is invalid
     }
     // Update the store with the valid price range

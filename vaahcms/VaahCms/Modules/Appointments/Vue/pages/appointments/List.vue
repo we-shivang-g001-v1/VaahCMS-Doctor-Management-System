@@ -38,7 +38,6 @@ const handleFileUpload = (event) => {
         const reader = new FileReader();
         reader.onload = (e) => {
             csvData.value = csvToJson(e.target.result);
-            console.log("CSV Data:", csvData.value); // Log CSV data
             extractHeaders();
             activeStep.value = 1; // Move to step 2 after upload
         };
@@ -66,15 +65,13 @@ const csvToJson = (csv) => {
 const extractHeaders = () => {
     if (csvData.value && csvData.value.length > 0) {
         csvHeaders.value = Object.keys(csvData.value[0]);
-        console.log("Extracted CSV Headers:", csvHeaders.value); // Log extracted headers
-        fieldMappings.value = new Array(store.assets.fields.length).fill(""); // Link to store.fields
+        fieldMappings.value = new Array(store.assets.fields.length).fill("");
     }
 };
 
 // Proceed to preview data after field mapping
 const mapFieldsAndPreview = () => {
     if (fieldMappings.value.length > 0) {
-        console.log("Field Mappings:", fieldMappings.value); // Log field mappings
         activeStep.value = 2; // Move to step 3 for preview
     }
 };
@@ -93,7 +90,6 @@ const importAppointments = () => {
         return mappedRow;
     });
 
-    console.log("Mapped Appointment Data for Upload:", mappedData);
     store.importAppointments(mappedData);
     isModalVisible.value = false; // Close modal
     activeStep.value = 0; // Reset steps

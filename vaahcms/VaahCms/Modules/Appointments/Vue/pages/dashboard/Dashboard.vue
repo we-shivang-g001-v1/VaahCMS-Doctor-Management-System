@@ -28,7 +28,6 @@ onMounted(async () => {
 
     } catch (err) {
         error.value = 'Failed to load appointment data. Please try again later.';
-        console.error('Error loading appointment data:', err);
     } finally {
         loading.value = false;
     }

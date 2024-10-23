@@ -39,7 +39,6 @@ const handleFileUpload = (event) => {
         reader.onload = (e) => {
             const contents = e.target.result;
             const jsonData = csvToJson(contents);
-            console.log('Parsed JSON data:', jsonData);
             importDoctors(jsonData);
             isModalVisible.value = false; // close modal after file upload
         };
@@ -77,7 +76,6 @@ onMounted(async () => {
 });
 
 const exportDoctors = () => {
-    console.log("doctor")
     store.exportDoctors();
 };
 

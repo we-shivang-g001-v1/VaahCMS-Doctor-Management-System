@@ -24,7 +24,6 @@ onMounted(async () => {
     await rootStore.getAssets();
 });
 
-console.log(rootStore);
 
 
 const items = ref([
@@ -59,7 +58,7 @@ const items = ref([
 
 </script>
 <template>
-   
+
 
     <!-- Show this div when it's not a mobile device -->
     <div v-if="!$isMobile() && height">

@@ -23,7 +23,6 @@ class AppointmentExport implements FromCollection, WithHeadings, WithCustomCsvSe
                 'slot_end_time' => $item->slot_end_time,
                 'status' => $item->status == 1 ? 'Booked' : 'Canceled',
                 'reason' => $item->reason,
-                // Add any other fields you want to export
             ];
         });
     }

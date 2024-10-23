@@ -764,6 +764,7 @@ export const useAppointmentStore = defineStore({
                     this.ajax_url.concat('/bulkAppointmentExport/appointmentList'),
                     (data, res) => {
                         file_data = res.data;
+                        console.log(res)
                     }
                 );
                 const blob = new Blob([file_data]);

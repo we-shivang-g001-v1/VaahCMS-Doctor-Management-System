@@ -105,6 +105,7 @@ const importAppointments = () => {
 // Export appointments
 const exportAppointments = () => {
     store.exportAppointments();
+    console.log(store.exportAppointments())
 };
 
 onMounted(async () => {
@@ -126,8 +127,42 @@ const toggleCreateMenu = (event) => {
 
 <template>
     <div class="grid" v-if="store.assets">
+        <div v-if="$isMobile()" :class="'col-' + (store.show_filters ? 6 : store.list_view_width)">
+            <Panel class="is-small mobile-panel">
+                <template #header>
+                    <div class="flex flex-row justify-between align-items-center">
+                        <div>
+                            <b class="mr-1">Appointments mobile</b>
+                            <Badge v-if="store.list && store.list.total > 0" :value="store.list.total" />
+                        </div>
+<!--                        <Button icon="pi pi-refresh" class="p-button-sm" @click="store.getList()" />-->
+                    </div>
+                </template>
 
-        <div :class="'col-'+(store.show_filters?9:store.list_view_width)">
+                <template #icons>
+<!--                    <div class="p-inputgroup mobile-buttons">-->
+<!--                        <Button @click="isModalVisible = true" class="p-button-sm full-width mb-1">Upload CSV</Button>-->
+<!--                        <Button label="Export" @click="exportAppointments" class="p-button-sm full-width mb-1" />-->
+<!--                        <Button v-if="store.assets.permission[1] !== 'appointments-has-access-of-doctor-section'"-->
+<!--                                class="p-button-sm full-width mb-1"-->
+<!--                                @click="store.toForm()">-->
+<!--                            <i class="pi pi-plus mr-1"></i> Create-->
+<!--                        </Button>-->
+<!--                        <Button v-if="root.assets && root.assets.module && root.assets.module.is_dev"-->
+<!--                                type="button"-->
+<!--                                @click="toggleCreateMenu"-->
+<!--                                class="p-button-sm full-width mb-1"-->
+<!--                                icon="pi pi-angle-down" />-->
+<!--                    </div>-->
+                </template>
+
+                <Actions />
+                <Table />
+            </Panel>
+        </div>
+
+
+        <div v-if="!$isMobile()" :class="'col-'+(store.show_filters?9:store.list_view_width)">
             <Panel class="is-small">
                 <template class="p-1" #header>
                     <div class="flex flex-row">
@@ -182,6 +217,9 @@ const toggleCreateMenu = (event) => {
                 <p>Select a CSV file to upload appointment data from your computer.</p>
                 <input type="file" ref="fileInput" @change="handleFileUpload" accept=".csv" class="hidden-file-input" />
                 <Button label="Choose File" @click="openFileDialog" class="p-button-rounded p-button-outlined" />
+
+                <Button label="Download Sample File" icon="pi pi-download" @click="downloadSampleFile" class="p-button-rounded p-button-outlined" />
+
             </div>
 
             <!-- Step 2: Map Fields -->
@@ -363,5 +401,35 @@ const toggleCreateMenu = (event) => {
     color: #4CAF50;
     background-color: white;
 }
+
+/* Mobile panel styling */
+.mobile-panel {
+    margin: 1rem;
+    padding: 1rem;
+    border-radius: 8px; /* Rounded corners for modern look */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Soft shadow */
+}
+
+/* Aligns header elements */
+.mobile-panel .flex {
+    justify-content: space-between; /* Space out header content */
+    align-items: center; /* Vertical alignment */
+}
+
+/* Full-width buttons */
+.mobile-buttons .full-width {
+    width: 100%; /* Make buttons fill the container */
+}
+
+/* Spacing between buttons */
+.mobile-buttons .mb-1 {
+    margin-bottom: 0.5rem; /* Space between buttons */
+}
+
+/* Badge styling */
+.p-badge {
+    margin-left: 0.5rem; /* Space between badge and text */
+}
+
 
 </style>

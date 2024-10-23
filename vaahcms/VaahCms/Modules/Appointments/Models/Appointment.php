@@ -299,8 +299,8 @@ class Appointment extends VaahModel
         $item->save();
 
         // Send appointment confirmation emails
-        $subject = 'Appointment Booked - Mail';
-        self::appointmentMail($inputs, $subject);
+//        $subject = 'Appointment Booked - Mail';
+//        self::appointmentMail($inputs, $subject);
 
         $response = self::getItem($item->id);
         $response['messages'][] = trans("appointment booked successfully");

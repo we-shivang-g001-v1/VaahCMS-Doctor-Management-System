@@ -105,7 +105,9 @@ const importAppointments = () => {
 // Export appointments
 const exportAppointments = () => {
     store.exportAppointments();
-    console.log(store.exportAppointments())
+};
+const downloadSampleFile = () => {
+    store.downloadSampleFile();
 };
 
 onMounted(async () => {
@@ -140,20 +142,7 @@ const toggleCreateMenu = (event) => {
                 </template>
 
                 <template #icons>
-<!--                    <div class="p-inputgroup mobile-buttons">-->
-<!--                        <Button @click="isModalVisible = true" class="p-button-sm full-width mb-1">Upload CSV</Button>-->
-<!--                        <Button label="Export" @click="exportAppointments" class="p-button-sm full-width mb-1" />-->
-<!--                        <Button v-if="store.assets.permission[1] !== 'appointments-has-access-of-doctor-section'"-->
-<!--                                class="p-button-sm full-width mb-1"-->
-<!--                                @click="store.toForm()">-->
-<!--                            <i class="pi pi-plus mr-1"></i> Create-->
-<!--                        </Button>-->
-<!--                        <Button v-if="root.assets && root.assets.module && root.assets.module.is_dev"-->
-<!--                                type="button"-->
-<!--                                @click="toggleCreateMenu"-->
-<!--                                class="p-button-sm full-width mb-1"-->
-<!--                                icon="pi pi-angle-down" />-->
-<!--                    </div>-->
+
                 </template>
 
                 <Actions />

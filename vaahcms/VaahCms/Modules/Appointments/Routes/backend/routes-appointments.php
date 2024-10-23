@@ -82,6 +82,9 @@ function () {
     Route::get('/bulkAppointmentExport/appointmentList', [AppointmentsController::class, 'bulkAppointmentExport'])
         ->name('vh.backend.appointment.appointments.bulk.export');
 
+    Route::get('/sampleExport/sampleList', [AppointmentsController::class, 'sampleExport'])
+        ->name('vh.backend.appointment.appointments.bulk.export');
+
     //---------------------------------------------------------
 
 });

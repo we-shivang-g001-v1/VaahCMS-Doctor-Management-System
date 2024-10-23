@@ -779,6 +779,28 @@ export const useAppointmentStore = defineStore({
             } catch (error) {
                 console.error('Error downloading file:', error);
             }
+        },async downloadSampleFile(){
+            let file_data = null;
+            try {
+                await vaah().ajax(
+                    this.ajax_url.concat('/sampleExport/sampleList'),
+                    (data, res) => {
+                        file_data = res.data;
+                        console.log(res)
+                    }
+                );
+                const blob = new Blob([file_data]);
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', 'SampleList.csv');
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                window.URL.revokeObjectURL(url);
+            } catch (error) {
+                console.error('Error downloading file:', error);
+            }
         },async importAppointments(fileData) {
             if (!fileData) {
                 return false;

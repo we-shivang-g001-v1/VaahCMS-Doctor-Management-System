@@ -16,6 +16,7 @@ use WebReinvent\VaahCms\Models\User;
 use WebReinvent\VaahCms\Libraries\VaahSeeder;
 use Maatwebsite\Excel\Facades\Excel;
 use App\ExportData\AppointmentExport;
+use App\ExportData\SampleExport;
 
 class Appointment extends VaahModel
 {
@@ -1193,6 +1194,10 @@ class Appointment extends VaahModel
     }
     //-------------------------------------------------
 
+    public static function sampleExport()
+    {
+        return Excel::download(new SampleExport,'SampleList.csv');
+    }
 
 
 }

@@ -1,5 +1,6 @@
 <?php namespace VaahCms\Modules\Appointments\Models;
 
+use App\ExportData\DoctorExport;
 use Carbon\Carbon;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -1188,9 +1189,10 @@ class Appointment extends VaahModel
 
 
     //-------------------------------------------------
-    public static function bulkAppointmentExport()
+    public static function bulkAppointmentExport(Request $request)
     {
-        return Excel::download(new AppointmentExport,'AppointmentsList.csv');
+        $ids_selected = $request->input('selected_ids', null);
+        return Excel::download(new AppointmentExport($ids_selected),'AppointmentsList.csv');
     }
     //-------------------------------------------------
 

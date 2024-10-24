@@ -8,9 +8,24 @@ use VaahCms\Modules\Appointments\Models\Doctor;
 
 class DoctorExport implements FromCollection, WithHeadings, WithCustomCsvSettings
 {
+    protected $ids_selected;
+    public function __construct($ids_selected = null)
+    {
+        if (is_string($ids_selected)) {
+            $this->ids_selected = explode(',', $ids_selected);
+        } elseif (is_array($ids_selected)) {
+            $this->ids_selected = $ids_selected;
+        } else {
+            $this->ids_selected = [];
+        }
+    }
     public function collection()
     {
-        return Doctor::all()->map(function ($item) {
+        $query = Doctor::query();
+        if (!empty($this->ids_selected)) {
+            $query->whereIn('id', $this->ids_selected);
+        }
+        return $query->get()->map(function ($item) {
             return [
                 'id' => $item->id,
                 'name' => $item->name,

@@ -758,19 +758,30 @@ export const useAppointmentStore = defineStore({
             ]
 
         },async exportAppointments(){
+            let selected_appointment_ids = this.action.items.map(item => item.id);
+            console.log(selected_appointment_ids)
+            let params = {};
+            if (selected_appointment_ids.length > 0) {
+                params.selected_ids = selected_appointment_ids;
+
+            }
             let file_data = null;
             try {
+                const method = selected_appointment_ids.length > 0 ? 'GET' : 'POST';
+                console.log(selected_appointment_ids.length)
+                const url = method === 'GET'
+                    ? this.ajax_url.concat('/bulkAppointmentExport/appointmentList', `?selected_ids=${selected_appointment_ids.join(',')}`)
+                    : this.ajax_url.concat('/bulkAppointmentExport/appointmentList');
                 await vaah().ajax(
-                    this.ajax_url.concat('/bulkAppointmentExport/appointmentList'),
+                    url,
                     (data, res) => {
                         file_data = res.data;
-                        console.log(res)
-                    }
+                    },
                 );
                 const blob = new Blob([file_data]);
-                const url = window.URL.createObjectURL(blob);
+                const url_blob = window.URL.createObjectURL(blob);
                 const link = document.createElement('a');
-                link.href = url;
+                link.href = url_blob;
                 link.setAttribute('download', 'AppointmentList.csv');
                 document.body.appendChild(link);
                 link.click();

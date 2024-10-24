@@ -8,10 +8,33 @@ use VaahCms\Modules\Appointments\Models\Appointment;
 
 class AppointmentExport implements FromCollection, WithHeadings, WithCustomCsvSettings
 {
+    protected $ids_selected;
+
+    public function __construct($ids_selected = null)
+    {
+
+        if (is_string($ids_selected)) {
+            $this->ids_selected = explode(',', $ids_selected);
+
+        } elseif (is_array($ids_selected)) {
+            $this->ids_selected = $ids_selected;
+        } else {
+            $this->ids_selected = [];
+        }
+    }
+
     public function collection()
     {
-        // Fetch appointments with related doctor and patient data
-        return Appointment::with(['doctor', 'patient'])->get()->map(function ($item) {
+        // Eager load doctor and patient relationships
+        $query = Appointment::with(['doctor', 'patient']);
+
+
+        // Apply filter for selected IDs if any
+        if (!empty($this->ids_selected)) {
+            $query->whereIn('id', $this->ids_selected);
+        }
+
+        return $query->get()->map(function ($item) {
 
             return [
                 'id' => $item->id,
@@ -39,16 +62,14 @@ class AppointmentExport implements FromCollection, WithHeadings, WithCustomCsvSe
             'End Time',
             'Status',
             'Reason',
-            // Include other headings for additional fields
         ];
     }
 
-    // Custom CSV settings
     public function getCsvSettings(): array
     {
         return [
-            'delimiter' => ',',  // Specify the delimiter
-            'enclosure' => '',   // Specify no enclosure (removes double quotes)
+            'delimiter' => ',',
+            'enclosure' => '',  // No enclosure to avoid double quotes
         ];
     }
 }

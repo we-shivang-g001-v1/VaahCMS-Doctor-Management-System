@@ -738,18 +738,28 @@ export const useDoctorStore = defineStore({
             ]
 
         },async exportDoctors(){
+            let selected_doctor_ids = this.action.items.map(item => item.id);
+            console.log(selected_doctor_ids)
+            let params = {};
+            if (selected_doctor_ids.length > 0) {
+                params.selected_ids = selected_doctor_ids;
+            }
             let file_data = null;
             try {
+                const method = selected_doctor_ids.length > 0 ? 'GET' : 'POST';
+                const url = method === 'GET'
+                    ? this.ajax_url.concat('/bulkDoctorExport/doctorList', `?selected_ids=${selected_doctor_ids.join(',')}`)
+                    : this.ajax_url.concat('/bulkDoctorExport/doctorList');
                 await vaah().ajax(
-                    this.ajax_url.concat('/bulkDoctorExport/doctorList'),
+                     url,
                     (data, res) => {
                         file_data = res.data;
-                    }
+                    },
                 );
                 const blob = new Blob([file_data]);
-                const url = window.URL.createObjectURL(blob);
+                const url_blob = window.URL.createObjectURL(blob);
                 const link = document.createElement('a');
-                link.href = url;
+                link.href = url_blob;
                 link.setAttribute('download', 'doctorsList.csv');
                 document.body.appendChild(link);
                 link.click();

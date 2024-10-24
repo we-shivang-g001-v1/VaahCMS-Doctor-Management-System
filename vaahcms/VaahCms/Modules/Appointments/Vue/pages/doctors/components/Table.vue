@@ -1,9 +1,10 @@
 <script setup>
 import { vaah } from '../../../vaahvue/pinia/vaah'
 import { useDoctorStore } from '../../../stores/store-doctors'
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 const store = useDoctorStore();
 const useVaah = vaah();
+
 
 const visibleRight = ref(false) // Control sidebar visibility
 const currentAppointmentCount = ref(0); // Store the current appointment count
@@ -48,6 +49,8 @@ function convertUtcToIst(utcTimeString) {
 
     return `${hoursStr}:${minutesStr}:${secondsStr}`;
 }
+
+console.log(store.action.items)
 
 
 function formatTimeWithAmPm(time) {
@@ -135,7 +138,6 @@ function formatTimeWithAmPm(time) {
                    v-model:selection="store.action.items"
                    stripedRows
                    responsiveLayout="scroll">
-
             <Column selectionMode="multiple"
                     v-if="store.isViewLarge()"
                     headerStyle="width: 3em">

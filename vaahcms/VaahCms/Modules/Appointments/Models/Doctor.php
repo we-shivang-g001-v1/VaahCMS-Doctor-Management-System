@@ -969,14 +969,14 @@ class Doctor extends VaahModel
             'email_errors' => [],
             'phone_errors' => [],
         ];
-        $successMessages = []; // For successful imports
+        $success_messages = []; // For successful imports
 
         // Array to hold unique doctor data
         $uniqueDoctors = [];
 
         foreach ($fileContents as $content) {
             // Normalize the incoming data by converting the keys to the standard format
-            $normalizedContent = [];
+            $normalized_content = [];
             foreach ($content as $key => $value) {
                 $normalizedKey = null;
 
@@ -1000,63 +1000,63 @@ class Doctor extends VaahModel
                 }
 
                 // Assign the normalized key and value to the new array
-                $normalizedContent[$normalizedKey] = $value;
+                $normalized_content[$normalizedKey] = $value;
             }
 
             // Handle missing or null values in required fields
-            if (empty($normalizedContent['email'])) {
-                $errors['email_errors'][] = "Email is required for doctor: " . (isset($normalizedContent['name']) ? $normalizedContent['name'] : 'unknown');
+            if (empty($normalized_content['email'])) {
+                $errors['email_errors'][] = "Email is required for doctor: " . (isset($normalized_content['name']) ? $normalized_content['name'] : 'unknown');
                 continue; // Skip this record
             }
 
-            if (empty($normalizedContent['phone'])) {
-                $errors['phone_errors'][] = "Phone number is required for doctor: {$normalizedContent['name']}.";
+            if (empty($normalized_content['phone'])) {
+                $errors['phone_errors'][] = "Phone number is required for doctor: {$normalized_content['name']}.";
                 continue; // Skip this record
             }
 
             // Default values for optional fields
-            $normalizedContent['price'] = isset($normalizedContent['price']) ? $normalizedContent['price'] : 0.00; // Set default price if not provided
-            $normalizedContent['specialization'] = isset($normalizedContent['specialization']) ? $normalizedContent['specialization'] : 'General'; // Set default specialization
+            $normalized_content['price'] = isset($normalized_content['price']) ? $normalized_content['price'] : 0.00; // Set default price if not provided
+            $normalized_content['specialization'] = isset($normalized_content['specialization']) ? $normalized_content['specialization'] : 'General'; // Set default specialization
 
             // Shift time validation
-            if (isset($normalizedContent['shift_start_time'], $normalizedContent['shift_end_time'])) {
-                $start_time = strtotime($normalizedContent['shift_start_time']);
-                $end_time = strtotime($normalizedContent['shift_end_time']);
+            if (isset($normalized_content['shift_start_time'], $normalized_content['shift_end_time'])) {
+                $start_time = strtotime($normalized_content['shift_start_time']);
+                $end_time = strtotime($normalized_content['shift_end_time']);
 
                 if ($start_time === false || $end_time === false) {
-                    $errors['phone_errors'][] = "Invalid shift start or end time for doctor: {$normalizedContent['name']}.";
+                    $errors['phone_errors'][] = "Invalid shift start or end time for doctor: {$normalized_content['name']}.";
                     continue;
                 }
 
                 if ($start_time >= $end_time) {
-                    $errors['phone_errors'][] = "Shift start time must be earlier than shift end time for doctor: {$normalizedContent['name']}.";
+                    $errors['phone_errors'][] = "Shift start time must be earlier than shift end time for doctor: {$normalized_content['name']}.";
                     continue;
                 }
             } else {
-                $errors['phone_errors'][] = "Shift start time and end time are required for doctor: {$normalizedContent['name']}.";
+                $errors['phone_errors'][] = "Shift start time and end time are required for doctor: {$normalized_content['name']}.";
                 continue;
             }
 
             // Add to uniqueDoctors array only if email or phone is not already present
-            $uniqueKey = $normalizedContent['email'] . '|' . $normalizedContent['phone'];
+            $uniqueKey = $normalized_content['email'] . '|' . $normalized_content['phone'];
             if (isset($uniqueDoctors[$uniqueKey])) {
                 continue; // Skip this record if already added
             }
-            $uniqueDoctors[$uniqueKey] = $normalizedContent; // Add unique entry
+            $uniqueDoctors[$uniqueKey] = $normalized_content; // Add unique entry
 
             // Check if the email already exists
-            $existingDoctorByEmail = self::where('email', $normalizedContent['email'])->withTrashed()->first();
+            $existingDoctorByEmail = self::where('email', $normalized_content['email'])->withTrashed()->first();
             if ($existingDoctorByEmail) {
-                $error_message = "The email {$normalizedContent['email']} is already stored for another doctor" .
+                $error_message = "The email {$normalized_content['email']} is already stored for another doctor" .
                     ($existingDoctorByEmail->deleted_at ? ' in trash.' : '.');
                 $errors['email_errors'][] = $error_message;
                 continue; // Skip this record
             }
 
             // Check if the phone number already exists
-            $existingDoctorByPhone = self::where('phone', $normalizedContent['phone'])->withTrashed()->first();
+            $existingDoctorByPhone = self::where('phone', $normalized_content['phone'])->withTrashed()->first();
             if ($existingDoctorByPhone) {
-                $error_message = "The phone number {$normalizedContent['phone']} is already stored for another doctor" .
+                $error_message = "The phone number {$normalized_content['phone']} is already stored for another doctor" .
                     ($existingDoctorByPhone->deleted_at ? ' in trash.' : '.');
                 $errors['phone_errors'][] = $error_message;
                 continue; // Skip this record
@@ -1065,21 +1065,21 @@ class Doctor extends VaahModel
             // If validation passes, update or create doctor record
             self::updateOrCreate(
                 [
-                    'email' => $normalizedContent['email'],
-                    'phone' => $normalizedContent['phone'],  // Phone and email are unique identifiers
+                    'email' => $normalized_content['email'],
+                    'phone' => $normalized_content['phone'],  // Phone and email are unique identifiers
                 ],
                 [
-                    'name' => $normalizedContent['name'],
-                    'price' => $normalizedContent['price'],
-                    'specialization' => $normalizedContent['specialization'],
-                    'shift_start_time' => date('Y-m-d H:i:s', strtotime($normalizedContent['shift_start_time'])),
-                    'shift_end_time' => date('Y-m-d H:i:s', strtotime($normalizedContent['shift_end_time'])),
+                    'name' => $normalized_content['name'],
+                    'price' => $normalized_content['price'],
+                    'specialization' => $normalized_content['specialization'],
+                    'shift_start_time' => date('Y-m-d H:i:s', strtotime($normalized_content['shift_start_time'])),
+                    'shift_end_time' => date('Y-m-d H:i:s', strtotime($normalized_content['shift_end_time'])),
                     'is_active' => 1,
                 ]
             );
 
             // Add success message for the imported doctor
-            $successMessages[] = "Doctor {$normalizedContent['name']} imported successfully.";
+            $success_messages[] = "Doctor {$normalized_content['name']} imported successfully.";
         }
 
         // Create a response structure similar to updateItem
@@ -1090,7 +1090,7 @@ class Doctor extends VaahModel
             $response['error'] = $errors;
         } else {
             $response['success'] = true;
-            $response['messages'] = $successMessages;
+            $response['messages'] = $success_messages;
             $response['message'] = trans("vaahcms-general.saved_successfully");
         }
 

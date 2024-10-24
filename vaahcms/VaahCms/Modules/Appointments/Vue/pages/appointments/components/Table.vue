@@ -193,27 +193,34 @@ function formatTimeWithAmPm(time) {
             :style="{ width: '50rem' }"
             :breakpoints="{ '1199px': '75vw', '575px': '90vw' }"
         >
-
             <div
                 class="error-column"
                 v-if="store.import_errors && store.import_errors.length > 0"
-                :class="'full-width'">
+                :class="'full-width'"
+            >
+                <!-- Show the count of error messages -->
+                <h3>
+                    Total Errors: {{ store.import_errors.length }}
+                </h3>
+
                 <table class="styled-table">
                     <thead>
                     <tr>
                         <th>Appointment Error Messages</th>
-
                     </tr>
                     </thead>
                     <tbody>
-                    <tr v-for="(appointmentError, index) in store.import_errors" :key="'appointment-'+index">
+                    <tr
+                        v-for="(appointmentError, index) in store.import_errors"
+                        :key="'appointment-'+index"
+                    >
                         <td>{{ appointmentError }}</td>
                     </tr>
                     </tbody>
-
                 </table>
             </div>
         </Dialog>
+
         <!--paginator-->
         <Paginator v-if="store.query.rows"
                    v-model:rows="store.query.rows"

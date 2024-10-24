@@ -18,7 +18,7 @@ const fileInput = ref(null);
 const csvData = ref([]);
 const csvHeaders = ref([]);
 const fieldMappings = ref([]);
-const activeStep = ref(0); // Track current step in CSV upload process
+const active_step = ref(0); // Track current step in CSV upload process
 const steps = ref([
     { label: "Upload CSV" },
     { label: "Map Fields" },
@@ -39,7 +39,7 @@ const handleFileUpload = (event) => {
         reader.onload = (e) => {
             csvData.value = csvToJson(e.target.result);
             extractHeaders();
-            activeStep.value = 1; // Move to step 2 after upload
+            active_step.value = 1; // Move to step 2 after upload
         };
         reader.readAsText(file);
     }
@@ -72,7 +72,7 @@ const extractHeaders = () => {
 // Proceed to preview data after field mapping
 const mapFieldsAndPreview = () => {
     if (fieldMappings.value.length > 0) {
-        activeStep.value = 2; // Move to step 3 for preview
+        active_step.value = 2; // Move to step 3 for preview
     }
 };
 
@@ -92,7 +92,7 @@ const importAppointments = () => {
 
     store.importAppointments(mappedData);
     isModalVisible.value = false; // Close modal
-    activeStep.value = 0; // Reset steps
+    active_step.value = 0; // Reset steps
     csvData.value = [];
     fieldMappings.value = [];
     csvHeaders.value = [];
@@ -194,10 +194,10 @@ const toggleCreateMenu = (event) => {
 
         <!-- CSV Upload Modal with steps -->
         <Dialog v-model:visible="isModalVisible" header="Import Appointments" :modal="true" :closable="true" class="custom-file-upload-modal">
-            <Steps :model="steps" :activeIndex="activeStep" class="custom-steps"></Steps>
+            <Steps :model="steps" :activeIndex="active_step" class="custom-steps"></Steps>
 
             <!-- Step 1: Upload CSV File -->
-            <div v-if="activeStep === 0" class="step-content">
+            <div v-if="active_step === 0" class="step-content">
                 <i class="pi pi-upload icon-large"></i>
                 <p>Select a CSV file to upload appointment data from your computer.</p>
                 <input type="file" ref="fileInput" @change="handleFileUpload" accept=".csv" class="hidden-file-input" />
@@ -208,7 +208,7 @@ const toggleCreateMenu = (event) => {
             </div>
 
             <!-- Step 2: Map Fields -->
-            <div v-if="activeStep === 1" class="step-content">
+            <div v-if="active_step === 1" class="step-content">
                 <i class="pi pi-sitemap icon-large"></i>
                 <p>Map the CSV headers to the corresponding fields.</p>
                 <div class="mapping-fields-container">
@@ -226,7 +226,7 @@ const toggleCreateMenu = (event) => {
             </div>
 
             <!-- Step 3: Preview Data -->
-            <div v-if="activeStep === 2" class="step-content">
+            <div v-if="active_step === 2" class="step-content">
                 <i class="pi pi-eye icon-large"></i>
                 <p>Preview the mapped data before importing.</p>
                 <table class="preview-table">
@@ -241,11 +241,11 @@ const toggleCreateMenu = (event) => {
                     </tr>
                     </tbody>
                 </table>
-                <Button label="Confirm & Upload" @click="activeStep = 3" class="p-button-rounded p-button-outlined" />
+                <Button label="Confirm & Upload" @click="active_step = 3" class="p-button-rounded p-button-outlined" />
             </div>
 
             <!-- Step 4: Confirm & Upload -->
-            <div v-if="activeStep === 3" class="step-content">
+            <div v-if="active_step === 3" class="step-content">
                 <i class="pi pi-check-circle icon-large"></i>
                 <p>Confirm the appointment data upload.</p>
                 <Button label="Upload Appointments" @click="importAppointments" class="p-button-rounded p-button-outlined" />

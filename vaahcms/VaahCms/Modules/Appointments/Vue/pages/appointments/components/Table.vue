@@ -93,6 +93,7 @@ function formatTimeWithAmPm(time) {
 
                         <!-- Cancel Appointment Button -->
                         <Button v-if="item.status !== 0 && !item.deleted_at"
+                                class="p-button-tiny p-button-danger p-button-text"
                                 v-tooltip.top="'Cancel Appointment'"
                                 @click="store.confirmToCancelAppointment(item)"
                                 icon="pi pi-times" />
@@ -193,34 +194,27 @@ function formatTimeWithAmPm(time) {
             :style="{ width: '50rem' }"
             :breakpoints="{ '1199px': '75vw', '575px': '90vw' }"
         >
+
             <div
                 class="error-column"
                 v-if="store.import_errors && store.import_errors.length > 0"
-                :class="'full-width'"
-            >
-                <!-- Show the count of error messages -->
-                <h3>
-                    Total Errors: {{ store.import_errors.length }}
-                </h3>
-
+                :class="'full-width'">
                 <table class="styled-table">
                     <thead>
                     <tr>
                         <th>Appointment Error Messages</th>
+
                     </tr>
                     </thead>
                     <tbody>
-                    <tr
-                        v-for="(appointmentError, index) in store.import_errors"
-                        :key="'appointment-'+index"
-                    >
+                    <tr v-for="(appointmentError, index) in store.import_errors" :key="'appointment-'+index">
                         <td>{{ appointmentError }}</td>
                     </tr>
                     </tbody>
+
                 </table>
             </div>
         </Dialog>
-
         <!--paginator-->
         <Paginator v-if="store.query.rows"
                    v-model:rows="store.query.rows"

@@ -73,11 +73,14 @@ export const useDoctorStore = defineStore({
         list_create_menu: [],
         item_menu_list: [],
         item_menu_state: null,
-        form_menu_list: []
+        form_menu_list: [],
+        specializations:[]
+
     }),
     getters: {
 
     },
+
     actions: {
         //---------------------------------------------------------------------
         async onLoad(route)
@@ -737,9 +740,21 @@ export const useDoctorStore = defineStore({
                 },
             ]
 
+        },async getSpecializations() {
+            try {
+                const response = await vaah().ajax(this.ajax_url.concat('/specializations'));
+                console.log(response);
+
+                if (response.data.success) {
+                    this.specializations = response.data.specializations;
+                } else {
+                    console.error('Failed to fetch specializations:', response.messages);
+                }
+            } catch (error) {
+                console.error('An error occurred while fetching specializations:', error);
+            }
         },async exportDoctors(){
             let selected_doctor_ids = this.action.items.map(item => item.id);
-            console.log(selected_doctor_ids)
             let params = {};
             if (selected_doctor_ids.length > 0) {
                 params.selected_ids = selected_doctor_ids;

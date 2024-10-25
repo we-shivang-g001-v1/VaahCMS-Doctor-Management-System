@@ -43,6 +43,9 @@ function () {
      */
     Route::post('/', [DoctorsController::class, 'createItem'])
         ->name('vh.backend.appointments.doctors.create');
+
+    Route::get('/specializations', [DoctorsController::class, 'getSpecializationsWithDoctorCounts'])
+        ->name('vh.backend.appointments.doctors.specializations');
     /**
      * Get Item
      */
@@ -76,6 +79,7 @@ function () {
 
     Route::get('/bulkDoctorExport/doctorList', [DoctorsController::class, 'bulkDoctorExport'])
         ->name('vh.backend.appointment.doctors.bulk.export');
+
 
 
 

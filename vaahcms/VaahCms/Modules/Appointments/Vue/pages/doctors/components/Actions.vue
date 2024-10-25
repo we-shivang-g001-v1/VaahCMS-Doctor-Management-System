@@ -53,6 +53,17 @@ const toggleBulkMenuState = (event) => {
     bulk_menu_state.value.toggle(event);
 };
 //--------/bulk_menu_state
+const handleCustomFiltersClick = () => {
+    toggleFilters('customFilters');
+    getSpecializations(); // Replace with your actual function
+};
+
+const getSpecializations = () => {
+    store.getSpecializations();
+};
+const someOtherFunction = () => {
+    console.log('Another function executed.'); // Your logic here
+};
 
 </script>
 
@@ -105,7 +116,7 @@ const toggleBulkMenuState = (event) => {
                                 type="button"
                                 class="p-button-sm"
                                 :disabled="Object.keys(route.params).length"
-                                @click="toggleFilters('customFilters')">
+                                @click="handleCustomFiltersClick">
                                 Custom Filters
                                 <Badge v-if="store.count_custom_filters > 0" :value="store.count_custom_filters"></Badge>
                             </Button>

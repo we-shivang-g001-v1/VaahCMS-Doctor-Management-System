@@ -255,6 +255,32 @@ class Doctor extends VaahModel
     }
     //-------------------------------------------------
     //-------------------------------------------------
+
+    public static function getSpecializationsWithDoctorCounts()
+    {
+        // Query to get the specializations with the count of doctors
+        $specializations = self::select('specialization')
+            ->selectRaw('COUNT(*) as doctor_count')
+            ->groupBy('specialization')
+            ->get();
+
+        // Prepare the response
+        $response = [
+            'success' => true,
+        ];
+
+        // Populate the specializations array
+        foreach ($specializations as $specialization) {
+            $response['specializations'][] = [
+                'name' => $specialization->specialization,
+                'doctor_count' => $specialization->doctor_count,
+            ];
+        }
+
+        return $response;
+    }
+
+
     //-------------------------------------------------
     public function scopeGetSorted($query, $filter)
     {
@@ -385,24 +411,27 @@ class Doctor extends VaahModel
         if (isset($filter['shift_time']) && !empty($filter['shift_time'])) {
             // Split the combined value into start and end times
             list($start, $end) = explode('-', $filter['shift_time']);
+            $startTime = trim($start) . ':00'; // Add seconds if needed
+            $endTime = trim($end) . ':00'; // Add seconds if needed
 
-            // Trim whitespace
-            $startTime = trim($start);
-            $endTime = trim($end);
-
-            // Convert 12-hour format to 24-hour format
-            $startTime24 = date('H:i:s', strtotime($startTime)); // Converts to HH:MM:SS
-            $endTime24 = date('H:i:s', strtotime($endTime));     // Converts to HH:MM:SS
-
-            // Apply the filter based on the parsed start and end times
-            $query->where('shift_start_time', '>=', $startTime24)
-                ->where('shift_end_time', '<=', $endTime24);
+            // Adjust the query to check for overlapping time ranges
+            $query->where(function ($q) use ($startTime, $endTime) {
+                $q->where(function ($subQuery) use ($startTime, $endTime) {
+                    $subQuery->where('shift_start_time', '<', $endTime)
+                        ->where('shift_end_time', '>', $startTime);
+                });
+            });
         }
 
         return $query;
     }
 
 
+
+
+
+
+    //-------------------------------------------------
 
 
     //-------------------------------------------------

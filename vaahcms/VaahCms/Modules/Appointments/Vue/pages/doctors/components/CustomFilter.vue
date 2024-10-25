@@ -5,12 +5,15 @@ import VhFieldVertical from './../../../vaahvue/vue-three/primeflex/VhFieldVerti
 import { watch,ref } from 'vue';
 const store = useDoctorStore();
 const shiftTimings = [
-    { value: '05:00:00-09:00:00', label: '05:00 PM - 09:00 PM' },
-    { value: '09:00:00-13:00:00', label: '09:00 AM - 01:00 PM' },
-    { value: '13:00:00-17:00:00', label: '01:00 PM - 05:00 PM' },
-    { value: '17:00:00-21:00:00', label: '05:00 PM - 09:00 PM' },
-    { value: '21:00:00-23:00:00', label: '09:00 PM - 11:00 PM' },
+    { value: '23:30:00-03:30:00', label: '05:00 AM - 09:00 AM' },
+    { value: '03:30:00-07:30:00', label: '09:00 AM - 01:00 PM' },
+    { value: '07:30:00-11:30:00', label: '01:00 PM - 05:00 PM' },
+    { value: '11:30:00-15:30:00', label: '05:00 PM - 09:00 PM' },
+    { value: '15:30:00-17:30:00', label: '09:00 PM - 11:00 PM' },
 ];
+
+
+
 // Ensure initial values are set
 const priceRange = ref([500, 1000]);
 const minPrice = 500; // Define minimum price
@@ -32,17 +35,21 @@ const resetPriceRange = () => {
 const shiftStartTime = ref(null);
 const shiftEndTime = ref(null);
 
+
 // Watch for time changes and update the store
 watch([shiftStartTime, shiftEndTime], ([newStart, newEnd]) => {
     if (newStart && newEnd) {
-        store.query.filter.shift_time = `${formatTime(newStart)}-${formatTime(newEnd)}`;
+        const utcStart = convertToUTC(newStart);
+        const utcEnd = convertToUTC(newEnd);
+        store.query.filter.shift_time = `${utcStart}-${utcEnd}`;
     }
 });
 
-// Function to format time as HH:mm:ss
-const formatTime = (date) => {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-}
+// Function to convert local time to UTC as HH:mm:ss
+const convertToUTC = (date) => {
+    const utcDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
+    return utcDate.toISOString().substr(11, 8); // Extract HH:mm:ss from ISO string
+};
 
 </script>
 
@@ -83,80 +90,20 @@ const formatTime = (date) => {
                     <b>Specialization:</b>
                 </template>
 
-
-                <div class="field-radiobutton">
-                    <Checkbox name="specialization-physician"
-                                 inputId="specialization-physician"
-                                 data-testid="doctors-filters-specialization-physician"
-                                 value="Physician"
-                                 v-model="store.query.filter.specialization" />
-                    <label for="specialization-physician" class="cursor-pointer">Physician</label>
+                <div v-for="specialization in store.specializations" :key="specialization.name" class="field-radiobutton">
+                    <Checkbox
+                        :name="`specialization-${specialization.name}`"
+                        :inputId="`specialization-${specialization.name}`"
+                        :data-testid="`doctors-filters-specialization-${specialization.name}`"
+                        :value="specialization.name"
+                        v-model="store.query.filter.specialization"
+                    />
+                    <label :for="`specialization-${specialization.name}`" class="cursor-pointer">
+                        {{ specialization.name }} ({{ specialization.doctor_count }})
+                    </label>
                 </div>
-
-                <div class="field-radiobutton">
-                    <Checkbox name="specialization-ortho"
-                                 inputId="specialization-ortho"
-                                 data-testid="doctors-filters-specialization-ortho"
-                                 value="Ortho"
-                                 v-model="store.query.filter.specialization" />
-                    <label for="specialization-ortho" class="cursor-pointer">ortho</label>
-                </div>
-
-                <div class="field-radiobutton">
-                    <Checkbox name="specialization-dentist"
-                                 inputId="specialization-dentist"
-                                 data-testid="doctors-filters-specialization-dentist"
-                                 value="Dentist"
-                                 v-model="store.query.filter.specialization" />
-                    <label for="specialization-dentist" class="cursor-pointer">Dentist</label>
-                </div>
-
-                <div class="field-radiobutton">
-                    <Checkbox name="specialization-pediatrics"
-                                 inputId="specialization-pediatrics"
-                                 data-testid="doctors-filters-specialization-pediatrics"
-                                 value="Pediatrics"
-                                 v-model="store.query.filter.specialization" />
-                    <label for="specialization-pediatrics" class="cursor-pointer">Pediatrics</label>
-                </div>
-
-                <div class="field-radiobutton">
-                    <Checkbox name="specialization-neurology"
-                                 inputId="specialization-neurology"
-                                 data-testid="doctors-filters-specialization-neurology"
-                                 value="Neurology"
-                                 v-model="store.query.filter.specialization" />
-                    <label for="specialization-neurology" class="cursor-pointer">Neurology</label>
-                </div>
-
-                <div class="field-radiobutton">
-                    <Checkbox name="specialization-orthopedics"
-                                 inputId="specialization-orthopedics"
-                                 data-testid="doctors-filters-specialization-orthopedics"
-                                 value="Orthopedics"
-                                 v-model="store.query.filter.specialization" />
-                    <label for="specialization-orthopedics" class="cursor-pointer">Orthopedics</label>
-                </div>
-
-                <div class="field-radiobutton">
-                    <Checkbox name="specialization-cardiology"
-                                 inputId="specialization-cardiology"
-                                 data-testid="doctors-filters-specialization-cardiology"
-                                 value="Cardiology"
-                                 v-model="store.query.filter.specialization" />
-                    <label for="specialization-cardiology" class="cursor-pointer">Cardiology</label>
-                </div>
-
-                <div class="field-radiobutton">
-                    <Checkbox name="specialization-dermatology"
-                                 inputId="specialization-dermatology"
-                                 data-testid="doctors-filters-specialization-dermatology"
-                                 value="Dermatology"
-                                 v-model="store.query.filter.specialization" />
-                    <label for="specialization-dermatology" class="cursor-pointer">Dermatology</label>
-                </div>
-
             </VhFieldVertical>
+
 
             <Divider/>
 
@@ -190,39 +137,17 @@ const formatTime = (date) => {
                 <template #label>
                     <b>Select Shift Timings:</b>
                 </template>
-
-                <div class="flex flex-col gap-2">
-                    <div>
-                        <label for="shiftStartTime" class="font-semibold">Shift Start Time:</label>
-                        <Calendar
-                            v-model="shiftStartTime"
-                            :hourFormat="'12'"
-                            :pt="{
-                    monthPicker: {class: 'w-15rem'},
-                    yearPicker: {class: 'w-15rem'}
-                }"
-                            time-only
-                            placeholder="Shift Start Time"
-                            @change="updateShiftTime"
-                        />
-                    </div>
-
-                    <div>
-                        <label for="shiftEndTime" class="font-semibold">Shift End Time:</label>
-                        <Calendar
-                            v-model="shiftEndTime"
-                            :hourFormat="'12'"
-                            :pt="{
-                    monthPicker: {class: 'w-15rem'},
-                    yearPicker: {class: 'w-15rem'}
-                }"
-                            time-only
-                            placeholder="Shift End Time"
-                            @change="updateShiftTime"
-                        />
-                    </div>
+                <div v-for="(shift, index) in shiftTimings" :key="index" class="field-radiobutton">
+                    <RadioButton
+                        :name="'shift-time-' + (index + 1)"
+                        :inputId="'shift-time-' + (index + 1)"
+                        :data-testid="'doctors-filters-shift-time-' + (index + 1)"
+                        :value="shift.value"
+                        v-model="store.query.filter.shift_time"
+                    />
+                    <label :for="'shift-time-' + (index + 1)" class="cursor-pointer">{{ shift.label }}</label>
                 </div>
-
+                {{ store.query.filter.shift_time }} <!-- For debugging, can be removed later -->
             </VhFieldVertical>
             <Divider/>
 

@@ -172,6 +172,29 @@ class DoctorsController extends Controller
         }
     }
     //----------------------------------------------------------
+    public function getSpecializationsWithDoctorCounts(Request $request)
+    {
+        try {
+            // Call the model method to get specializations with doctor counts
+            $response = Doctor::getSpecializationsWithDoctorCounts();
+
+            return response()->json($response, 200);
+        } catch (\Exception $e) {
+            $response = [];
+            $response['success'] = false;
+
+            if (env('APP_DEBUG')) {
+                $response['errors'][] = $e->getMessage();
+                $response['hint'] = $e->getTrace();
+            } else {
+                $response['errors'][] = trans("vaahcms-general.something_went_wrong");
+            }
+
+            return response()->json($response, 500);
+        }
+    }
+
+    //----------------------------------------------------------
     public function getItem(Request $request, $id)
     {
         try{

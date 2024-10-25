@@ -24,6 +24,18 @@ onMounted(async () => {
     await store.getFormMenu();
 });
 
+// Error state for price validation
+const priceError = ref(false);
+
+// Validate price between 500 and 1000
+const validatePrice = () => {
+    const price = store.item.price;
+    priceError.value = price < 500 || price > 1000;
+};
+
+// Watch for changes in the price and validate
+watch(() => store.item.price, validatePrice);
+
 function formatTimeWithAmPm(time) {
     if (!time) return '';
 
@@ -197,6 +209,7 @@ const isValidTime = (date) => date instanceof Date && !isNaN (date.getTime());
                         <div class="required-field hidden"></div>
                     </div>
                 </VhField>
+                <!-- Price Field with Validation -->
                 <VhField label="Price">
                     <div class="p-inputgroup">
                         <InputNumber class="w-full"
@@ -204,12 +217,16 @@ const isValidTime = (date) => date instanceof Date && !isNaN (date.getTime());
                                      name="doctors-price"
                                      data-testid="doctors-price"
                                      :use-grouping="false"
-                                     v-model="store.item.price" required
-
-                        />
+                                     v-model="store.item.price"
+                                     :min="500"
+                        :max="1000"
+                        required />
+                        <!-- Error message if price is invalid -->
+                        <div v-if="priceError" class="error-message">Price must be between 500 and 1000</div>
                         <div class="required-field hidden"></div>
                     </div>
                 </VhField>
+
 
                 <VhField label="Time">
                     <div class="p-inputgroup">
@@ -256,3 +273,4 @@ const isValidTime = (date) => date instanceof Date && !isNaN (date.getTime());
     </div>
 
 </template>
+

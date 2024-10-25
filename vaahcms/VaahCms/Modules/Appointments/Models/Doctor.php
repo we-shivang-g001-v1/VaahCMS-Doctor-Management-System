@@ -350,23 +350,34 @@ class Doctor extends VaahModel
     //-------------------------------------------------
     public function scopeSearchFilter($query, $filter)
     {
-
-        if(!isset($filter['q']))
-        {
+        if (!isset($filter['q'])) {
             return $query;
         }
-        $search_array = explode(' ',$filter['q']);
-        foreach ($search_array as $search_item){
-            $query->where(function ($q1) use ($search_item) {
-                $q1->where('name', 'LIKE', '%' . $search_item . '%')
-                    ->orWhere('email', 'LIKE', '%' . $search_item . '%')
-                    ->orWhere('phone', 'LIKE', '%' . $search_item . '%')
-                    ->orWhere('specialization', 'LIKE', '%' . $search_item . '%')
-                    ->orWhere('id', 'LIKE', $search_item . '%');
+
+        // Split the search query into an array
+        $search_array = explode(' ', $filter['q']);
+
+        foreach ($search_array as $search_item) {
+            // Normalize search item to lower case for case-insensitive comparison
+            $normalized_search_item = strtolower(trim($search_item));
+
+            // Create a LIKE pattern to match without spaces
+            $query->where(function ($q1) use ($normalized_search_item) {
+                $q1->where('name', 'LIKE', '%' . $normalized_search_item . '%')
+                    ->orWhere('name', 'LIKE', '%' . str_replace('.', '. ', $normalized_search_item) . '%') // Match with space after period
+                    ->orWhere('name', 'LIKE', '%' . str_replace(' ', '', $normalized_search_item) . '%') // Match without spaces
+                    ->orWhere('email', 'LIKE', '%' . $normalized_search_item . '%')
+                    ->orWhere('phone', 'LIKE', '%' . $normalized_search_item . '%')
+                    ->orWhere('specialization', 'LIKE', '%' . $normalized_search_item . '%')
+                    ->orWhere('id', 'LIKE', $normalized_search_item . '%');
             });
         }
 
+        return $query;
     }
+
+
+
     //-------------------------------------------------
 
     public function scopeSpecializationFilter($query, $filter)

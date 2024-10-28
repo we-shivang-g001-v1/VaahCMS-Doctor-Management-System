@@ -32,7 +32,6 @@ class Doctor extends VaahModel
     ];
     //-------------------------------------------------
     protected $fillable = [
-        'uuid',
         'name',
         'email',
         'specialization',
@@ -40,13 +39,15 @@ class Doctor extends VaahModel
         'price',
         'shift_start_time',
         'shift_end_time',
-        'is_active',
-        'created_by',
-        'updated_by',
-        'deleted_by',
+
     ];
     //-------------------------------------------------
     protected $fill_except = [
+        'uuid',
+        'created_by',
+        'updated_by',
+        'deleted_by',
+        'is_active',
 
     ];
 
@@ -984,6 +985,26 @@ class Doctor extends VaahModel
         return $response;
     }
 
+    //-------------------------------------------------
+    public static function getFieldsColumn()
+    {
+        $model = new self();
+        $fillable_columns = $model->getFillable();;
+        $filtered_columns = array_diff($fillable_columns, $model->fill_except);
+        $mapping_columns = [
+            'name' => 'Name',
+            'email' =>'Email',
+            'price' => 'Price',
+            'phone' => 'Phone',
+            'specialization' =>'Specialization',
+            'shift_start_time' => 'shift_start_time',
+            'shift_end_time' => 'shift_end_time',
+        ];
+        $filtered_columns= array_map(function($column)use($mapping_columns){
+            return $mapping_columns[$column] ?? $column;
+        },$fillable_columns);
+        return $filtered_columns;
+    }
     //-------------------------------------------------
 
     public static function bulkDoctorImport(Request $request)

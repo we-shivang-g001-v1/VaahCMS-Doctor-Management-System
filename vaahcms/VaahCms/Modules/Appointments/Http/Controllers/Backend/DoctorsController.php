@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use VaahCms\Modules\Appointments\Models\Appointment;
 use VaahCms\Modules\Appointments\Models\Doctor;
 
 
@@ -29,7 +30,7 @@ class DoctorsController extends Controller
         try{
 
             $data = [];
-
+            $data['fields'] = Doctor::getFieldsColumn();
             $data['permission'] = \Auth::user()->permissions(true);
             $data['rows'] = config('vaahcms.per_page');
 

@@ -213,8 +213,11 @@ const toggleCreateMenu = (event) => {
                 <p>Map the CSV headers to the corresponding fields.</p>
                 <div class="mapping-fields-container">
                     <div v-for="(field, index) in store.assets.fields" :key="index" class="mapping-field">
-                        <label>{{ field }}</label>
-                        <select v-model="fieldMappings[index]" class="field-dropdown">
+                        <label>
+                            {{ field }}
+                            <span v-if="index <= 4" class="required">*</span>
+                        </label>
+                        <select v-model="fieldMappings[index]" class="field-dropdown" :required="index <= 4">
                             <option disabled value="">-- Select Field --</option>
                             <option v-for="(csvHeader, csvIndex) in csvHeaders" :key="csvIndex" :value="csvHeader">
                                 {{ csvHeader }}
@@ -224,6 +227,7 @@ const toggleCreateMenu = (event) => {
                 </div>
                 <Button label="Preview Data" @click="mapFieldsAndPreview" class="p-button-rounded p-button-outlined" />
             </div>
+
 
             <!-- Step 3: Preview Data -->
             <div v-if="active_step === 2" class="step-content">
@@ -414,6 +418,10 @@ const toggleCreateMenu = (event) => {
 /* Badge styling */
 .p-badge {
     margin-left: 0.5rem; /* Space between badge and text */
+}
+.required {
+    color: red;
+    margin-left: 4px;
 }
 
 

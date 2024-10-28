@@ -5,11 +5,11 @@ import VhFieldVertical from './../../../vaahvue/vue-three/primeflex/VhFieldVerti
 import { watch,ref } from 'vue';
 const store = useDoctorStore();
 const shiftTimings = [
-    { value: '23:30:00-03:30:00', label: '05:00 AM - 09:00 AM' },
-    { value: '03:30:00-07:30:00', label: '09:00 AM - 01:00 PM' },
-    { value: '07:30:00-11:30:00', label: '01:00 PM - 05:00 PM' },
-    { value: '11:30:00-15:30:00', label: '05:00 PM - 09:00 PM' },
-    { value: '15:30:00-17:30:00', label: '09:00 PM - 11:00 PM' },
+    { value: '00:00:00-03:30:00', label: '05:00 AM - 09:00 AM' },
+    { value: '03:31:00-07:30:00', label: '09:00 AM - 01:00 PM' },
+    { value: '07:31:00-11:30:00', label: '01:00 PM - 05:00 PM' },
+    { value: '11:31:00-15:30:00', label: '05:00 PM - 09:00 PM' },
+    { value: '15:31:00-17:30:00', label: '09:00 PM - 11:00 PM' },
 ];
 
 
@@ -147,7 +147,7 @@ const convertToUTC = (date) => {
                     />
                     <label :for="'shift-time-' + (index + 1)" class="cursor-pointer">{{ shift.label }}</label>
                 </div>
-                {{ store.query.filter.shift_time }} <!-- For debugging, can be removed later -->
+
             </VhFieldVertical>
             <Divider/>
 

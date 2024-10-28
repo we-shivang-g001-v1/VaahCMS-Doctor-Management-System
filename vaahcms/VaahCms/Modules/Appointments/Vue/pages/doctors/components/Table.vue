@@ -50,7 +50,7 @@ function convertUtcToIst(utcTimeString) {
     return `${hoursStr}:${minutesStr}:${secondsStr}`;
 }
 
-console.log(store.action.items)
+
 
 
 function formatTimeWithAmPm(time) {

@@ -61,9 +61,6 @@ const handleCustomFiltersClick = () => {
 const getSpecializations = () => {
     store.getSpecializations();
 };
-const someOtherFunction = () => {
-    console.log('Another function executed.'); // Your logic here
-};
 
 </script>
 
@@ -100,7 +97,7 @@ const someOtherFunction = () => {
                             <InputText v-model="store.query.filter.q"
                                        @keyup.enter="store.delayedSearch()"
                                        class="p-inputtext-sm"
-                                       placeholder="Search"/>
+                                       placeholder="Name,Email,Specialization"/>
                             <Button @click="store.delayedSearch()"
                                     class="p-button-sm"
                                     icon="pi pi-search"/>

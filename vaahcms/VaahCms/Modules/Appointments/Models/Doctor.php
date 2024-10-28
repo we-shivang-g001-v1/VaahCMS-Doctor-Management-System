@@ -700,7 +700,7 @@ class Doctor extends VaahModel
 
 
         return $response;
-        dd($response);
+
 
     }
     //-------------------------------------------------
@@ -816,7 +816,7 @@ class Doctor extends VaahModel
 //------------------------------------------------------------
     public static function deleteItem($request, $id): array
     {
-        dd('hello');
+
         $item = self::where('id', $id)->withTrashed()->first();
         if (!$item) {
             $response['success'] = false;

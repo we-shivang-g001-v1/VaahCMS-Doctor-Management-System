@@ -24,7 +24,8 @@ onMounted(async () => {
 
         // Set the chart data based on the fetched appointment counts
         chartData.value = setChartData(store.item.counts);
-        pieChartData.value = setPieChartData(store.item.counts); // Set pie chart data
+        pieChartData.value = setPieChartData(store.item.counts);
+        // Set pie chart data
 
     } catch (err) {
         error.value = 'Failed to load appointment data. Please try again later.';
@@ -74,10 +75,10 @@ const setChartData = (counts) => {
 
 const setPieChartData = (counts) => {
     return {
-        labels: ['Booked', 'Cancelled'],
+        labels: ['Doctors', 'Patients'],
         datasets: [
             {
-                data: [counts.booked_count, counts.cancelled_count],
+                data: [counts.total_doctor_count, counts.total_patient_count],
                 backgroundColor: [
                     'rgba(192, 192, 192, 0.6)', // Silver for booked
                     'rgba(128, 128, 128, 0.6)'  // Gray for cancelled
@@ -158,37 +159,53 @@ const setPieChartOptions = () => {
         <div v-if="!loading && !error" class="grid mt-4">
             <div class="col-12 md:col-3">
                 <Card :class="'card'">
-                    <template #title>Total Appointments</template>
+                    <template #title>
+                        <div class="flex items-center">
+                            <i class="pi pi-user" style="margin-right: 8px; font-size: 2rem;"></i>
+                            <span class="title-text">Total Appointments</span>
+                        </div>
+                    </template>
                     <template #content>
-                        <h2 class="text-3xl font-semibold">{{ store.item.counts.total_count }}</h2><br>
-                        <p class="m-0 font-bold text-lg text-gray-700">Total appointments scheduled</p>
+                        <h2 class="count-text">{{ store.item.counts.total_count }}</h2><br>
                     </template>
                 </Card>
             </div>
             <div class="col-12 md:col-3">
                 <Card :class="'card'">
-                    <template #title>Booked Appointments</template>
+                    <template #title>
+                        <div class="flex items-center">
+                            <i class="pi pi-calendar-plus" style="margin-right: 8px; font-size: 2rem;"></i>
+                            <span class="title-text">Booked Appointments</span>
+                        </div>
+                    </template>
                     <template #content>
-                        <h2 class="text-3xl font-semibold">{{ store.item.counts.booked_count }}</h2><br>
-                        <p class="m-0 font-bold text-lg text-gray-700">Appointments successfully booked</p>
+                        <h2 class="count-text">{{ store.item.counts.booked_count }}</h2><br>
                     </template>
                 </Card>
             </div>
             <div class="col-12 md:col-3">
                 <Card :class="'card'">
-                    <template #title>Cancelled Appointments</template>
+                    <template #title>
+                        <div class="flex items-center">
+                            <i class="pi pi-calendar-times" style="margin-right: 8px; margin-left: 1px; font-size: 2rem;"></i>
+                            <span class="title-text">Cancelled Appointments</span>
+                        </div>
+                    </template>
                     <template #content>
-                        <h2 class="text-3xl font-semibold">{{ store.item.counts.cancelled_count }}</h2><br>
-                        <p class="m-0 font-bold text-lg text-gray-700">Appointments that were cancelled</p>
+                        <h2 class="count-text">{{ store.item.counts.cancelled_count }}</h2><br>
                     </template>
                 </Card>
             </div>
             <div class="col-12 md:col-3">
                 <Card :class="'card'">
-                    <template #title>Booked Doctors</template>
+                    <template #title>
+                        <div class="flex items-center">
+                            <i class="pi pi-users" style="margin-right: 8px; font-size: 2rem;"></i>
+                            <span class="title-text">Booked Doctors</span>
+                        </div>
+                    </template>
                     <template #content>
-                        <h2 class="text-3xl font-semibold">{{ store.item.counts.booked_doctor_count }}</h2><br>
-                        <p class="m-0 font-bold text-lg text-gray-700">Doctors with booked appointments</p>
+                        <h2 class="count-text">{{ store.item.counts.booked_doctor_count }}</h2><br>
                     </template>
                 </Card>
             </div>
@@ -220,15 +237,15 @@ const setPieChartOptions = () => {
     flex: 0 0 24%;
 }
 .card {
-    background-color: #f7fafc; /* Light gray background */
-    color: black; /* Set text color to black */
+    background-color: #f7fafc;
+    color: black;
     transition: transform 0.3s;
     border-radius: 8px;
     padding: 16px;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
-    border: 1px solid #e2e8f0; /* Light border */
+    border: 1px solid #e2e8f0;
 }
 
 .card:hover {
@@ -244,39 +261,68 @@ const setPieChartOptions = () => {
 
 /* Chart container styles */
 .chart-container {
-    display: flex; /* Align charts side by side */
-    justify-content: space-around; /* Adjust to space-around for more space between charts */
-    width: 100%; /* Full width of the container */
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
 }
 
 .chart-wrapper.bar-chart {
-    width: 60%; /* Bar chart takes 60% of the width */
-    margin: 20px; /* Maintain the same margin */
+    width: 66%;
+    margin: 20px;
 }
 
 .chart-wrapper.pie-chart {
-    width: 40%; /* Pie chart takes 40% of the width */
-    margin: 20px; /* Maintain the same margin */
+    width: 34%;
+    margin: 20px;
 }
 
 .chart {
-    height: 400px; /* Set the same height for both charts */
-    width: 100%; /* Full width of the container */
+    height: 400px;
+    width: 100%;
 }
 
+.title-text {
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-grow: 1;
+    font-size: 20px;
+}
+
+.count-text {
+    font-size: 2rem;
+}
+
+.flex {
+    display: flex;
+    align-items: center;
+}
+
+/* Adjust text sizes for smaller screens */
 @media (max-width: 768px) {
     .md\:col-3 {
         flex: 0 0 48%;
     }
 
-    .chart-wrapper {
-        width: 100%; /* Full width on smaller screens */
+    .title-text {
+        font-size: 1.25rem; /* Smaller font for titles */
+    }
+    .count-text {
+        font-size: 1.5rem; /* Smaller font for counts */
     }
 }
 
 @media (max-width: 576px) {
     .md\:col-3 {
-        flex: 0 0 100%; /* Full width for small screens */
+        flex: 0 0 100%;
+    }
+    .title-text {
+        font-size: 1.1rem; /* Further reduce font size for titles */
+    }
+    .count-text {
+        font-size: 1.25rem; /* Further reduce font size for counts */
     }
 }
 </style>
+

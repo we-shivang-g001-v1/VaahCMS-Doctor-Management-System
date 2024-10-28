@@ -516,6 +516,9 @@ class Appointment extends VaahModel
             $bookedDoctorCount = $list->where('status', 1)->unique('doctor_id')->count(); // Count of unique doctors with booked appointments
             $bookedPatientCount = $list->where('status', 1)->unique('patient_id')->count(); // Count of unique patients with booked appointments
 
+            $totalPatientCount = patient::distinct()->count('id'); // Total unique patients
+            $totalDoctorCount = Doctor::distinct()->count('id'); // Total unique doctors
+
             // Prepare the response with counts inside a data object
             $response['success'] = true;
             $response['data'] = [
@@ -525,7 +528,9 @@ class Appointment extends VaahModel
                     'booked_count' => $bookedCount, // Count of booked appointments
                     'cancelled_count' => $cancelledCount, // Count of cancelled appointments
                     'booked_doctor_count' => $bookedDoctorCount, // Count of unique booked doctors
-                    'booked_patient_count' => $bookedPatientCount // Count of unique booked patients
+                    'booked_patient_count' => $bookedPatientCount, // Count of unique booked patients
+                    'total_patient_count' => $totalPatientCount, // Total unique patients
+                    'total_doctor_count' => $totalDoctorCount // Total unique doctors
                 ]
             ];
 

@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, reactive, ref } from "vue";
+import { onMounted, reactive, ref , watch } from "vue";
 import { useRoute } from 'vue-router';
 import { useAppointmentStore } from '../../stores/store-appointments';
 import { useRootStore } from '../../stores/root';
@@ -76,7 +76,15 @@ const mapFieldsAndPreview = () => {
     }
 };
 
-
+watch(isModalVisible, (newValue) => {
+    if (!newValue) {
+        // Reset all data and steps when modal is closed
+        active_step.value = 0;
+        csvData.value = [];
+        fieldMappings.value = [];
+        csvHeaders.value = [];
+    }
+});
 // Import mapped appointments
 const importAppointments = () => {
     const mappedData = csvData.value.map(row => {
@@ -91,11 +99,8 @@ const importAppointments = () => {
     });
 
     store.importAppointments(mappedData);
-    isModalVisible.value = false; // Close modal
-    active_step.value = 0; // Reset steps
-    csvData.value = [];
-    fieldMappings.value = [];
-    csvHeaders.value = [];
+    isModalVisible.value = false; // Close modal, triggering the watcher
+
 };
 
 // Export appointments

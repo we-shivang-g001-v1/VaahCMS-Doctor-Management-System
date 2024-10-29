@@ -30,7 +30,8 @@ const toggleFormMenu = (event) => {
 
 
 
-
+// Define today_date as a ref
+const today_date = ref(new Date());
 //--------/form_menu
 // Fetch the selected doctor's full details
 const selectedDoctor = computed(() => {
@@ -85,7 +86,20 @@ function formatTimeWithAmPm(time) {
     // Corrected template literal
     return `${hour}:${minutes} ${amPm}`;
 }
+const handleDateChange = (date, type) => {
+    if (type === 'date') {
+        store.item.date = date;
+    }
 
+    // Validate start and end time
+    if (store.item.slot_start_time && store.item.slot_end_time) {
+        if (store.item.slot_end_time < store.item.slot_start_time) {
+            // Handle error: end time cannot be before start time
+            console.error('End time cannot be before start time.');
+            store.item.slot_end_time = null; // Reset end time or handle as needed
+        }
+    }
+};
 
 </script>
 <template>

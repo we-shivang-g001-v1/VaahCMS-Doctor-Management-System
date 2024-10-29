@@ -80,6 +80,9 @@ function () {
     Route::get('/bulkDoctorExport/doctorList', [DoctorsController::class, 'bulkDoctorExport'])
         ->name('vh.backend.appointment.doctors.bulk.export');
 
+    Route::get('/doctorSampleExport/doctorSampleList', [DoctorsController::class, 'doctorSampleExport'])
+        ->name('vh.backend.appointment.doctors.bulk.export');
+
 
 
 

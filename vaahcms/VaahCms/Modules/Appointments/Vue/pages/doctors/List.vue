@@ -1,10 +1,12 @@
 <script setup>
-import { onMounted, ref } from "vue";
+import { onMounted, ref ,watch } from "vue";
 import { useRoute } from "vue-router";
 import { useDoctorStore } from '../../stores/store-doctors';
 import { useRootStore } from '../../stores/root';
 import Actions from "./components/Actions.vue";
 import Table from "./components/Table.vue";
+import CustomFilter from "./components/CustomFilter.vue";
+import Filters from "./components/Filters.vue";
 import { useConfirm } from "primevue/useconfirm";
 const store = useDoctorStore();
 const root = useRootStore();
@@ -29,6 +31,7 @@ const steps = ref([
 const openFileDialog = () => {
     fileInput.value.click();
 };
+
 
 // Handle file upload and extract CSV data
 const handleFileUpload = (event) => {
@@ -75,6 +78,15 @@ const mapFieldsAndPreview = () => {
     }
 };
 
+watch(isModalVisible, (newValue) => {
+    if (!newValue) {
+        // Reset all data and steps when modal is closed
+        active_step.value = 0;
+        csvData.value = [];
+        fieldMappings.value = [];
+        csvHeaders.value = [];
+    }
+});
 // Import mapped doctors
 const importDoctors = () => {
     const mappedData = csvData.value.map(row => {
@@ -89,15 +101,18 @@ const importDoctors = () => {
     });
 
     store.importDoctors(mappedData);
-    isModalVisible.value = false; // Close modal
-    active_step.value = 0; // Reset steps
-    csvData.value = [];
-    fieldMappings.value = [];
-    csvHeaders.value = [];
+    isModalVisible.value = false; // Close modal, triggering the watcher
+
 };
+
+
 
 const exportDoctors = () => {
     store.exportDoctors();
+};
+
+const downloadDoctorSampleFile = () => {
+    store.downloadDoctorSampleFile();
 };
 
 onMounted(async () => {
@@ -170,7 +185,7 @@ const toggleCreateMenu = (event) => {
                 <input type="file" ref="fileInput" @change="handleFileUpload" accept=".csv" class="hidden-file-input" />
                 <Button label="Choose File" @click="openFileDialog" class="p-button-rounded p-button-outlined" />
 
-<!--                <Button label="Download Sample File" icon="pi pi-download" @click="downloadSampleFile" class="p-button-rounded p-button-outlined" />-->
+                <Button label="Download Sample File" icon="pi pi-download" @click="downloadDoctorSampleFile" class="p-button-rounded p-button-outlined" />
 
             </div>
 
@@ -182,7 +197,7 @@ const toggleCreateMenu = (event) => {
                     <div v-for="(field, index) in store.assets.fields" :key="index" class="mapping-field">
                         <label>
                             {{ field }}
-                            <span v-if="index <= 4" class="required">*</span>
+                            <span v-if="index <= 6" class="required">*</span>
                         </label>
                         <select v-model="fieldMappings[index]" class="field-dropdown" :required="index <= 4">
                             <option disabled value="">-- Select Field --</option>
@@ -229,137 +244,52 @@ const toggleCreateMenu = (event) => {
 </template>
 
 <style>
-.custom-file-upload-modal {
-    max-width: 500px;
-    width: 100%;
-    text-align: center;
-}
-.steps-container {
-    margin-bottom: 1rem;
-}
 .hidden-file-input {
     display: none;
 }
-.file-upload-step, .map-fields-step, .preview-step {
-    padding: 1.5rem;
-    text-align: center;
-}
+
 .mapping-fields-container {
     display: flex;
     flex-direction: column;
-    gap: 1rem; /* Space between mapping fields */
-    width: 100%; /* Ensures full width */
+    gap: 1rem;
+    width: 100%;
 }
 
 .mapping-field {
     display: flex;
     align-items: center;
-    justify-content: space-between; /* Space between label and dropdown */
-    padding: 0.5rem; /* Adds padding for better spacing */
-    border: 1px solid #ccc; /* Adds a border around each mapping field */
-    border-radius: 4px; /* Rounded corners */
-    background-color: #f9f9f9; /* Light background */
+    justify-content: space-between;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+    margin-bottom: 1.5rem;
+    width: 100%;
 }
 
 .mapping-field label {
-    flex: 1; /* Label takes up available space */
-    margin-right: 1rem; /* Space between label and dropdown */
-    font-weight: bold; /* Make label bold */
+    flex: 1;
+    margin-right: 1rem;
+    font-weight: bold;
 }
 
 .field-dropdown {
-    flex: 2; /* Dropdown takes up more space */
-    padding: 0.5rem; /* Padding inside the dropdown */
-    border: 1px solid #ccc; /* Border around dropdown */
-    border-radius: 4px; /* Rounded corners */
-    background-color: #fff; /* White background for dropdown */
-    transition: border-color 0.3s; /* Smooth transition for focus */
+    flex: 2;
+    width: 60%;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #fff;
+    transition: border-color 0.3s;
 }
 
 .field-dropdown:focus {
-    border-color: #4CAF50; /* Change border color on focus */
-    outline: none; /* Remove default outline */
+    border-color: #4CAF50;
+    outline: none;
 }
 
 .field-dropdown option {
-    padding: 0.5rem; /* Padding inside dropdown options */
-}
-
-/* Optional: Style for the button */
-.p-button-rounded {
-    border-radius: 25px;
-    margin-top: 1rem; /* Space above the button */
-}
-
-.custom-file-upload-modal {
-    max-width: 1500px;
-    width: 100%;
-    text-align: center;
-}
-.step-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem;
-}
-.icon-large {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-    color: #4CAF50;
-}
-.mapping-field {
-    margin-bottom: 1rem;
-    width: 100%;
-}
-.custom-file-upload-modal {
-    max-width: 1500px; /* Increased width for a larger dialog */
-    width: 100%;
-    text-align: center;
-    padding: 1.5rem; /* Added padding for a more spacious look */
-}
-
-.custom-steps {
-    margin-bottom: 2rem; /* Added margin for stepper */
-    justify-content: center; /* Centered stepper */
-}
-
-.step-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem;
-}
-
-.icon-large {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-    color: #4CAF50;
-}
-
-.mapping-field {
-    margin-bottom: 1.5rem; /* Increased spacing between mapping fields */
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.field-dropdown {
-    width: 60%; /* Set width of dropdowns */
-}
-
-.preview-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 1.5rem 0;
-}
-
-.preview-table th, .preview-table td {
-    padding: 0.75rem;
-    border: 1px solid #ddd;
-    text-align: left;
+    padding: 0.5rem;
 }
 
 .p-button-rounded {
@@ -373,34 +303,68 @@ const toggleCreateMenu = (event) => {
     background-color: white;
 }
 
-/* Mobile panel styling */
+.custom-file-upload-modal {
+    max-width: 1500px;
+    width: 100%;
+    text-align: center;
+}
+
+.step-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.custom-steps {
+    margin-bottom: 2rem;
+    justify-content: center;
+}
+
+.icon-large {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: #4CAF50;
+}
+
+.preview-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+}
+
+.preview-table th,
+.preview-table td {
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
 .mobile-panel {
     margin: 1rem;
     padding: 1rem;
-    border-radius: 8px; /* Rounded corners for modern look */
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Soft shadow */
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Aligns header elements */
 .mobile-panel .flex {
-    justify-content: space-between; /* Space out header content */
-    align-items: center; /* Vertical alignment */
+    justify-content: space-between;
+    align-items: center;
 }
 
-/* Full-width buttons */
 .mobile-buttons .full-width {
-    width: 100%; /* Make buttons fill the container */
+    width: 100%;
 }
 
-/* Spacing between buttons */
 .mobile-buttons .mb-1 {
-    margin-bottom: 0.5rem; /* Space between buttons */
+    margin-bottom: 0.5rem;
 }
 
-/* Badge styling */
 .p-badge {
-    margin-left: 0.5rem; /* Space between badge and text */
+    margin-left: 0.5rem;
 }
+
 .required {
     color: red;
     margin-left: 4px;

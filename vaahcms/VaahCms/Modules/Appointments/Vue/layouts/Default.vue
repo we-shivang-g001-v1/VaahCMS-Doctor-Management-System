@@ -18,7 +18,7 @@ onMounted(async () => {
 <template>
 
   <div class="grid  gap-0">
-    <div class="col-fixed  p-1" style="width:212px;"><Aside/></div>
+<!--    <div class="col-fixed  p-1" style="width:212px;"><Aside/></div>-->
     <div class="col  p-1"><RouterView /></div>
   </div>
 

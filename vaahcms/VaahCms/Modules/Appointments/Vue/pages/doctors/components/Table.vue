@@ -419,7 +419,8 @@ function formatTimeWithAmPm(time) {
                     <div
                         class="error-column"
                         v-if="store.data_res_phone && store.data_res_phone.length > 0"
-                        :class="{ 'full-width': !store.data_res_email || store.data_res_email.length === 0 }">
+                        :class="{ 'full-width': !store.data_res_email || store.data_res_email.length === 0 }"
+                    >
                         <table class="styled-table">
                             <thead>
                             <tr>
@@ -438,7 +439,8 @@ function formatTimeWithAmPm(time) {
                     <div
                         class="error-column"
                         v-if="store.data_res_email && store.data_res_email.length > 0"
-                        :class="{ 'full-width': !store.data_res_phone || store.data_res_phone.length === 0 }">
+                        :class="{ 'full-width': !store.data_res_phone || store.data_res_phone.length === 0 }"
+                    >
                         <table class="styled-table">
                             <thead>
                             <tr>
@@ -452,8 +454,29 @@ function formatTimeWithAmPm(time) {
                             </tbody>
                         </table>
                     </div>
+
+                    <!-- Mandatory Errors Section -->
+                    <div
+                        class="error-column"
+                        v-if="(!store.data_res_phone || store.data_res_phone.length === 0) && (!store.data_res_email || store.data_res_email.length === 0) && store.data_res_mandatory && store.data_res_mandatory.length > 0"
+                        :class="{ 'full-width': true }"
+                    >
+                        <table class="styled-table">
+                            <thead>
+                            <tr>
+                                <th>Mandatory Error Messages</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr v-for="(mandatoryError, index) in store.data_res_mandatory" :key="'mandatory-'+index">
+                                <td>{{ mandatoryError }}</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </Dialog>
+
         </template>
 
 

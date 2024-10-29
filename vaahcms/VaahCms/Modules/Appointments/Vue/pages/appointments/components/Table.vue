@@ -1,3 +1,4 @@
+
 <script setup>
 import { vaah } from '../../../vaahvue/pinia/vaah'
 import { useAppointmentStore } from '../../../stores/store-appointments'

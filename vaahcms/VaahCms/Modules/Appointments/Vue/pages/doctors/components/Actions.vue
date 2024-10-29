@@ -25,7 +25,7 @@ const toggleFilters = (filterType) => {
     if (filterType === 'filters') {
         store.show_filters = !store.show_filters;
         if (store.show_filters) {
-            store.show_custom_filters = false;
+            store.cc = false;
         }
     } else if (filterType === 'customFilters') {
         store.show_custom_filters = !store.show_custom_filters;
@@ -113,7 +113,7 @@ const getSpecializations = () => {
                                 type="button"
                                 class="p-button-sm"
                                 :disabled="Object.keys(route.params).length"
-                                @click="handleCustomFiltersClick">
+                                @click="handleCustomFiltersClick('custom_filters')">
                                 Custom Filters
                                 <Badge v-if="store.count_custom_filters > 0" :value="store.count_custom_filters"></Badge>
                             </Button>

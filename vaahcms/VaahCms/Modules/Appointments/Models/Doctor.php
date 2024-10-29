@@ -1,5 +1,6 @@
 <?php namespace VaahCms\Modules\Appointments\Models;
 
+
 use Carbon\Carbon;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -15,6 +16,7 @@ use Illuminate\Support\Facades\Session;
 use Maatwebsite\Excel\Facades\Excel;
 use App\ExportData\DoctorExport;
 use App\Jobs\BulkRecordDoctor;
+use App\ExportData\DoctorSampleExport;
 
 class Doctor extends VaahModel
 {
@@ -1015,7 +1017,7 @@ class Doctor extends VaahModel
             return response()->json(['success' => false, 'message' => 'No data provided.'], 400);
         }
 
-        // Define the allowed fields and map camelCase, uppercase, and variations to consistent keys
+        // Define the allowed fields and map variations to consistent keys
         $fieldMappings = [
             'name' => ['name', 'Name'],
             'email' => ['email', 'Email'],
@@ -1029,6 +1031,7 @@ class Doctor extends VaahModel
         $errors = [
             'email_errors' => [],
             'phone_errors' => [],
+            'mandatory_errors' => []
         ];
         $success_messages = []; // For successful imports
 
@@ -1036,7 +1039,7 @@ class Doctor extends VaahModel
         $uniqueDoctors = [];
 
         foreach ($fileContents as $content) {
-            // Normalize the incoming data by converting the keys to the standard format
+            // Normalize the incoming data
             $normalized_content = [];
             foreach ($content as $key => $value) {
                 $normalizedKey = null;
@@ -1065,14 +1068,27 @@ class Doctor extends VaahModel
             }
 
             // Handle missing or null values in required fields
+            if (empty($normalized_content['name'])) {
+                $errors['mandatory_errors'][] = "Name is required for doctor.";
+                continue; // Skip this record
+            }
+
             if (empty($normalized_content['email'])) {
                 $errors['email_errors'][] = "Email is required for doctor: " . (isset($normalized_content['name']) ? $normalized_content['name'] : 'unknown');
                 continue; // Skip this record
             }
 
             if (empty($normalized_content['phone'])) {
-                $errors['phone_errors'][] = "Phone number is required for doctor: {$normalized_content['name']}.";
+                $errors['phone_errors'][] = "Phone number is required for doctor: " . (isset($normalized_content['name']) ? $normalized_content['name'] : 'unknown') . '.';
                 continue; // Skip this record
+            }
+
+            // Check for other mandatory fields
+            foreach (['shift_start_time', 'shift_end_time', 'specialization'] as $mandatoryField) {
+                if (empty($normalized_content[$mandatoryField])) {
+                    $errors['mandatory_errors'][] = ucfirst(str_replace('_', ' ', $mandatoryField)) . " is required for doctor: " . (isset($normalized_content['name']) ? $normalized_content['name'] : 'unknown') . '.';
+                    continue 2; // Skip this record
+                }
             }
 
             // Default values for optional fields
@@ -1085,16 +1101,16 @@ class Doctor extends VaahModel
                 $end_time = strtotime($normalized_content['shift_end_time']);
 
                 if ($start_time === false || $end_time === false) {
-                    $errors['phone_errors'][] = "Invalid shift start or end time for doctor: {$normalized_content['name']}.";
+                    $errors['mandatory_errors'][] = "Invalid shift start or end time for doctor: " . (isset($normalized_content['name']) ? $normalized_content['name'] : 'unknown') . '.';
                     continue;
                 }
 
                 if ($start_time >= $end_time) {
-                    $errors['phone_errors'][] = "Shift start time must be earlier than shift end time for doctor: {$normalized_content['name']}.";
+                    $errors['mandatory_errors'][] = "Shift start time must be earlier than shift end time for doctor: " . (isset($normalized_content['name']) ? $normalized_content['name'] : 'unknown') . '.';
                     continue;
                 }
             } else {
-                $errors['phone_errors'][] = "Shift start time and end time are required for doctor: {$normalized_content['name']}.";
+                $errors['mandatory_errors'][] = "Shift start time and end time are required for doctor: " . (isset($normalized_content['name']) ? $normalized_content['name'] : 'unknown') . '.';
                 continue;
             }
 
@@ -1146,17 +1162,21 @@ class Doctor extends VaahModel
         // Create a response structure similar to updateItem
         $response = [];
 
-        if (!empty($errors['email_errors']) || !empty($errors['phone_errors'])) {
+        if (!empty($errors['email_errors']) || !empty($errors['phone_errors']) || !empty($errors['mandatory_errors'])) {
             $response['success'] = true;
-            $response['error'] = $errors;
+            $response['error'] = [
+                'email_errors' => $errors['email_errors'],
+                'phone_errors' => $errors['phone_errors'],
+                'mandatory_errors' => $errors['mandatory_errors'],
+            ];
         } else {
             $response['success'] = true;
-            $response['messages'] = $success_messages;
             $response['message'] = trans("vaahcms-general.saved_successfully");
         }
 
         return response()->json($response, 200);
     }
+
 
 
 
@@ -1169,6 +1189,9 @@ class Doctor extends VaahModel
     }
 
     //-------------------------------------------------
-
+    public static function doctorSampleExport()
+    {
+        return Excel::download(new DoctorSampleExport,'DoctorSampleList.csv');
+    }
 
 }

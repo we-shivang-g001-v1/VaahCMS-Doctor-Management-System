@@ -58,6 +58,7 @@ export const useDoctorStore = defineStore({
         is_visible_errors: false,
         data_res_phone:null,
         data_res_email:null,
+        data_res_mandatory:null,
         show_custom_filters: false,
         list_view_width: 12,
         form: {
@@ -783,6 +784,28 @@ export const useDoctorStore = defineStore({
             } catch (error) {
                 console.error('Error downloading file:', error);
             }
+        },async downloadDoctorSampleFile(){
+            let file_data = null;
+            try {
+                await vaah().ajax(
+                    this.ajax_url.concat('/doctorSampleExport/doctorSampleList'),
+                    (data, res) => {
+                        file_data = res.data;
+                        console.log(res)
+                    }
+                );
+                const blob = new Blob([file_data]);
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', 'DoctorSampleList.csv');
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                window.URL.revokeObjectURL(url);
+            } catch (error) {
+                console.error('Error downloading file:', error);
+            }
         },async importDoctors(fileData) {
             // Check if fileData exists
             if (!fileData) {
@@ -811,10 +834,12 @@ export const useDoctorStore = defineStore({
         importDoctorsAfter(data, res) {
             // Set phone and email errors
             this.data_res_phone = res.data.error?.phone_errors;
-            this.data_res_phone = res.data.error?.email_errors;
+            this.data_res_email = res.data.error?.email_errors;
+            this.data_res_mandatory = res.data.error?.mandatory_errors;
+            console.log(res);
 
             // Check if there are errors
-            if (this.data_res_phone || this.data_res_phone) {
+            if (this.data_res_email || this.data_res_phone || this.data_res_mandatory) {
                 this.is_visible_errors = true; // Show errors if any
             } else {
                 this.is_visible_errors = false; // Hide errors if none

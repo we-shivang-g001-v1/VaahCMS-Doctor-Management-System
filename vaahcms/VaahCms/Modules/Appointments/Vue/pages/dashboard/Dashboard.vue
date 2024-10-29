@@ -236,6 +236,34 @@ const setPieChartOptions = () => {
 .md\:col-3 {
     flex: 0 0 24%;
 }
+.loading-message,
+.error-message {
+    font-size: 1.5rem;
+    text-align: center;
+    margin-top: 20px;
+}
+
+.chart-container {
+    display: flex;
+    justify-content: space-between; /* Space between charts */
+    width: 100%;
+    max-width: 100vw; /* Prevent scaling beyond 100% of viewport width */
+    max-height: 80vw; /* Prevent scaling beyond 100% of viewport width */
+    overflow: hidden; /* Hide overflow */
+}
+
+.chart-wrapper.bar-chart {
+    flex: 0 0 66%; /* Take up 66% of the container */
+    max-width: 66%; /* Prevent scaling beyond 66% */
+    margin: 20px;
+}
+
+.chart-wrapper.pie-chart {
+    flex: 0 0 34%; /* Take up 34% of the container */
+    max-width: 34%; /* Prevent scaling beyond 34% */
+    margin: 20px;
+}
+
 .card {
     background-color: #f7fafc;
     color: black;
@@ -244,36 +272,11 @@ const setPieChartOptions = () => {
     padding: 16px;
     white-space: nowrap;
     text-overflow: ellipsis;
+    max-height: 75%;
     overflow: hidden;
     border: 1px solid #e2e8f0;
-}
-
-.card:hover {
-    transform: scale(1.05);
-}
-
-.loading-message,
-.error-message {
-    font-size: 1.5rem;
-    text-align: center;
-    margin-top: 20px;
-}
-
-/* Chart container styles */
-.chart-container {
-    display: flex;
-    justify-content: space-around;
-    width: 100%;
-}
-
-.chart-wrapper.bar-chart {
-    width: 66%;
-    margin: 20px;
-}
-
-.chart-wrapper.pie-chart {
-    width: 34%;
-    margin: 20px;
+    max-width: 100%; /* Prevent cards from scaling beyond 100% of their parent */
+    box-sizing: border-box; /* Include padding and border in width calculations */
 }
 
 .chart {

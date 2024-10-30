@@ -1055,6 +1055,13 @@ class Appointment extends VaahModel
             // Convert the input date to a standard format (e.g., YYYY-MM-DD)
             $input_date = date('Y-m-d', strtotime($normalized_content['Date']));
 
+            // Check if the input date is in the past
+            if ($input_date < date('Y-m-d')) {
+                $errors[] = "Appointment date cannot be in the past for Doctor (Email: {$normalized_content['Doctor']}) and Patient (Email: {$normalized_content['Patient']}).";
+                $failure_count++;
+                continue;
+            }
+
             // Retrieve doctor and patient by email
             $doctor = Doctor::where('email', $normalized_content['Doctor'])->first();
             $patient = Patient::where('email', $normalized_content['Patient'])->first();
@@ -1179,7 +1186,6 @@ class Appointment extends VaahModel
         // Final response
         $response = [];
 
-
         if (!empty($errors)) {
             $response['success'] = true;
             $response['res_data'] = $errors;
@@ -1191,6 +1197,7 @@ class Appointment extends VaahModel
 
         return response()->json($response, 200);
     }
+
 
 
     //-------------------------------------------------

@@ -43,12 +43,12 @@ class Appointment extends VaahModel
         'doctor_id',
         'status',
         'reason',
+        'is_active',
         ];
 
     //-------------------------------------------------
     protected $fill_except = [
         'uuid',
-        'is_active',
         'created_by',
         'updated_by',
         'deleted_by',

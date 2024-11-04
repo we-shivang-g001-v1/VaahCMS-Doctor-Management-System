@@ -178,9 +178,6 @@ const toggleCreateMenu = (event) => {
         <Dialog v-model:visible="isModalVisible" header="Import Doctors" :modal="true" :closable="true" class="custom-file-upload-modal">
             <Steps :model="steps" v-model:activeStep="active_step" class="custom-steps"></Steps>
 
-            {{steps}}
-            {{active_step}}
-
             <!-- Step 1: Upload CSV File -->
             <div v-if="active_step === 0" class="step-content">
                 <i class="pi pi-upload icon-large"></i>

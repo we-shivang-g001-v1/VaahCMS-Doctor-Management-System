@@ -257,6 +257,25 @@ class Doctor extends VaahModel
         );
     }
     //-------------------------------------------------
+
+    public static function getDoctorPriceRange()
+    {
+        // Query to get the highest and minimum prices among all doctors
+        $highest_price = self::max('price');
+        $minimum_price = self::min('price');
+
+        // Prepare the response
+        $response = [
+            'success' => true,
+            'highest_price' => $highest_price,
+            'minimum_price' => $minimum_price,
+        ];
+
+        return $response;
+    }
+
+
+
     //-------------------------------------------------
 
     public static function getSpecializationsWithDoctorCounts()

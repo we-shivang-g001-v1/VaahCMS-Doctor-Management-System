@@ -56,8 +56,12 @@ const toggleBulkMenuState = (event) => {
 const handleCustomFiltersClick = () => {
     toggleFilters('customFilters');
     getSpecializations(); // Replace with your actual function
+    getDoctorPriceRange();
 };
 
+const getDoctorPriceRange = () => {
+    store.getDoctorPriceRange();
+};
 const getSpecializations = () => {
     store.getSpecializations();
 };

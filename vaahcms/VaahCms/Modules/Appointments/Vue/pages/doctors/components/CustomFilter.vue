@@ -1,8 +1,8 @@
-<script  setup>
+<script setup>
+import { useDoctorStore } from '../../../stores/store-doctors';
+import VhFieldVertical from './../../../vaahvue/vue-three/primeflex/VhFieldVertical.vue';
+import { watch, ref } from 'vue';
 
-import { useDoctorStore } from '../../../stores/store-doctors'
-import VhFieldVertical from './../../../vaahvue/vue-three/primeflex/VhFieldVertical.vue'
-import { watch,ref } from 'vue';
 const store = useDoctorStore();
 const shiftTimings = [
     { value: '00:00:00-03:30:00', label: '05:00 AM - 09:00 AM' },
@@ -12,29 +12,52 @@ const shiftTimings = [
     { value: '15:31:00-17:30:00', label: '09:00 PM - 11:00 PM' },
 ];
 
-
-
 // Ensure initial values are set
-const priceRange = ref([500, 1000]);
-const minPrice = 500; // Define minimum price
-const maxPrice = 1000; // Define maximum price
+const minPrice = ref(store.minimumPrice !== null ? store.minimumPrice : 500); // Use store's minimum price
+const maxPrice = ref(store.highestPrice !== null ? store.highestPrice : 1000); // Use store's highest price
+const priceRange = ref([minPrice.value, maxPrice.value]); // Initialize price range with reactive values
+const showSlider = ref(maxPrice.value !== null); // Show slider if highestPrice is not null
+
+// Watch for changes to highestPrice
+watch(
+    () => store.highestPrice,
+    (newValue) => {
+        if (newValue !== null) {
+            maxPrice.value = newValue; // Update maxPrice when highestPrice changes
+            priceRange.value[1] = newValue; // Set the upper bound of the price range to the new highest price
+            showSlider.value = newValue !== null; // Show slider if highestPrice is not null
+        }
+    }
+);
+
+// Watch for changes to minimumPrice
+watch(
+    () => store.minimumPrice,
+    (newValue) => {
+        if (newValue !== null) {
+            minPrice.value = newValue; // Update minPrice when minimumPrice changes
+            priceRange.value[0] = newValue; // Update the lower bound of the price range to the new minimum price
+        }
+    }
+);
 
 // Watch for changes to the price range
 watch(priceRange, (newValue) => {
     // Validate the new price range
-    if (newValue[0] < minPrice || newValue[0] >= newValue[1] || newValue[1] > maxPrice) {
+    if (newValue[0] < minPrice.value || newValue[0] >= newValue[1] || newValue[1] > maxPrice.value) {
         return; // Exit if the range is invalid
     }
     // Update the store with the valid price range
     store.query.filter.price = `${newValue[0]}-${newValue[1]}`;
 });
+
 // Optionally, you can create a method to reset the price range
 const resetPriceRange = () => {
-    priceRange.value = [minPrice, maxPrice];
+    priceRange.value = [minPrice.value, maxPrice.value];
 };
+
 const shiftStartTime = ref(null);
 const shiftEndTime = ref(null);
-
 
 // Watch for time changes and update the store
 watch([shiftStartTime, shiftEndTime], ([newStart, newEnd]) => {
@@ -55,35 +78,24 @@ const convertToUTC = (date) => {
 
 <template>
     <div class="col-3" v-if="store.show_custom_filters">
-
         <Panel class="is-small">
-
             <template class="p-1" #header>
-
                 <div class="flex flex-row">
-                    <div >
+                    <div>
                         <b class="mr-1">Custom Filters</b>
                     </div>
-
                 </div>
-
             </template>
 
             <template #icons>
-
                 <div class="p-inputgroup">
-
                     <Button data-testid="doctors-hide-filter"
                             class="p-button-sm"
                             @click="store.show_custom_filters = false">
                         <i class="pi pi-times"></i>
                     </Button>
-
                 </div>
-
             </template>
-
-
 
             <VhFieldVertical>
                 <template #label>
@@ -104,32 +116,28 @@ const convertToUTC = (date) => {
                 </div>
             </VhFieldVertical>
 
-
             <Divider/>
 
+            <!-- Price Range Slider -->
+            <VhFieldVertical v-if="showSlider">
+                <template #label>
+                    <b class="price-label">Price Range:</b>
+                </template>
 
-                <VhFieldVertical>
-                    <template #label>
-                        <b class="price-label">Price Range:</b>
-                    </template>
+                <Slider v-model="priceRange"
+                        class="w-56 slider"
+                        :range="true"
+                        :min="minPrice"
+                        :max="maxPrice"
+                        :step="1"
+                        :tooltip="true"
+                        :style="sliderStyle"/>
 
-                    <Slider v-model="priceRange"
-                            class="w-56 slider"
-                            :range="true"
-                            :min="minPrice"
-                            :max="maxPrice"
-                            :step="1"
-                            :tooltip="true"
-                            :style="sliderStyle"/>
-
-                    <div class="selected-price-range">
-                        <b>Selected Price Range:</b>
-                        <span class="range-values">{{ priceRange[0] }} - {{ priceRange[1] }}</span>
-                    </div>
-                </VhFieldVertical>
-
-
-
+                <div class="selected-price-range">
+                    <b>Selected Price Range:</b>
+                    <span class="range-values">{{ priceRange[0] }} - {{ priceRange[1] }}</span>
+                </div>
+            </VhFieldVertical>
 
             <Divider/>
 
@@ -147,18 +155,13 @@ const convertToUTC = (date) => {
                     />
                     <label :for="'shift-time-' + (index + 1)" class="cursor-pointer">{{ shift.label }}</label>
                 </div>
-
             </VhFieldVertical>
             <Divider/>
-
         </Panel>
-
     </div>
 </template>
 
 <style scoped>
-
-
 .price-label {
     font-size: 1.2em; /* Slightly larger font */
     color: #333; /* Dark color for contrast */

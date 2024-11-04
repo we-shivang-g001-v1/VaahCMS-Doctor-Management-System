@@ -744,7 +744,6 @@ export const useDoctorStore = defineStore({
         },async getSpecializations() {
             try {
                 const response = await vaah().ajax(this.ajax_url.concat('/specializations'));
-                console.log(response);
 
                 if (response.data.success) {
                     this.specializations = response.data.specializations;
@@ -753,6 +752,21 @@ export const useDoctorStore = defineStore({
                 }
             } catch (error) {
                 console.error('An error occurred while fetching specializations:', error);
+            }
+        },async getDoctorPriceRange() {
+            try {
+                const response = await vaah().ajax(this.ajax_url.concat('/price'));
+                console.log(response);
+
+                if (response.data.success) {
+                    this.highestPrice = response.data.highest_price;
+                    this.minimumPrice = response.data.minimum_price;
+
+                } else {
+                    console.error('Failed to fetch the highest doctor price:', response.messages);
+                }
+            } catch (error) {
+                console.error('An error occurred while fetching the highest doctor price:', error);
             }
         },async exportDoctors(){
             let selected_doctor_ids = this.action.items.map(item => item.id);

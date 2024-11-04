@@ -46,6 +46,9 @@ function () {
 
     Route::get('/specializations', [DoctorsController::class, 'getSpecializationsWithDoctorCounts'])
         ->name('vh.backend.appointments.doctors.specializations');
+
+    Route::get('/price', [DoctorsController::class, 'getDoctorPriceRange'])
+        ->name('vh.backend.appointments.doctors.price');
     /**
      * Get Item
      */

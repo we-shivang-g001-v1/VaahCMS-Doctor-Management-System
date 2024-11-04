@@ -421,20 +421,27 @@ class Appointment extends VaahModel
     //-------------------------------------------------
     public function scopeSearchFilter($query, $filter)
     {
-
-        if(!isset($filter['q']))
-        {
+        if (!isset($filter['q'])) {
             return $query;
         }
-        $search_array = explode(' ',$filter['q']);
+
+        // Split the search query into an array
+        $search_array = explode(' ', $filter['q']);
 
         foreach ($search_array as $search_item) {
+            // Normalize search item to lower case for case-insensitive comparison
+            $search_item = strtolower(trim($search_item));
+
             $query->where(function ($q1) use ($search_item) {
                 $q1->whereHas('doctor', function ($query) use ($search_item) {
-                    $query->where('name', 'LIKE', '%' . $search_item . '%');
+                    $query->whereRaw("LOWER(name) REGEXP ?", ['(' . preg_quote($search_item) . ')'])
+                        ->orWhereRaw("LOWER(name) REGEXP ?", ['(' . preg_quote(str_replace('.', '. ', $search_item)) . ')']) // Match with space after period
+                        ->orWhereRaw("LOWER(name) REGEXP ?", ['(' . preg_quote(str_replace(' ', '', $search_item)) . ')']); // Match without spaces
                 })
                     ->orWhereHas('patient', function ($query) use ($search_item) {
-                        $query->where('name', 'LIKE', '%' . $search_item . '%');
+                        $query->whereRaw("LOWER(name) REGEXP ?", ['(' . preg_quote($search_item) . ')'])
+                            ->orWhereRaw("LOWER(name) REGEXP ?", ['(' . preg_quote(str_replace('.', '. ', $search_item)) . ')']) // Match with space after period
+                            ->orWhereRaw("LOWER(name) REGEXP ?", ['(' . preg_quote(str_replace(' ', '', $search_item)) . ')']); // Match without spaces
                     })
                     ->orWhere(function ($query) use ($search_item) {
                         if (strtolower($search_item) === 'booked') {
@@ -445,7 +452,10 @@ class Appointment extends VaahModel
                     });
             });
         }
+
+        return $query; // Return the modified query
     }
+
 
     //-------------------------------------------------
     public static function getList($request)

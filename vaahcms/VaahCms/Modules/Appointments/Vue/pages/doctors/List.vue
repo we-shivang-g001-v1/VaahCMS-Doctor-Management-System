@@ -116,7 +116,7 @@ const downloadDoctorSampleFile = () => {
 };
 
 onMounted(async () => {
-    document.title = 'Doctors CSV';
+    document.title = 'Doctors';
     store.item = null;
     await store.onLoad(route);
     await store.watchRoutes(route);

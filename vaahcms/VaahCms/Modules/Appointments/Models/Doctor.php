@@ -385,14 +385,15 @@ class Doctor extends VaahModel
 
             // Create a LIKE pattern to match without spaces
             $query->where(function ($q1) use ($normalized_search_item) {
-                $q1->where('name', 'LIKE', '%' . $normalized_search_item . '%')
-                    ->orWhere('name', 'LIKE', '%' . str_replace('.', '. ', $normalized_search_item) . '%') // Match with space after period
-                    ->orWhere('name', 'LIKE', '%' . str_replace(' ', '', $normalized_search_item) . '%') // Match without spaces
-                    ->orWhere('email', 'LIKE', '%' . $normalized_search_item . '%')
-                    ->orWhere('phone', 'LIKE', '%' . $normalized_search_item . '%')
-                    ->orWhere('specialization', 'LIKE', '%' . $normalized_search_item . '%')
-                    ->orWhere('id', 'LIKE', $normalized_search_item . '%');
+                $q1->whereRaw("name REGEXP ?", ['(' . preg_quote($normalized_search_item) . ')'])
+                    ->orWhereRaw("name REGEXP ?", ['(' . preg_quote(str_replace('.', '. ', $normalized_search_item)) . ')']) // Match with space after period
+                    ->orWhereRaw("name REGEXP ?", ['(' . preg_quote(str_replace(' ', '', $normalized_search_item)) . ')']) // Match without spaces
+                    ->orWhereRaw("email REGEXP ?", ['(' . preg_quote($normalized_search_item) . ')'])
+                    ->orWhereRaw("phone REGEXP ?", ['(' . preg_quote($normalized_search_item) . ')'])
+                    ->orWhereRaw("specialization REGEXP ?", ['(' . preg_quote($normalized_search_item) . ')'])
+                    ->orWhereRaw("id REGEXP ?", [$normalized_search_item . '.*']); // Match starts with the normalized search item
             });
+
         }
 
         return $query;

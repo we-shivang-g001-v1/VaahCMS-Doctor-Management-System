@@ -36,12 +36,11 @@ watch(
     (newValue) => {
         if (newValue !== null) {
             minPrice.value = newValue; // Update minPrice when minimumPrice changes
-            priceRange.value[0] = newValue; // Update the lower bound of the price range to the new minimum price
+            priceRange.value[0] = newValue;
         }
     }
 );
 
-// Watch for changes to the price range
 watch(priceRange, (newValue) => {
     // Validate the new price range
     if (newValue[0] < minPrice.value || newValue[0] >= newValue[1] || newValue[1] > maxPrice.value) {

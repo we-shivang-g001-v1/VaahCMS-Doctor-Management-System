@@ -247,22 +247,34 @@ class patient extends VaahModel
     //-------------------------------------------------
     public function scopeSearchFilter($query, $filter)
     {
-
-        if(!isset($filter['q']))
-        {
+        if (!isset($filter['q'])) {
             return $query;
         }
-        $search_array = explode(' ',$filter['q']);
-        foreach ($search_array as $search_item){
-            $query->where(function ($q1) use ($search_item) {
-                $q1->where('name', 'LIKE', '%' . $search_item . '%')
-                    ->orWhere('email', 'LIKE', '%' . $search_item . '%')
-                    ->orWhere('phone', 'LIKE', '%' . $search_item . '%')
-                    ->orWhere('id', 'LIKE', $search_item . '%');
+
+        // Split the search query into an array
+        $search_array = explode(' ', $filter['q']);
+
+        foreach ($search_array as $search_item) {
+            // Normalize search item to lower case for case-insensitive comparison
+            $normalized_search_item = strtolower(trim($search_item));
+
+            // Create a pattern to match variations
+            $pattern = preg_quote($normalized_search_item, '/') // Escape special characters
+                . '|' . preg_quote(str_replace('.', '. ', $normalized_search_item), '/') // Match with space after period
+                . '|' . preg_quote(str_replace(' ', '', $normalized_search_item), '/'); // Match without spaces
+
+            $query->where(function ($q1) use ($pattern) {
+                $q1->whereRaw("LOWER(name) REGEXP ?", ['(' . $pattern . ')'])
+                    ->orWhereRaw("LOWER(email) REGEXP ?", ['(' . $pattern . ')'])
+                    ->orWhereRaw("LOWER(phone) REGEXP ?", ['(' . $pattern . ')'])
+                    ->orWhereRaw("LOWER(id) REGEXP ?", ['(' . $pattern . '.*)']); // Match starts with the normalized search item
             });
         }
 
+        return $query; // Return the modified query
     }
+
+
     //-------------------------------------------------
     public static function getList($request)
     {

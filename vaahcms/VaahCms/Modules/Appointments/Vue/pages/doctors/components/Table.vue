@@ -317,12 +317,14 @@ function formatTimeWithAmPm(time) {
         <!--/table-->
         <!-- Sidebar Component -->
         <Sidebar v-model:visible="visibleRight" header="Appointments Details" position="right" class="custom-sidebar">
-            <p>Total Appointments: {{ currentAppointmentCount }}</p>
+            <p>Total Active Appointments: {{ currentAppointmentCount }}</p>
+
 
             <TabView>
                 <!-- Booked Tab -->
                 <TabPanel header="Booked">
                     <DataTable :value="bookedAppointments" dataKey="id" class="p-datatable-sm p-datatable-hoverable-rows" emptyMessage="No records available">
+
                         <Column field="id" header="ID" :sortable="true" :style="{ width: '80px' }">
                             <template #body="prop">
                                 {{ prop.data.id }}
@@ -363,43 +365,49 @@ function formatTimeWithAmPm(time) {
 
                 <!-- Cancelled Tab -->
                 <TabPanel header="Cancelled">
-                    <DataTable :value="cancelledAppointments" dataKey="id" class="p-datatable-sm p-datatable-hoverable-rows" emptyMessage="No records available">
-                        <Column field="id" header="ID" :sortable="true" :style="{ width: '80px' }">
-                            <template #body="prop">
-                                {{ prop.data.id }}
-                            </template>
-                        </Column>
+                    <template v-if="cancelledAppointments.length > 0">
+                        <DataTable :value="cancelledAppointments" dataKey="id" class="p-datatable-sm p-datatable-hoverable-rows">
 
-                        <Column field="patient.name" header="Patient Name" :sortable="true" class="overflow-wrap-anywhere">
-                            <template #body="prop">
-                                {{ prop.data.patient.name }} <!-- Accessing nested patient name -->
-                            </template>
-                        </Column>
+                            <Column field="id" header="ID" :sortable="true" :style="{ width: '80px' }">
+                                <template #body="prop">
+                                    {{ prop.data.id }}
+                                </template>
+                            </Column>
 
-                        <Column field="date" header="Appointment Date" :sortable="true" class="overflow-wrap-anywhere">
-                            <template #body="prop">
-                                {{ prop.data.date }}
-                            </template>
-                        </Column>
+                            <Column field="patient.name" header="Patient Name" :sortable="true" class="overflow-wrap-anywhere">
+                                <template #body="prop">
+                                    {{ prop.data.patient.name }}
+                                </template>
+                            </Column>
 
-                        <Column field="slot_start_time" header="Start Time" :sortable="true" class="overflow-wrap-anywhere">
-                            <template #body="prop">
-                                {{ formatTimeWithAmPm(convertUtcToIst(prop.data.slot_start_time)) }}
-                            </template>
-                        </Column>
+                            <Column field="date" header="Appointment Date" :sortable="true" class="overflow-wrap-anywhere">
+                                <template #body="prop">
+                                    {{ prop.data.date }}
+                                </template>
+                            </Column>
 
-                        <Column field="slot_end_time" header="End Time" :sortable="true" class="overflow-wrap-anywhere">
-                            <template #body="prop">
-                                {{ formatTimeWithAmPm(convertUtcToIst(prop.data.slot_end_time)) }}
-                            </template>
-                        </Column>
+                            <Column field="slot_start_time" header="Start Time" :sortable="true" class="overflow-wrap-anywhere">
+                                <template #body="prop">
+                                    {{ formatTimeWithAmPm(convertUtcToIst(prop.data.slot_start_time)) }}
+                                </template>
+                            </Column>
 
-                        <Column field="reason" header="Reason" :sortable="true" class="overflow-wrap-anywhere">
-                            <template #body="prop">
-                                {{ prop.data.reason || 'N/A' }}
-                            </template>
-                        </Column>
-                    </DataTable>
+                            <Column field="slot_end_time" header="End Time" :sortable="true" class="overflow-wrap-anywhere">
+                                <template #body="prop">
+                                    {{ formatTimeWithAmPm(convertUtcToIst(prop.data.slot_end_time)) }}
+                                </template>
+                            </Column>
+
+                            <Column field="reason" header="Reason" :sortable="true" class="overflow-wrap-anywhere">
+                                <template #body="prop">
+                                    {{ prop.data.reason || 'N/A' }}
+                                </template>
+                            </Column>
+                        </DataTable>
+                    </template>
+                    <template v-else>
+                        <p>No records found</p>
+                    </template>
                 </TabPanel>
             </TabView>
 

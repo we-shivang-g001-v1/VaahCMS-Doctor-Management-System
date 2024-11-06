@@ -17,6 +17,7 @@ import Toast from 'primevue/toast';
 import ToastService from 'primevue/toastservice';
 import Tooltip from 'primevue/tooltip';
 import VueMobileDetection from "vue-mobile-detection";
+import Apexcharts from "vue3-apexcharts";
 
 //-------------/PrimeVue Imports
 
@@ -114,7 +115,9 @@ app.component('Chart', Chart);
 app.component('Dialog', Dialog);
 app.component('Checkbox', Checkbox);
 app.component('Steps', Steps);
+app.component('Apexcharts', Apexcharts);
 app.use(VueMobileDetection);
+
 
 
 //-------------/CRUD PrimeVue Use

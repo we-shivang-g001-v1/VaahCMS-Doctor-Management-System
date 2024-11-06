@@ -2,6 +2,7 @@
 import { useAppointmentStore } from "../../stores/store-appointments";
 import { ref, onMounted } from "vue";
 import Chart from 'primevue/chart'; // Import Chart component
+import CustomChart from "./components/CustomChart.vue";
 
 document.title = 'Appointments';
 const store = useAppointmentStore();
@@ -18,6 +19,7 @@ onMounted(async () => {
     chartOptions.value = setChartOptions();
     pieChartOptions.value = setPieChartOptions(); // Set pie chart options
 
+
     try {
         // Fetch appointment data
         await store.getAppointmentList();
@@ -25,6 +27,19 @@ onMounted(async () => {
         // Set the chart data based on the fetched appointment counts
         chartData.value = setChartData(store.item.counts);
         pieChartData.value = setPieChartData(store.item.counts);
+
+        chart_series.value = [
+            {
+                name: 'Appointments Count',
+                data: [
+                    store.item?.counts?.total_count, // Correctly referencing counts from the store
+                    store.item?.counts?.booked_count,
+                    store.item?.counts?.cancelled_count,
+                    store.item?.counts?.booked_doctor_count,
+                    store.item?.counts?.booked_patient_count
+                ]
+            }
+        ];
         // Set pie chart data
 
     } catch (err) {
@@ -139,6 +154,38 @@ const setPieChartOptions = () => {
         }
     };
 };
+const chart_series = ref([
+    {
+        name: 'Appointments Count',
+        data: [
+            store.item?.counts?.total_count, // Correctly referencing counts from the store
+            store.item?.counts?.booked_count,
+            store.item?.counts?.cancelled_count,
+            store.item?.counts?.booked_doctor_count,
+            store.item?.counts?.booked_patient_count
+        ]
+    }
+]);
+const chart_options = ref({
+    chart: {
+        stacked: false,
+    },
+    plotOptions: {
+        bar: {},
+    },
+    xaxis: {
+        categories: ['Total Appointments','Booked Appointments','Cancelled Appointments','Booked Doctors','Booked Patients'],
+    },
+    yaxis: {
+        title: {
+            text: 'Count',
+        },
+    },
+    title: {
+        text: 'Appointments Count',
+        align: 'center',
+    },
+});
 </script>
 
 <template>
@@ -220,6 +267,24 @@ const setPieChartOptions = () => {
                     <Chart type="pie" :data="pieChartData" :options="pieChartOptions" class="chart" />
                 </div>
             </div>
+
+            <div class="chart-container">
+
+                <div class="chart-wrapper bar-chart">
+                    <CustomChart
+                        type="bar"
+                        title='Customer Count Bar Chart'
+                        height="400"
+                        width="800"
+                        titleAlign="center"
+                        :chartSeries="chart_series"
+                        :chartOptions="chart_options"
+                    />
+                </div>
+
+            </div>
+
+
         </div>
     </div>
 </template>
